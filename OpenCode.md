@@ -2,9 +2,10 @@
 
 > **For the agent:** This document is the single source of truth.
 > Build exactly what is specified here. When a choice is marked ✅ LOCKED, do not revisit it.
-> When marked ⚠️ VERIFY, check the referenced nixpkgs option exists in the pinned channel before using it.
+> When a choice was marked ⚠️ VERIFY, it has been checked against pinned `nixos-26.05` as of 2026-08-03 (see Changes.md for verification table).
+> All options, packages, and module names below reflect the pinned channel — use them directly.
 > Do not add services, containers, or dependencies not listed here.
-> _the rulings document amends CLAUDE.md; where they conflict, rulings win_
+> _the Rulings appendix amends the main body; where they conflict, rulings win_
 
 ## Intro
 You will be provided with an local IPv4 Address you can connect to via ssh (or ssh-mcp) to tinker around with the nixOS installation ISO.
@@ -78,6 +79,14 @@ Speedport may still announce itself as IPv6 DNS. Devices using it bypass AdGuard
 ### 3.6 Cloudflare Tunnel (blogs only)
 `services.cloudflared.tunnels."<id>"` with `credentialsFile` from sops; ingress: `dnanu.de`, `www.dnanu.de`, `autoconfig.dnanu.de` → `http://127.0.0.1:8080`; default `http_status:404`. Tunnel routes created once in CF dashboard (1% manual) or via API.
 
+### 3.7 DNSSEC — ✅ LOCKED (Cloudflare-managed, zero NixOS config)
+- Enable DNSSEC on both Cloudflare zones (`dnanu.de`, `nanulab.de`). Algorithm: ECDSAP256SHA256 (CF-managed). Nameservers unchanged.
+- Publish the DS record (one per zone) at the `.de` registrar's DENIC interface. **1% manual**, added to §12.
+- Order: enable signing at Cloudflare first, **then** publish DS at registrar. Never withdraw signing while DS exists (bogus domain, full resolution failure).
+- No conflicts: grey-cloud `mail.dnanu.de` (dynamic IP) is re-signed automatically by Cloudflare; DNSSEC signs names, not IPs. Proxied records and wildcard `*.nanulab.de → 100.x` sign fine. AdGuard split-horizon rewrites are unsigned local answers (standard private-view behaviour, accepted).
+- Phase-2 hook: DANE/TLSA for SMTP (joins MTA-STS/TLS-RPT in §15).
+- Verification: `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set), `delv dnanu.de`, dnsviz.net spot check.
+
 ## 4. Mail Architecture
 
 ### 4.1 Stack — ✅ LOCKED
@@ -93,34 +102,34 @@ mailserver = {
   domains = [ "dnanu.de" ];
   enableSubmission = true;     # 587
   enableSubmissionSsl = true;  # 465
-  loginAccounts."hey@dnanu.de" = {
+  accounts."hey@dnanu.de" = {
     hashedPasswordFile = config.sops.secrets.mail_hey.path;
     aliases = [ "it@" "health@" "wealth@" "creative@" "academic@"
                 "accounts@" "contact@" "partners@" ]; # @dnanu.de
-    sieveScript = '' ... per-alias fileinto :create ... ''; # ⚠️ VERIFY option exists in pinned SNM release
+    sieveScript = '' ... per-alias fileinto :create ... ''; # ✅ verified in pinned SNM 26.05
   };
-  loginAccounts."admin@dnanu.de" = {
+  accounts."admin@dnanu.de" = {
     hashedPasswordFile = config.sops.secrets.mail_admin.path;
     aliases = [ "postmaster@" "hostmaster@" "webmaster@" "abuse@" "security@" ];
   };
-  certificateScheme = "manual"; # certs from security.acme DNS-01, group-readable by dovecot2/postfix
+  x509.useACMEHost = "mail.dnanu.de"; # cert from security.acme DNS-01, group-readable by dovecot2/postfix
 };
 ```
-Sieve logic: `if address :is "to" "it@dnanu.de" { fileinto :create "IT"; stop; }` × 8; fallthrough → INBOX (only `hey@` lands there). Sub-addressing `hey+foo@` ⚠️ VERIFY `recipientDelimiter`.
+Sieve logic: `if address :is "to" "it@dnanu.de" { fileinto :create "IT"; stop; }` × 8; fallthrough → INBOX (only `hey@` lands there). Sub-addressing `hey+foo@` ✅ `recipientDelimiter` verified.
 
 ### 4.3 Outbound relay (Resend) — ✅ LOCKED
 SNM has no relay option; use Postfix directly:
 ```nix
 services.postfix = {
   mapFiles."sasl_passwd" = sopsTemplate; # "[smtp.resend.com]:465 resend:re_APIKEY" — rendered from sops, mode 0600
-  extraConfig = ''
-    relayhost = [smtp.resend.com]:465
-    smtp_sasl_auth_enable = yes
-    smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
-    smtp_sasl_security_options = noanonymous
-    smtp_tls_wrappermode = yes
-    smtp_tls_security_level = encrypt
-  '';
+  settings.main = {
+    relayhost = "[smtp.resend.com]:465";
+    smtp_sasl_auth_enable = "yes";
+    smtp_sasl_password_maps = "hash:/etc/postfix/sasl_passwd";
+    smtp_sasl_security_options = "noanonymous";
+    smtp_tls_wrappermode = "yes";
+    smtp_tls_security_level = "encrypt";
+  };
 };
 ```
 
@@ -196,17 +205,20 @@ nixos-homelab/
 | cloudflared | `services.cloudflared` | — | §3.6 |
 | Mail | SNM `mailserver.*` | `mail.dnanu.de` | §4 |
 | Nextcloud | `services.nextcloud` | `cloud.nanulab.de` | native pg + redis; `extraApps`: mail, calendar, contacts; `adminpassFile`=sops; `maxUploadSize="16G"` |
+| Collabora Online | `services.collabora-online` | `office.nanulab.de` | native module; Nextcloud Office backend; Tailscale-only |
 | Immich | `services.immich` | `photos.nanulab.de` | `mediaLocation=/fast/immich`; ML off on Dell |
 | Vaultwarden | `services.vaultwarden` | `vault.nanulab.de` | `SIGNUPS_ALLOWED=false` |
 | Jellyfin | `services.jellyfin` | `watch.nanulab.de` | SNB iGPU: `intel-vaapi-driver`; prod: `intel-media-driver` |
-| Navidrome | `services.navidrome` | `music.nanulab.de` | `MusicFolder=/slow/shared-media/audio/music` |
+| Navidrome | `services.navidrome` | `music.nanulab.de` | `settings.MusicFolder=/slow/shared-media/audio/music` |
 | Audiobookshelf | `services.audiobookshelf` | `listen.nanulab.de` | podcasts + audiobooks, manager AND player |
-| Kavita | `services.kavita` | `read.nanulab.de` | books + comics + manga |
+| Booklore | OCI container (`ghcr.io/booklore-app/booklore:<pinned-tag>`) | `books.nanulab.de` | single sanctioned container exception; MariaDB via `services.mysql.package = pkgs.mariadb` |
 | Seerr | `services.seerr` | `requests.nanulab.de` | requests for movies/shows |
 | Sonarr/Radarr/Lidarr/Readarr*/Prowlarr/Bazarr | `services.<name>` | `*.nanulab.de` | *Readarr pinned-archived + rreading-glasses mirror (Q1) |
 | qBittorrent | `services.qbittorrent` | via VPN bridge IP | confined; listen port = AirVPN forwarded port |
 | SABnzbd | `services.sabnzbd` | via VPN bridge IP | confined |
 | slskd | `services.slskd` | via VPN bridge IP | confined; creds via `environmentFile`=sops; + soularr timer (Lidarr↔slskd bridge) |
+| beets | `pkgs.beets` (systemd service) | — | CLI + YAML config; music tag post-processor (Lidarr organizes, beets perfects) |
+| soularr | systemd timer (Python) | — | bridges Lidarr ↔ slskd for missing album searches |
 | Home Assistant | `services.home-assistant` | `home.nanulab.de` | `trusted_proxies` for nginx |
 | Beszel | `services.beszel.hub` + `.agent` | `status.nanulab.de` | agent monitors systemd units; mail-queue alert |
 | Restic | `services.restic.backups.b2` | — | §11 |
@@ -232,11 +244,11 @@ nixos-homelab/
 
 **On the Mac (once):** generate age keypair (private → USB + password manager); generate mobile CA; clone repo; edit `settings.nix`; `sops secrets/secrets.yaml` to fill §7; commit.
 **Install:** boot NixOS ISO on Dell (ethernet) → start sshd, set password → from Mac: `nix run github:nix-community/nixos-anywhere -- --flake .#homelab --extra-files <dir-with-age-key> root@<ip>` → disko formats, installs, reboots.
-**1% manual (~45 min):** approve Tailscale subnet route; create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Kavita admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key.
+**1% manual (~45 min):** approve Tailscale subnet route; create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; publish DS records at registrar (both zones, §3.7).
 
 ## 13. Verification Suite (run after install)
 
-`zpool status` · `dig @10.0.0.2 mail.dnanu.de` (→10.0.0.2) · `dig mail.dnanu.de @1.1.1.1` (→home IP) · `swaks --to hey@dnanu.de --server <home-ip>` from outside · send via iOS → check Resend dashboard · `curl -I https://cloud.nanulab.de` over Tailscale · torrent IP-leak test in qBittorrent · `restic check` · lid-close test · `systemctl --failed` empty.
+`zpool status` · `dig @10.0.0.2 mail.dnanu.de` (→10.0.0.2) · `dig mail.dnanu.de @1.1.1.1` (→home IP) · `swaks --to hey@dnanu.de --server <home-ip>` from outside · send via iOS → check Resend dashboard · `curl -I https://cloud.nanulab.de` over Tailscale · torrent IP-leak test in qBittorrent · `restic check` · lid-close test · `systemctl --failed` empty · `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set) · `delv dnanu.de`.
 
 ## 14. Update Policy
 
@@ -244,15 +256,17 @@ Quarterly: `nix flake update` → build → test → switch. Rollback via boot m
 
 ## 15. Phase 2 Backlog (documented, NOT built)
 
-Docmost (container, when packaged or accepted), Odoo (native), Kometa timer, Nextcloud Talk (needs TURN+ports), Nextcloud Office (Collabora), MeTube/Pinchflat, IPTV, Headscale (if Tailscale SaaS ever fails you), MTA-STS/TLS-RPT, multi-user mailboxes.
+Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale (if Tailscale SaaS ever fails you), MTA-STS/TLS-RPT, multi-user mailboxes.
 
 ## 16. Key References
 
-- SNM: https://nixos-mailserver.readthedocs.io/en/latest/ (options: `loginAccounts.<name>.{aliases,sieveScript}`, `enableSubmissionSsl`, relay workaround = GitLab issue #148)
+- SNM: https://nixos-mailserver.readthedocs.io/en/latest/ (options: `accounts.<name>.{aliases,sieveScript}`, `enableSubmissionSsl`, `x509.useACMEHost`, relay workaround = services.postfix directly)
 - VPN-Confinement: https://github.com/Maroka-chan/VPN-Confinement · nixarr VPN docs: https://nixarr.com/wiki/vpn/ (AirVPN = static port forward, wg-quick)
 - Resend SMTP: https://resend.com/docs/send-with-smtp (`smtp.resend.com:465`, user `resend`, pass = API key)
 - Readarr retirement: https://github.com/readarr/readarr (mirror: rreading-glasses)
 - disko: https://github.com/nix-community/disko · nixos-anywhere: https://github.com/nix-community/nixos-anywhere · sops-nix: https://github.com/Mic92/sops-nix
+- Beszel/slskd/seerr modules: nixpkgs `services.beszel.{hub,agent}`, `services.slskd`, `services.seerr` (26.05)
+- Booklore: https://github.com/booklore-app/booklore · soularr: https://github.com/mrusse/soularr · Hugo: https://gohugo.io · rreading-glasses mirror for Readarr metadata
 - Beszel/slskd/seerr modules: nixpkgs `services.beszel.{hub,agent}`, `services.slskd`, `services.seerr` (26.05)
 # Ruling by Kimi K3 for Kimi K3 in Claude Code Harness
 ## Final Rulings (Blueprint v3)
