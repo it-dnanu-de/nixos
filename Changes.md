@@ -1,14 +1,35 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
-## 2026-08-03 — build session start: Init + environment probe
-- Session orchestrated via `/init`. Repo clean on `main`, no unpushed commits.
-- Server 10.0.0.2 confirmed live: Dell E5520, live ISO `26.05.5591` (Yarara), sshd active, 5.7Gi RAM, booted from Ventoy USB.
-- **CRITICAL for install:** `/dev/sda` = 223.6G Intenso SSD (target, wipe it). `/dev/sdb` = 7.3G Cruzer Switch Ventoy USB (NEVER touch). disko must target `sda` only.
-- `sda` currently carries an old LVM layout (`nanulab-vg-*`) from a previous install — disko replaces it.
-- Human approved milestone: VERIFY sweep → pause → build step 1 (flake + settings + sops skeleton). Secrets: placeholders.
-- Toolchain on dev machine: node/npm/gh present; nix + sshpass not installed locally (nix runs on server).
+## 2026-08-03 — build step 1 complete: flake + settings + sops skeleton + verified OpenCode
 
-## 2026-08-03 — opencode workflow: model routing + Init command
+### Toolchain
+- nix 2.35.1, sops 3.13.3, age 1.3.1 all installed locally (single-user nix, no daemon).
+- nixpkgs reference clone restored from a broken worktree state.
+
+### Verification sweep (all 43 items checked against pinned nixos-26.05)
+| Category | ✅ | ⚠️ RENAMED | ❌ MISSING |
+|---|---|---|---|
+| Nixos service modules | 24 | 0 | 1 (booklore — sanctioned container) |
+| Packages (hugo/beets/video-drivers/swaks/bind) | 6 | 0 | 0 |
+| SNM options (accounts/sieve/x509/submission/recipientDelimiter) | 8 | 2 (loginAccounts→accounts, certificateScheme→x509) | 0 |
+| VPN-Confinement | 2 | 0 | 0 |
+| Postfix | 0 | 1 (extraConfig→settings.main) | 0 |
+
+### Flake lock resolved
+- nixpkgs: `531670d` (2026-08-03) — nixos-26.05 branch
+- disko: `ff8702b` (2026-06-11) — follows nixpkgs
+- sops-nix: `f140661` (2026-07-04) — follows nixpkgs
+- vpn-confinement: `b3aa71a` (2026-07-27) — no follows (flake has zero inputs)
+- simple-nixos-mailserver: `d357b9f` (2026-07-28) — nixos-26.05 branch (not master!)
+
+### Eval checks
+- hostId confirmed `2f69efe2` via `nix eval`
+- SNM options confirmed: accounts, x509.useACMEHost, enableSubmissionSsl, recipientDelimiter
+- Verification table amended into OpenCode.md header
+
+### Security review (T3 Kimi K3): GO
+- No secrets in history. secrets.yaml is ciphertext. age private key outside the repo.
+- SSH PasswordAuthentication intentional and documented. .gitignore coverage complete.
 - Wired T1/T2/T3 models into all 5 agents: architect + security-reviewer -> `openrouter/moonshotai/kimi-k3` (T3), nixos-builder + deployer -> `openrouter/deepseek/deepseek-v4-pro` (T2), verifier -> `openrouter/deepseek/deepseek-v4-flash` (T1).
 - Created `.opencode/command/init.md`: the session orchestration entry point. Probes env, asks the human setup questions, routes to tiered subagents, drives the frozen build order, pauses for approval before writing code.
 - Fixed `opencode.json` references: `snm` -> GitLab URL (it's not on GitHub), `disko` -> `nix-community/disko`. Deleted the manual reference clones (reverted); opencode re-materializes them on use.

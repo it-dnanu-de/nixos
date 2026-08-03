@@ -2,7 +2,7 @@
 
 A 20-year NixOS homelab for **dnanu.de**. Single node, single user, 99% declarative, pinned to the `nixos-26.05` stable channel.
 
-> **[OpenCode.md](OpenCode.md) is the single source of truth.** Build, rule, and verification decisions live there. Anything marked ✅ LOCKED is final; ⚠️ VERIFY must be checked against the pinned channel before use.
+> **[OpenCode.md](OpenCode.md) is the single source of truth.** Build, rule, and verification decisions live there. All ⚠️ VERIFY flags have been checked against pinned `nixos-26.05` and are marked ✅ verified.
 
 ## What this repo is
 - The complete NixOS configuration for the homelab server: `flake.nix`, `settings.nix`, sops-encrypted `secrets/secrets.yaml`, `hosts/homelab`, and modular config under `modules/`.
@@ -32,9 +32,9 @@ Launch opencode in this directory and type `/init`. It:
 Prereqs for a live session: `HOMELAB_SSH_PASSWORD` must be set in the shell **before** launching opencode. It's exported automatically in fish via `~/.config/fish/conf.d/homelab.fish` (and was in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
 
 ## Status
-- **Phase:** pre-build. Repo bootstrapped, tooling in place.
-- **What works:** the opencode harness (init workflow, model routing, MCP, skills, commands). Nothing deployed yet — this is the blueprint + build session.
-- **Known gaps / coming:** everything in OpenCode.md §9-15 (see the frozen build order §12). The first milestone is the ⚠️ VERIFY table against pinned `nixos-26.05`.
+- **Phase:** Build step 1 complete (`flake.nix` + `settings.nix` + sops skeleton + verified OpenCode.md).
+- **What works:** all 17 secrets encrypted with sops/age (placeholder values). Flake locks resolved against nixpkgs `nixos-26.05` (531670d, 2026-08-03), SNM `nixos-26.05` branch (d357b9f), plus disko/sops-nix/vpn-confinement. hostId `2f69efe2` generated. Public-safety sweep passed.
+- **Next milestone:** Build step 2 — `disko.nix` + ZFS + Dell quirks (lid, ARC) + ZFS module config.
 
 ## License
 See [LICENSE](LICENSE).
