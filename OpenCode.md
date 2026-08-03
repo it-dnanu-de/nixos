@@ -569,3 +569,169 @@ Here you store changes in this file, like everything we have done, this file is 
 
 ### Memory.md
 Here you can store your memory, API Keys, Tokens you need, Credentials and everything else, this file it gitignored.
+
+## AI capabilities and extensions
+
+The AI harness may extend its capabilities through external knowledge sources, skills, MCP servers, and persistent memory.
+
+Extensions should improve reliability and accuracy, not replace engineering judgement.
+
+---
+
+## Web access
+
+The AI may use web search and documentation lookup when:
+
+- verifying NixOS options
+- checking package availability
+- reading upstream documentation
+- investigating errors
+- validating security recommendations
+- checking current versions or compatibility
+
+Prefer primary sources:
+
+1. Official documentation
+2. Upstream repositories
+3. NixOS/nixpkgs sources
+4. Project documentation
+5. Community discussions only when primary sources are unavailable
+
+Do not rely on outdated information when a current source exists.
+
+For NixOS work specifically, always verify options against the pinned nixpkgs version before implementation.
+
+---
+
+## Skills system
+
+The AI may search for and load additional skills when a task requires specialized knowledge.
+
+Examples:
+
+- NixOS configuration
+- ZFS administration
+- networking
+- security hardening
+- mail server configuration
+- Git workflows
+- debugging
+- documentation generation
+
+Before using a skill:
+
+1. Check what the skill does.
+2. Verify it does not conflict with OpenCode.md.
+3. Use only the minimum required capability.
+
+Skills provide knowledge and workflows. They do not override project decisions.
+
+---
+
+## MCP servers
+
+The AI may install and configure MCP servers when additional tools are required.
+
+Examples:
+
+- GitHub integration
+- filesystem tools
+- browser automation
+- documentation search
+- infrastructure tools
+- monitoring tools
+
+Before installing an MCP server:
+
+1. Explain why it is required.
+2. Verify the source is trustworthy.
+3. Check permissions requested.
+4. Avoid unnecessary dependencies.
+
+Prefer official MCP implementations.
+
+Installed MCP servers should be documented in the repository.
+
+---
+
+## Browser automation
+
+The AI may use browser automation for tasks requiring interaction with web interfaces.
+
+Examples:
+
+- checking dashboards
+- verifying DNS settings
+- interacting with provider consoles
+- testing web applications
+- reading documentation
+
+Browser automation should not be used when an API or CLI method exists.
+
+Never expose credentials in screenshots, logs, or commits.
+
+---
+
+## Memory system
+
+The AI may maintain persistent project memory.
+
+Memory should contain:
+
+- architectural decisions
+- resolved problems
+- important commands
+- environment information
+- lessons learned
+- recurring issues
+
+Memory should not contain:
+
+- passwords
+- API keys
+- private keys
+- personal secrets
+- temporary debugging information
+
+Important decisions should eventually be moved into OpenCode.md rather than existing only in memory.
+
+---
+
+## Learning from previous work
+
+Before starting a major task:
+
+Review:
+
+- previous commits
+- previous decisions
+- existing architecture
+- known problems
+- previous failed approaches
+
+Do not repeat previously rejected approaches without explaining why circumstances changed.
+
+Failed attempts are valuable information. Record useful lessons.
+
+---
+
+## Self improvement
+
+The AI may improve its workflows over time.
+
+Examples:
+
+- creating reusable skills
+- improving documentation
+- improving verification scripts
+- adding automation
+- refining development procedures
+
+Self-improvement must preserve:
+
+- reproducibility
+- security
+- declarative configuration
+- project constraints
+
+Never modify the core rules of the project without explicit approval.
