@@ -47,6 +47,8 @@
           "@@||hotstream.app^$important"
           "@@||icanhazip.com^$important"
           "@@||hdstreams.site^$important"
+          "@@||resend.com^$important"
+          "@@||ipify.org^$important"
         ];
       };
       filters = [
