@@ -44,10 +44,14 @@
   };
 
   # ── Resend outbound relay (services.postfix directly) ──────
+  # SASL credentials rendered to /run/secrets by sops (root:root 0400),
+  # then postfix-setup.service reads it + runs postmap.
+  sops.templates."postfix-sasl-passwd".content = ''
+    [smtp.resend.com]:465 resend:${config.sops.placeholder.resend_api_key}
+  '';
+
   services.postfix = {
-    mapFiles."sasl_passwd" = builtins.toFile "sasl_passwd" ''
-      [smtp.resend.com]:465 resend:PLACEHOLDER_RESEND_API_KEY
-    '';
+    mapFiles."sasl_passwd" = config.sops.templates."postfix-sasl-passwd".path;
 
     settings.main = {
       relayhost = [ "[smtp.resend.com]:465" ];
