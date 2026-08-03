@@ -31,9 +31,9 @@
         protection_enabled = true;
         filtering_enabled = true;
         rewrites = [
-          { domain = "*.nanulab.de";  answer = settings.network.address; }
-          { domain = "nanulab.de";    answer = settings.network.address; }
-          { domain = settings.domains.mail; answer = settings.network.address; }
+          { domain = "*.nanulab.de";  answer = settings.network.address; enabled = true; }
+          { domain = "nanulab.de";    answer = settings.network.address; enabled = true; }
+          { domain = settings.domains.mail; answer = settings.network.address; enabled = true; }
         ];
         safe_search.enabled = true;
         safe_search.bing = true;
