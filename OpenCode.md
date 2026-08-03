@@ -1,10 +1,22 @@
-# CLAUDE.md — nanulab/dnanu 20-Year NixOS Homelab
+# OpenCode.md — nanulab/dnanu 20-Year NixOS Homelab
 
-> **For the agent (Kimi K3 / Claude Code):** This document is the single source of truth.
+> **For the agent:** This document is the single source of truth.
 > Build exactly what is specified here. When a choice is marked ✅ LOCKED, do not revisit it.
 > When marked ⚠️ VERIFY, check the referenced nixpkgs option exists in the pinned channel before using it.
 > Do not add services, containers, or dependencies not listed here.
 > _the rulings document amends CLAUDE.md; where they conflict, rulings win_
+
+## Intro
+You will be provided with an local IPv4 Address you can connect to via ssh (or ssh-mcp) to tinker around with the nixOS installation ISO.
+
+I will basicall do this:
+1. Boot into the Live ISO
+2. sudo -i
+3. passwd nixos (and set the password to 123)
+4. passwd root  (and set the password to 456)
+5. sudo systemctl start sshd
+6. and give you the credentials, which I will give you now ssh 10.0.0.2@nixos with password 123 or ssh 10.0.0.2@root with password 456
+7. if something doesnt work please tell me
 
 ## 1. Philosophy & Hard Rules
 
@@ -13,7 +25,7 @@
 3. **Zero open ports** except TCP 25 (inbound SMTP) forwarded to `10.0.0.2`.
 4. **Stable channel, pinned flake.** `nixpkgs` follows `nixos-26.05` (or current stable). No auto-upgrades. Human runs `nix flake update` deliberately, 2–4×/year.
 5. **Single-node monolith.** No clustering.
-6. **Single-user system.** One human. One mailbox identity (`hey@dnanu.de`), one services admin (`admin@nanulab.de`).
+6. **Single-user system.** One human. One mailbox identity (`hey@dnanu.de`), one services admin (`admin@dnanu.de`).
 7. **Secrets via `sops-nix` (age).** Private age key lives on a USB drive + password manager, never in the repo. Repo is public-safe.
 
 ## 2. Hardware Lifecycle
@@ -39,7 +51,7 @@ Dell-specific: `services.logind.lidSwitch = "ignore"` (lid closed ≠ suspend �
 | Flow | Path | Ports open on router |
 |------|------|----------------------|
 | Inbound SMTP (server→server) | Internet → `mail.dnanu.de` (public A, **grey cloud**, ddclient-updated) → router fwd → `10.0.0.2:25` | **25/tcp only** |
-| Public blogs + autoconfig | Internet → Cloudflare edge → `cloudflared` tunnel → nginx `127.0.0.1:8080` | none |
+| Public blogs + autoconfig | Internet → Cloudflare edge → `cloudflared` tunnel → nginx `10.0.0.2:8080` | none |
 | Everything else (Nextcloud, Jellyfin, IMAP 993, submission 465, all admin UIs) | Device → Tailscale → `10.0.0.2` (subnet route) or `100.x` → nginx 443 / direct | none |
 | Outbound mail | Postfix → `smtp.resend.com:465` (SMTPS, user `resend`, pass = API key) | none |
 | Torrent/Soulseek/Usenet | confined netns → AirVPN WireGuard | none |
@@ -78,7 +90,7 @@ Speedport may still announce itself as IPv6 DNS. Devices using it bypass AdGuard
 mailserver = {
   enable = true;
   fqdn = "mail.dnanu.de";
-  domains = [ "dnanu.de" "nanulab.de" ];
+  domains = [ "dnanu.de" ];
   enableSubmission = true;     # 587
   enableSubmissionSsl = true;  # 465
   loginAccounts."hey@dnanu.de" = {
@@ -87,7 +99,7 @@ mailserver = {
                 "accounts@" "contact@" "partners@" ]; # @dnanu.de
     sieveScript = '' ... per-alias fileinto :create ... ''; # ⚠️ VERIFY option exists in pinned SNM release
   };
-  loginAccounts."admin@nanulab.de" = {
+  loginAccounts."admin@dnanu.de" = {
     hashedPasswordFile = config.sops.secrets.mail_admin.path;
     aliases = [ "postmaster@" "hostmaster@" "webmaster@" "abuse@" "security@" ];
   };
@@ -142,7 +154,7 @@ Layout:
 /fast/backups/postgres  # nightly dumps, restic source
 /slow/shared-media/video/{shows,movies}
 /slow/shared-media/audio/{music,audiobooks,podcasts}
-/slow/shared-media/literature/{books,comics}
+/slow/shared-media/literature/{books}
 /slow/downloads/{qbittorrent,sabnzbd,slskd}   # *arr hardlink source
 ```
 All media services + nextcloud + immich get supplementary group `media`; dirs `root:media 2775` (setgid).
@@ -202,7 +214,7 @@ nixos-homelab/
 
 ## 10. The `.mobileconfig` Generator — ✅ LOCKED design
 
-1. Human generates a root CA **on the Mac** (`openssl` commands in README); key+cert stored in sops (`mobileca_*`). **Never** generate in a Nix build — `/nix/store` is world-readable.
+1. Human generates a root CA **on the Mac** (`openssl` commands in README); key+cert stored in sops (`mobileca_*`). **Never** generate in a Nix build — `/nix/store` is world-readable. (I will not generate a root CA on my mac, mac's dead as of now, need to buy a new one, unsigned certs are also fine for now)
 2. Systemd oneshot renders a static `.mobileconfig` (payloads: IMAP `mail.dnanu.de:993` SSL, SMTP `mail.dnanu.de:465` SSL, CalDAV + CardDAV → `cloud.nanulab.de/remote.php/dav`, embedded CA cert payload, **no passwords** — iOS prompts at install), signs it via `openssl smime -sign` with the CA, writes to `/var/lib/mobileprofile/`.
 3. nginx serves it at `profile.nanulab.de` behind `auth_basic` (password in sops).
 4. Flow: Tailscale on → open `profile.nanulab.de` → basic auth → download → Settings → install → enable trust for the CA → Mail/Calendar/Contacts work (while Tailscale is on). Service TLS is real Let's Encrypt — the CA exists only for the "Verified" badge.
@@ -315,7 +327,7 @@ websites/dnanu.de/
 
 ---
 
-## Final Amendments to `CLAUDE.md`
+## Final Amendments to `OpenCode.md`
 
 1. **§7 secrets:** add `booklore_db_password`. (soularr needs no secret — local API keys entered in the 1% phase.)
 2. **§9 service map:** − Kavita, − Docmost, − Odoo, − Kometa; + Booklore (`books.nanulab.de`), + soularr (systemd timer, Lidarr↔slskd bridge), + beets (systemd service), + Collabora (`office.nanulab.de`). Every request path is: **Seerr** (movies/TV) or the native *arr/ABS/Readarr UIs.
@@ -325,7 +337,7 @@ websites/dnanu.de/
 
 ### Final service count
 
-**25 services, exactly one OCI container (Booklore), everything else native.** RAM-heavy four on the Dell: Immich, Nextcloud+Collabora, Jellyfin, Booklore — with ZFS ARC capped at 1GB and 6GB total it'll be tight but bootable; that's what the test phase is for.
+**25 services, exactly one OCI container (Booklore), or more, everything else native.** RAM-heavy four on the Dell: Immich, Nextcloud+Collabora, Jellyfin, Booklore — with ZFS ARC capped at 1GB and 6GB total it'll be tight but bootable; that's what the test phase is for.
 
 ---
 
@@ -343,9 +355,12 @@ websites/dnanu.de/
 Hand the blueprint + these rulings to the build session and start at step 1. The only things that can still bite us are the ⚠️ VERIFY flags (module names in pinned 26.05, SNM's `sieveScript` option, Booklore packaging status) — all of which get checked in the first 10 minutes of the build. Go build it.
 # Prompt 
 ```
-Read CLAUDE.md in full. It is the single source of truth — build exactly
+Read OpenCode.md in full. It is the single source of truth — build exactly
 what it specifies, nothing more. First task: pin nixpkgs, then verify every
 ⚠️ VERIFY flag against the pinned channel and report results as a table.
 Do not write any other code until I approve the verification table.
 Then we build phase 1 only.
 ```
+
+## Additional info
+I made a github repo: https://github.com/it-dnanu-de/nixos for this project and placed inside a README.md File, a License File and this document (OpenCode.md) and a .gitignore file, after every change you make please do a commit so everything is version controlled and can revert back whenever we fant to a previous configuration, make the use of Pull Requests if you want to, you can commit on my behalf instead of doing your own commits, everything is set up. Opencode is running on 7.1.5-arch1-2 archlinux x86_64 on this machine with 48GB of DDR5-6000MT/s CL30 Memory, AMD Ryzen 7 7900X3D, AMD Radeon RX7900XTX, 1TB NVMe Gen5 SSD, You are on a pretty powerfull machine running a pretty new version of arch linux, you can use my terminal on this machine, you can ssh into the server if you need anything, you can do everything you want just output me the server and do you OpenCode configurataion stuff on the machines.
