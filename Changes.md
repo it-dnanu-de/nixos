@@ -1,5 +1,13 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-03 — build session start: Init + environment probe
+- Session orchestrated via `/init`. Repo clean on `main`, no unpushed commits.
+- Server 10.0.0.2 confirmed live: Dell E5520, live ISO `26.05.5591` (Yarara), sshd active, 5.7Gi RAM, booted from Ventoy USB.
+- **CRITICAL for install:** `/dev/sda` = 223.6G Intenso SSD (target, wipe it). `/dev/sdb` = 7.3G Cruzer Switch Ventoy USB (NEVER touch). disko must target `sda` only.
+- `sda` currently carries an old LVM layout (`nanulab-vg-*`) from a previous install — disko replaces it.
+- Human approved milestone: VERIFY sweep → pause → build step 1 (flake + settings + sops skeleton). Secrets: placeholders.
+- Toolchain on dev machine: node/npm/gh present; nix + sshpass not installed locally (nix runs on server).
+
 ## 2026-08-03 — opencode workflow: model routing + Init command
 - Wired T1/T2/T3 models into all 5 agents: architect + security-reviewer -> `openrouter/moonshotai/kimi-k3` (T3), nixos-builder + deployer -> `openrouter/deepseek/deepseek-v4-pro` (T2), verifier -> `openrouter/deepseek/deepseek-v4-flash` (T1).
 - Created `.opencode/command/init.md`: the session orchestration entry point. Probes env, asks the human setup questions, routes to tiered subagents, drives the frozen build order, pauses for approval before writing code.

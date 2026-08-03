@@ -13,6 +13,11 @@ node_modules/
 # OS cruft
 .DS_Store
 
+# sops — decrypted plaintext outputs must never be committed
+*.dec
+secrets/*.plain*
+
 # editor
 .idea/
 .vscode/
+.flake.nix
