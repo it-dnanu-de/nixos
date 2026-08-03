@@ -20,6 +20,7 @@
     ../../modules/networking/acme.nix
     ../../modules/networking/nginx.nix
     ../../modules/networking/cloudflare.nix
+    ../../modules/system/users.nix
   ];
 
   # Dell quirk (§2): lid closed ≠ suspend — the battery is a free UPS.
