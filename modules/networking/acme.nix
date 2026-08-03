@@ -18,9 +18,9 @@
       reloadServices = [ "nginx" ];
     };
     certs."mail.dnanu.de" = {
-      domain = "mail.dnanu.de";
-      extraDomainNames = [ "dnanu.de" "*.dnanu.de" ];
-      reloadServices = [ "nginx" ]; # dovecot2 + postfix appended in build step 4
+      domain = "dnanu.de";
+      extraDomainNames = [ "*.dnanu.de" ];  # covers mail.dnanu.de, autoconfig, etc.
+      reloadServices = [ "nginx" ]; # dovecot + postfix reloaded by SNM
     };
   };
 
