@@ -32,9 +32,9 @@ Launch opencode in this directory and type `/init`. It:
 Prereqs for a live session: `HOMELAB_SSH_PASSWORD` must be set in the shell **before** launching opencode. It's exported automatically in fish via `~/.config/fish/conf.d/homelab.fish` (and was in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
 
 ## Status
-- **Phase:** Build step 1 complete (`flake.nix` + `settings.nix` + sops skeleton + verified OpenCode.md).
-- **What works:** all 17 secrets encrypted with sops/age (placeholder values). Flake locks resolved against nixpkgs `nixos-26.05` (531670d, 2026-08-03), SNM `nixos-26.05` branch (d357b9f), plus disko/sops-nix/vpn-confinement. hostId `2f69efe2` generated. Public-safety sweep passed.
-- **Next milestone:** Build step 2 — `disko.nix` + ZFS + Dell quirks (lid, ARC) + ZFS module config.
+- **Phase:** Build step 2 complete (`disko.nix` + `hardware-configuration.nix` + ZFS module).
+- **What works:** Single-disk ZFS layout (1G ESP + rpool: root/nix/fast/slow) targeting `/dev/disk/by-id` (never the USB stick). Dell E5520 kernel modules detected from live ISO. ARC capped at 1GiB. systemd-boot EFI. Lid switch ignores (native 26.05 logind path). Eval gate passed: all 5 filesystems confirmed, no deprecation warnings.
+- **Next milestone:** Build step 3 — Networking: static IP, AdGuard, Tailscale, ddclient, cloudflared, nginx + ACME.
 
 ## License
 See [LICENSE](LICENSE).
