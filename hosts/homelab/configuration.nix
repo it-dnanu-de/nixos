@@ -12,6 +12,14 @@
     ./disko.nix
     ./hardware-configuration.nix
     ../../modules/system/zfs.nix
+    ../../modules/system/sops.nix
+    ../../modules/networking/base.nix
+    ../../modules/networking/adguard.nix
+    ../../modules/networking/tailscale.nix
+    ../../modules/networking/ddclient.nix
+    ../../modules/networking/acme.nix
+    ../../modules/networking/nginx.nix
+    ../../modules/networking/cloudflare.nix
   ];
 
   # Dell quirk (§2): lid closed ≠ suspend — the battery is a free UPS.

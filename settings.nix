@@ -43,5 +43,9 @@
   sshPubKey = "ssh-ed25519 AAAA… placeholder";  # human populates with their real key
   # Note: SSH password authentication remains enabled — intentional by human ruling.
 
+  cloudflare = {
+    tunnelId = "00000000-0000-0000-0000-000000000000"; # placeholder — human sets real tunnel UUID (1% manual)
+  };
+
   timeZone = "Europe/Berlin";
 }
