@@ -29,7 +29,7 @@ Launch opencode in this directory and type `/init`. It:
 3. Routes work across the model tiers: `architect` for planning, `nixos-builder` for writing config, `verifier` for checking options against pinned 26.05, `security-reviewer` for audits, `deployer` for rebuilds.
 4. Drives the frozen build order (OpenCode.md §12), pausing for your approval at each milestone.
 
-Prereqs for a live session: `export HOMELAB_SSH_PASSWORD='123'` in the shell **before** launching opencode (it's already in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
+Prereqs for a live session: `HOMELAB_SSH_PASSWORD` must be set in the shell **before** launching opencode. It's exported automatically in fish via `~/.config/fish/conf.d/homelab.fish` (and was in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
 
 ## Status
 - **Phase:** pre-build. Repo bootstrapped, tooling in place.
