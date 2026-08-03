@@ -1,0 +1,18 @@
+# AI memory & credentials — never commit
+Memory.md
+
+# local environment / secrets
+.env
+*.env
+!*.env.example
+*.age
+
+# node tooling (only if MCP servers are run locally)
+node_modules/
+
+# OS cruft
+.DS_Store
+
+# editor
+.idea/
+.vscode/

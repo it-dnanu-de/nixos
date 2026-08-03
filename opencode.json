@@ -1,0 +1,104 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "username": "dnanu",
+  "share": "disabled",
+  "autoupdate": "notify",
+  "instructions": [
+    "OpenCode.md",
+    "README.md",
+    "Changes.md",
+    "Memory.md",
+    ".gitignore"
+  ],
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "ssh-homelab": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@fangjunjie/ssh-mcp-server",
+        "--host",
+        "10.0.0.2",
+        "--port",
+        "22",
+        "--username",
+        "nixos"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    }
+  },
+  "references": {
+    "nixpkgs": {
+      "repository": "NixOS/nixpkgs",
+      "branch": "nixos-26.05",
+      "description": "Pinned nixpkgs channel. Verify every nixos option and package exists here before use."
+    },
+    "snm": {
+      "repository": "simple-nixos-mailserver/nixos-mailserver",
+      "description": "Simple NixOS Mailserver: loginAccounts, aliases, sieveScript, Resend relay workaround."
+    },
+    "disko": {
+      "repository": "NixOS/disko",
+      "description": "Disko partitioning and ZFS layout definitions."
+    },
+    "sops-nix": {
+      "repository": "Mic92/sops-nix",
+      "description": "sops-nix secrets management: secrets.yaml, age keys, module options."
+    },
+    "nixos-anywhere": {
+      "repository": "nix-community/nixos-anywhere",
+      "description": "Remote NixOS install and deployment tooling."
+    },
+    "vpn-confinement": {
+      "repository": "Maroka-chan/VPN-Confinement",
+      "description": "Network-namespace VPN confinement for qBittorrent, SABnzbd, slskd."
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "allow"
+    },
+    "webfetch": "allow",
+    "websearch": "allow",
+    "external_directory": {
+      "~/secrets/**": "deny",
+      "*": "allow"
+    }
+  },
+  "experimental": {
+    "mcp_timeout": 30000
+  },
+  "compaction": {
+    "auto": true,
+    "tail_turns": 15
+  },
+  "tool_output": {
+    "max_lines": 2000,
+    "max_bytes": 51200
+  },
+  "lsp": false
+}

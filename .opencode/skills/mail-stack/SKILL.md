@@ -1,0 +1,38 @@
+---
+name: mail-stack
+description: Use when working on the mail system — simple-nixos-mailserver, Postfix/Resend relay, Dovecot, Rspamd, sieve rules, mail DNS records, DNSSEC for mail.
+---
+
+# Mail Stack (OpenCode.md §4)
+
+## Stack — LOCKED
+- **simple-nixos-mailserver** (Postfix + Dovecot + Rspamd): IMAP 993, submission 465 (SMTPS) + 587, LMTP, ManageSieve.
+- Nextcloud provides CalDAV/CardDAV/WebDAV + the Mail web app. Stalwart is **not** used.
+- Inbound port 25 direct. Outbound via Resend relay. No VPS relay.
+
+## Accounts
+- `hey@dnanu.de` — primary, aliases `it@ health@ wealth@ creative@ academic@ accounts@ contact@ partners@`, plus per-alias sieve `fileinto :create`.
+- `admin@dnanu.de` — services admin, aliases `postmaster@ hostmaster@ webmaster@ abuse@ security@`.
+- `hashedPasswordFile` points at `config.sops.secrets.mail_hey.path` / `mail_admin.path`.
+- Sieve: `if address :is "to" "it@dnanu.de" { fileinto :create "IT"; stop; }` x8; fallthrough -> INBOX (only `hey@` lands there).
+- `certificateScheme = "manual"` (certs from security.acme DNS-01, group-readable by dovecot2/postfix).
+
+## Outbound relay (Resend) — LOCKED
+SNM has no relay option; use Postfix directly:
+- `relayhost = [smtp.resend.com]:465`, user `resend`, password = API key.
+- `mapFiles."sasl_passwd"` from a sops template (mode 0600): `[smtp.resend.com]:465 resend:<API key>`.
+- `smtp_tls_wrappermode = yes`, `smtp_tls_security_level = encrypt`, `smtp_sasl_auth_enable = yes`, `smtp_sasl_security_options = noanonymous`.
+
+## DNS records (Cloudflare, grey cloud unless noted)
+| Type | Name | Value |
+|------|------|-------|
+| A | mail.dnanu.de | dynamic home IP (ddclient), **must stay unproxied or SMTP dies** |
+| MX | dnanu.de, nanulab.de | mail.dnanu.de prio 10 |
+| TXT | dnanu.de | SPF — copy Resend's domain-verification records exactly; Resend sends from its `send.` subdomain |
+| TXT/CNAME | per Resend dashboard | DKIM + SPF for send.dnanu.de |
+| TXT | _dmarc.dnanu.de | `v=DMARC1; p=quarantine; rua=mailto:admin@nanulab.de` -> `p=reject` after 1 month |
+| DNSSEC | dnanu.de, nanulab.de | enable via Cloudflare (human) — OpenCode.md requires it for mail + websites |
+
+## Gotchas
+- Telekom inbound-25 flakiness is accepted; health-check via Beszel mail-queue alert.
+- Readarr-style retirement risk: none here; SNM is maintained. Verify `sieveScript` option exists in the pinned SNM release before using.
