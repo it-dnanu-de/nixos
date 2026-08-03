@@ -1,5 +1,16 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-03 — build step 4 PLANNED (architect): mail stack verification findings
+
+New findings beyond the step-1 verification table (all checked against pinned SNM d357b9f + nixpkgs 26.05):
+- ⚠️ NEW RENAME: `mailDirectory` → `mailserver.storage.path` (default `/var/vmail`; owner `virtualMail` uid/gid 5000 auto-created, `createHome=true`). We set `/fast/mail`.
+- `mailserver.dkim.enable` defaults to TRUE (selector `mail`, RSA-2048, keys auto-generated into `/var/dkim` by rspamd ExecStartPre; rspamd milter auto-wired into postfix). Zero Nix config needed. DNS TXT read from `/var/dkim/dnanu.de.mail.txt` post-install (1% phase).
+- `x509.useACMEHost`: SNM itself sets `security.acme.certs.<name>.reloadServices = [ "dovecot2.service" ]` AND `[ "postfix.service" ]` (dovecot.nix:159, postfix.nix:277). No extraGroups needed — postfix/dovecot read TLS as root before dropping privileges. Our step-3 `reloadServices = [ "nginx" ]` merges untouched.
+- `hashedPasswordFile` is read by SNM's genPasswdScript running AS ROOT in dovecot startup → sops secrets stay root:root 0400 default. Add `sops.secrets.mail_{hey,admin}.restartUnits = [ "dovecot2.service" ]` for password rotation.
+- `services.postfix.mapFiles` = `attrsOf path` (NOT strings) → sasl_passwd must be a file path. Solution: `sops.templates."postfix-sasl-passwd"` (renders to `/run/secrets/rendered/`, confirmed in pinned sops-nix) + `restartUnits = [ "postfix-setup.service" "postfix.service" ]` so key rotation re-runs postmap.
+- Firewall: only TCP 25 added. tailscale0 is trusted → 465/587/993 need zero firewall rules (Tailscale-only by design).
+- `sieveScript` = plain lines string; SNM installs it as the account's default.sieve. `require ["fileinto" "mailbox"]` needed for `:create`.
+
 ## 2026-08-03 — build step 3 complete: networking stack (tasks 6–10)
 
 ### Files created
