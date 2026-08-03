@@ -364,3 +364,208 @@ Then we build phase 1 only.
 
 ## Additional info
 I made a github repo: https://github.com/it-dnanu-de/nixos for this project and placed inside a README.md File, a License File and this document (OpenCode.md) and a .gitignore file, after every change you make please do a commit so everything is version controlled and can revert back whenever we fant to a previous configuration, make the use of Pull Requests if you want to, you can commit on my behalf instead of doing your own commits, everything is set up. Opencode is running on 7.1.5-arch1-2 archlinux x86_64 on this machine with 48GB of DDR5-6000MT/s CL30 Memory, AMD Ryzen 7 7900X3D, AMD Radeon RX7900XTX, 1TB NVMe Gen5 SSD, You are on a pretty powerfull machine running a pretty new version of arch linux, you can use my terminal on this machine, you can ssh into the server if you need anything, you can do everything you want just output me the server and do you OpenCode configurataion stuff on the machines.
+
+One more thing I'd like to add is DNSSEC for the mail servers and websites, this should be pretty secure for intruders to have a hard time getting in so lots of stuff has to be configured.
+
+Please do not disable ssh via password, I know its a security hazard but I'm fine with it. You can use an ssh key on this system but still allow ssh via password.
+
+## Info about you and your harness
+
+You are operating as part of a multi-model AI development harness.
+
+The repository contains `OpenCode.md`, which is the single source of truth for this project. It defines the architecture, constraints, locked decisions, verification requirements, and implementation phases. Always follow it. Do not introduce services, dependencies, architectural changes, or alternatives that conflict with it.
+
+Only read the sections of `OpenCode.md` relevant to the current task unless the full document is explicitly requested. The document is large and contains many historical decisions; avoid wasting context by repeatedly loading unrelated sections.
+
+Your role depends on which model tier you are assigned to. Use the minimum capable model for each task. Higher reasoning models should be reserved for architecture, planning, and difficult decisions.
+
+## Model capabilities
+
+The available models are:
+
+### Tier 1 — Fast execution and simple reasoning
+
+Primary:
+- DeepSeek V4 Flash
+
+Fallback:
+- MiMo V2.5
+
+Use for:
+- Small code changes
+- Simple bug fixes
+- Formatting
+- Documentation updates
+- Minor configuration changes
+- Straightforward implementation tasks
+
+Do not use this tier for:
+- Architecture decisions
+- Large refactors
+- Multi-system changes
+- Security-sensitive design
+
+---
+
+### Tier 2 — Advanced execution and medium reasoning
+
+Primary:
+- DeepSeek V4 Pro
+
+Fallback:
+- MiMo V2.5 Pro
+
+Use for:
+- Feature implementation
+- Multi-file changes
+- NixOS module creation
+- Service configuration
+- Debugging complex issues
+- Implementing plans created by higher reasoning models
+
+This tier is the default execution model for planned work.
+
+---
+
+### Tier 3 — Maximum reasoning and architecture
+
+Primary:
+- Kimi K3
+
+Fallback:
+- GLM 5.2
+
+Use for:
+- System architecture
+- Large design decisions
+- Complex debugging
+- Security reviews
+- Migration planning
+- Cross-component reasoning
+- Breaking down large milestones into smaller tasks
+
+These models should primarily create plans, evaluate approaches, and resolve difficult decisions. They should not directly perform large amounts of repetitive implementation work when a Tier 2 model can execute the plan.
+
+---
+
+## Model routing principles
+
+Always prefer the lowest capable model.
+
+A simple request should not consume a high reasoning model.
+
+Examples:
+
+"Change this button color"
+→ Tier 1
+
+"Add a new service module"
+→ Tier 2
+
+"Redesign the network architecture"
+→ Tier 3
+
+"Implement a complete project milestone"
+→ Tier 3 for planning, Tier 2 for execution
+
+Escalate only when the task requires additional reasoning, planning, architectural decisions, or affects multiple systems.
+
+---
+
+## Available capabilities
+
+This environment provides:
+
+- Full terminal access on the development machine
+- Git repository access
+- Ability to inspect and modify project files
+- Ability to run builds, tests, and verification commands
+- SSH access to external machines when credentials and addresses are provided
+
+Use available tools when they improve accuracy. Do not assume a command succeeded without verifying the result.
+
+---
+
+## Git workflow
+
+Git is part of the development process.
+
+After completing a coherent milestone:
+
+1. Review all changes.
+2. Run relevant verification commands.
+3. Ensure no accidental files or secrets are committed.
+4. Create a descriptive commit.
+
+Commits should represent meaningful checkpoints that can safely be reverted.
+
+Do not create commits containing broken, incomplete, or unverified work.
+
+---
+
+## Security rules
+
+Never expose secrets, API keys, passwords, private keys, or sensitive configuration values.
+
+Follow the security model defined in `OpenCode.md`.
+
+Do not weaken security constraints unless explicitly instructed.
+
+Password SSH authentication is intentionally allowed in this project. Do not disable it unless explicitly requested.
+
+---
+
+## Infrastructure rules
+
+This project values:
+
+- Declarative configuration
+- Reproducibility
+- Long-term maintainability
+- Minimal unnecessary dependencies
+- Verification before implementation
+
+Before making architectural changes:
+
+1. Check whether the decision is already locked in `OpenCode.md`.
+2. If marked LOCKED, follow it.
+3. If marked VERIFY, verify against the pinned environment.
+4. If no decision exists, present options before committing to a design.
+
+---
+
+## Current project environment
+
+Development machine:
+
+- OS: Arch Linux
+- CPU: AMD Ryzen 7 7900X3D
+- RAM: 48GB DDR5-6000 CL30
+- GPU: AMD Radeon RX 7900 XTX
+- Storage: 1TB NVMe Gen5 SSD
+
+Target system:
+
+- NixOS homelab
+- Configuration stored in this repository
+- Deployment performed according to the instructions in `OpenCode.md`
+
+The goal is not just to make the system work today, but to create a maintainable 20-year infrastructure platform.
+
+## Changes you do
+Please after every session load OpenCode.md, Readme.md, .gitignore, Changes.md, Memory.md, in every session you update the Readme.md, .gitignore, Changes.md, Memory.md.
+
+### Opencode.md
+This is this file, this doesnt need much explaining, this is you source of truth, you can change it however you like if needed, if we switch the way we do things and etc
+
+### Readme.md
+Is the file that explains the project to humans, make this look nice, should state what the system can do, what it cant, what bugs there are, what features are coming in the near future.
+
+### .gitignoe
+Self-explanatory, I don't need to explain this
+
+### Changes.md
+Here you store changes in this file, like everything we have done, this file is temporary, you wipe this file at end of session and write the changes into the OpenCode.md Project file
+
+### Memory.md
+Here you can store your memory, API Keys, Tokens you need, Credentials and everything else, this file it gitignored.
