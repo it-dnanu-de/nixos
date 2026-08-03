@@ -32,9 +32,9 @@ Launch opencode in this directory and type `/init`. It:
 Prereqs for a live session: `HOMELAB_SSH_PASSWORD` must be set in the shell **before** launching opencode. It's exported automatically in fish via `~/.config/fish/conf.d/homelab.fish` (and was in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
 
 ## Status
-- **Phase:** Build step 2 complete (`disko.nix` + `hardware-configuration.nix` + ZFS module).
-- **What works:** Single-disk ZFS layout (1G ESP + rpool: root/nix/fast/slow) targeting `/dev/disk/by-id` (never the USB stick). Dell E5520 kernel modules detected from live ISO. ARC capped at 1GiB. systemd-boot EFI. Lid switch ignores (native 26.05 logind path). Eval gate passed: all 5 filesystems confirmed, no deprecation warnings.
-- **Next milestone:** Build step 3 — Networking: static IP, AdGuard, Tailscale, ddclient, cloudflared, nginx + ACME.
+- **Phase:** Build step 3 complete (networking stack).
+- **What works:** Static IP `10.0.0.2/24` on enp10s0. AdGuard Home DNS + DHCP (declarative, split-horizon rewrites). Tailscale subnet router (OAuth auth). ddclient Cloudflare dynamic DNS for `mail.dnanu.de`. ACME DNS-01 wildcard certs for `*.nanulab.de` + `*.dnanu.de`. nginx loopback-only on 8080 (placeholder site). cloudflared tunnel for `dnanu.de`/`www`/`autoconfig`. Full system closure builds with zero deprecation warnings.
+- **Next milestone:** Build step 4 — Mail (SNM + Resend relay + sieve rules + DNS records).
 
 ## License
 See [LICENSE](LICENSE).

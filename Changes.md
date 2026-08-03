@@ -1,5 +1,32 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-03 — build step 3 complete: networking stack (tasks 6–10)
+
+### Files created
+- `modules/networking/ddclient.nix` — Cloudflare dynamic DNS, 5min interval, webv4 detection
+- `modules/networking/acme.nix` — DNS-01 wildcard certs (*.nanulab.de + *.dnanu.de), quad9 resolver bypass
+- `modules/networking/nginx.nix` — loopback 8080, placeholder site, recommended settings on
+- `modules/networking/cloudflare.nix` — cloudflared tunnel: dnanu.de/www/autoconfig → 127.0.0.1:8080
+
+### Gate results (all passed)
+| Task | Check | Result |
+|------|-------|--------|
+| 6 | ddclient.domains | `[ "mail.dnanu.de" ]` ✅ |
+| 7 | acme cert names | `[ "mail.dnanu.de" "nanulab.de" ]` ✅ |
+| 7 | nginx.extraGroups | `[ "acme" ]` ✅ |
+| 8 | nginx virtualHosts | `[ "dnanu.de" ]` ✅ |
+| 9 | cloudflared tunnels | `[ "00000000-0000-0000-0000-000000000000" ]` ✅ |
+| 10 | Full `nix build` system closure | ZERO deprecation warnings, 13 derivations built ✅ |
+
+### Bug fix: secrets.yaml key name mismatch
+sops.nix declared `mail_hey`/`mail_admin` but secrets.yaml had `mail_hey_hash`/`mail_admin_hash`. Fixed by re-encrypting with correct key names. The `_hash` suffix was an artifact from an older draft — sops-nix doesn't care about key semantics, just that the name matches.
+
+### Configuration.nix imports updated
+Added imports for ddclient, acme, nginx, cloudflare modules alongside existing base/adguard/tailscale imports.
+
+### Full system closure
+Built `nixos-system-homelab-26.05.20260803.531670d` successfully — includes kernel 6.18.41, ZFS 2.4.3, nginx 1.30.4, Tailscale 1.98.10, Go 1.26.5, sshd 10.4p1, AdGuardHome 0.107.78.
+
 ## 2026-08-03 — build step 1 complete: flake + settings + sops skeleton + verified OpenCode
 
 ### Toolchain
