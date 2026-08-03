@@ -65,8 +65,8 @@
   };
 
   # ── Secrets wiring ────────────────────────────────────────
-  sops.secrets.mail_hey.restartUnits = [ "dovecot2.service" ];
-  sops.secrets.mail_admin.restartUnits = [ "dovecot2.service" ];
+  sops.secrets.mail_hey.restartUnits = [ "dovecot.service" ];
+  sops.secrets.mail_admin.restartUnits = [ "dovecot.service" ];
 
   # ── Thunderbird autoconfig ────────────────────────────────
   services.nginx.virtualHosts."autoconfig.${settings.domains.public}" = {
