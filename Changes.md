@@ -1,5 +1,13 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-03 — opencode workflow: model routing + Init command
+- Wired T1/T2/T3 models into all 5 agents: architect + security-reviewer -> `openrouter/moonshotai/kimi-k3` (T3), nixos-builder + deployer -> `openrouter/deepseek/deepseek-v4-pro` (T2), verifier -> `openrouter/deepseek/deepseek-v4-flash` (T1).
+- Created `.opencode/command/init.md`: the session orchestration entry point. Probes env, asks the human setup questions, routes to tiered subagents, drives the frozen build order, pauses for approval before writing code.
+- Fixed `opencode.json` references: `snm` -> GitLab URL (it's not on GitHub), `disko` -> `nix-community/disko`. Deleted the manual reference clones (reverted); opencode re-materializes them on use.
+- Updated `mail-stack` skill with verified SNM renames (`loginAccounts` -> `accounts`, `certificateScheme` removed -> `x509.{useACMEHost,certificateFile,privateKeyFile}`; `sieveScript` + `recipientDelimiter` exist).
+- Added model-routing + Init guidance to `nixos-flake` skill.
+- README: documented the `/init` workflow and the agent->model routing table.
+
 ## 2026-08-03 — opencode tooling bootstrap
 - Created `opencode.json`: instructions (OpenCode.md/README/Changes/Memory/.gitignore), MCP servers (context7, github, ssh-homelab, playwright), references (nixpkgs@s26.05, snm, disko, sops-nix, nixos-anywhere, vpn-confinement), permissions (bash allow, ~/secrets deny), experimental mcp_timeout 30s, compaction tail 15.
 - Created agents: architect (T3), nixos-builder (T2, primary), verifier, security-reviewer, deployer.

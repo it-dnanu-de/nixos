@@ -1,6 +1,7 @@
 ---
 description: Use to verify nixos options, package names, and module paths actually exist in the pinned nixos-26.05 nixpkgs channel before they are used. Call when a config references an option that has not been confirmed.
 mode: subagent
+model: openrouter/deepseek/deepseek-v4-flash
 color: success
 ---
 

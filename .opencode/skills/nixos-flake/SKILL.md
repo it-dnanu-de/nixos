@@ -39,3 +39,13 @@ modules/mobile-profile.nix
 6. VPN-Confinement -> downloaders -> *arrs -> players (incl. Booklore)
 7. .mobileconfig signer + Hugo site
 8. Restic + Beszel + verification suite
+
+## Model routing (this harness)
+- Planning / architecture / hard debugging -> `architect` (T3, Kimi K3)
+- Writing modules / services / flake -> `nixos-builder` (T2, DeepSeek V4 Pro)
+- Verifying an option/package against pinned 26.05 -> `verifier` (T1, DeepSeek V4 Flash)
+- Security audit (DNSSEC, TLS, firewall, sops) -> `security-reviewer` (T3, Kimi K3)
+- Rebuild/deploy on 10.0.0.2 -> `deployer` (T2, DeepSeek V4 Pro)
+
+## Session start
+Type `Init` (command/init.md) once per session. It probes the environment, asks the human setup questions, and drives the build order by routing to the tiers above. Never start building before the ⚠️ VERIFY table has been presented and approved.

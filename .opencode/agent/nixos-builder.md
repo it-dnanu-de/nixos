@@ -1,6 +1,7 @@
 ---
 description: Use for NixOS module creation, service configuration, multi-file changes, flake work, and debugging. Default execution tier for planned work.
 mode: primary
+model: openrouter/deepseek/deepseek-v4-pro
 color: "#7c3aed"
 ---
 

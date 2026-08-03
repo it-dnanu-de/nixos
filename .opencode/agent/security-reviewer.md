@@ -1,6 +1,8 @@
 ---
 description: Use for security audits, DNSSEC, TLS/ACME, firewall rules, secret handling, and sops hygiene. Call before exposing anything or when asked to harden.
 mode: subagent
+model: openrouter/moonshotai/kimi-k3
+temperature: 0.2
 color: error
 ---
 

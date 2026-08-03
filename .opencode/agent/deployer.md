@@ -1,6 +1,7 @@
 ---
 description: Use to deploy this repo's config to the homelab server (10.0.0.2) via ssh / nixos-anywhere and run nixos-rebuild, then smoke-test the result.
 mode: subagent
+model: openrouter/deepseek/deepseek-v4-pro
 color: warning
 ---
 

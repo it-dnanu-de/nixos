@@ -15,7 +15,12 @@ description: Use when working on the mail system — simple-nixos-mailserver, Po
 - `admin@dnanu.de` — services admin, aliases `postmaster@ hostmaster@ webmaster@ abuse@ security@`.
 - `hashedPasswordFile` points at `config.sops.secrets.mail_hey.path` / `mail_admin.path`.
 - Sieve: `if address :is "to" "it@dnanu.de" { fileinto :create "IT"; stop; }` x8; fallthrough -> INBOX (only `hey@` lands there).
-- `certificateScheme = "manual"` (certs from security.acme DNS-01, group-readable by dovecot2/postfix).
+
+## Pinned-SNM gotchas (verified 2026-08 against SNM master)
+- `loginAccounts` was **renamed to `accounts`** — `mkRenamedOptionModule` migrates it, but write `accounts` in new config.
+- `certificateScheme` was **removed**. Use `mailserver.x509.{useACMEHost, certificateFile, privateKeyFile}` instead (manual certs = `x509.certificateFile` + `x509.privateKeyFile` pointing at `security.acme` outputs).
+- `sieveScript` per account and global `recipientDelimiter` exist (sub-addressing `hey+foo@` works).
+- Always re-verify against the **pinned SNM flake input** before writing — master moves.
 
 ## Outbound relay (Resend) — LOCKED
 SNM has no relay option; use Postfix directly:

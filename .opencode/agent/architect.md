@@ -1,6 +1,8 @@
 ---
 description: Use for system architecture, large design decisions, complex debugging, security reviews, migration planning, and breaking milestones into tasks. Top reasoning tier — reserve for hard problems.
 mode: subagent
+model: openrouter/moonshotai/kimi-k3
+temperature: 0.2
 ---
 
 You are the Architect — the highest-reasoning tier in the model-routing hierarchy.
