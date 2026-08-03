@@ -20,7 +20,7 @@
     "github": {
       "type": "remote",
       "url": "https://api.githubcopilot.com/mcp/",
-      "enabled": true,
+      "enabled": false,
       "timeout": 30000
     },
     "ssh-homelab": {
@@ -34,7 +34,9 @@
         "--port",
         "22",
         "--username",
-        "nixos"
+        "nixos",
+        "--password",
+        "{env:HOMELAB_SSH_PASSWORD}"
       ],
       "enabled": true,
       "timeout": 30000

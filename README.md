@@ -20,7 +20,7 @@ This repo ships with an opencode configuration so AI agents work the way this pr
 | Skills | `.opencode/skills/` | nixos-flake, sops-secrets, mail-stack, zfs-disko, deployment, verification, security-hardening, git-workflow |
 | References | `@nixpkgs @snm @disko @sops-nix @nixos-anywhere @vpn-confinement` | pinned-channel verification sources |
 
-MCP servers: **context7** (option lookup), **github** (OAuth), **ssh-homelab** (`@fangjunjie/ssh-mcp-server` -> 10.0.0.2), **playwright** (browser-verifying UIs). The three `npx`-based ones need `nodejs`/`npm` installed (`sudo pacman -S nodejs npm`); the remote ones work without.
+MCP servers: **context7** (option lookup), **github** (disabled — GitHub's managed endpoint can't do opencode OAuth; use the `gh` CLI), **ssh-homelab** (`@fangjunjie/ssh-mcp-server` -> 10.0.0.2, password via the `HOMELAB_SSH_PASSWORD` env var — see Memory.md), **playwright** (browser-verifying UIs). The two `npx`-based ones need `nodejs`/`npm` installed (`sudo pacman -S nodejs npm`); the remote ones work without.
 
 ## Status
 - **Phase:** pre-build. Repo bootstrapped, tooling in place.
