@@ -18,8 +18,8 @@
 
   networking.firewall = {
     enable = true;
-    # TCP 53: AdGuard DNS for LAN clients.
-    allowedTCPPorts = [ 53 ];
+    # TCP 53: AdGuard DNS for LAN clients. TCP 25: inbound SMTP.
+    allowedTCPPorts = [ 25 53 ];
     # UDP 53: DNS, 67: AdGuard DHCP server.
     allowedUDPPorts = [ 53 67 ];
     # Tailscale interface — all traffic trusted (how admin UIs are reached).

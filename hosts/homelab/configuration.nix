@@ -20,6 +20,7 @@
     ../../modules/networking/acme.nix
     ../../modules/networking/nginx.nix
     ../../modules/networking/cloudflare.nix
+    ../../modules/services/mail.nix
     ../../modules/system/users.nix
   ];
 
