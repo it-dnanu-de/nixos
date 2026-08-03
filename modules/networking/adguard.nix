@@ -43,14 +43,14 @@
         safe_search.pixabay = true;
         safe_search.yandex = true;
         safe_search.youtube = true;
-        user_rules = [
-          "@@||hotstream.app^$important"
-          "@@||icanhazip.com^$important"
-          "@@||hdstreams.site^$important"
-          "@@||resend.com^$important"
-          "@@||ipify.org^$important"
-        ];
       };
+      user_rules = [
+        "@@||hotstream.app^$important"
+        "@@||icanhazip.com^$important"
+        "@@||hdstreams.site^$important"
+        "@@||resend.com^$important"
+        "@@||ipify.org^$important"
+      ];
       filters = [
         { enabled = true; url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt";  name = "AdGuard DNS filter"; id = 1; }
         { enabled = true; url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_24.txt"; name = "1Hosts (Lite)"; id = 1785782586; }
