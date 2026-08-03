@@ -14,7 +14,7 @@
     storage.path = "/fast/mail";
     x509.useACMEHost = settings.domains.mail;
     dkim.enable = true;
-    kresd.enable = false;  # AdGuard Home already owns port 53
+    localDnsResolver = false;  # AdGuard Home already owns port 53
 
     accounts."hey@${settings.domains.public}" = {
       hashedPasswordFile = config.sops.secrets.mail_hey.path;
