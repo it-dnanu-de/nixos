@@ -59,11 +59,11 @@
       "description": "Pinned nixpkgs channel. Verify every nixos option and package exists here before use."
     },
     "snm": {
-      "repository": "simple-nixos-mailserver/nixos-mailserver",
-      "description": "Simple NixOS Mailserver: loginAccounts, aliases, sieveScript, Resend relay workaround."
+      "repository": "https://gitlab.com/simple-nixos-mailserver/nixos-mailserver",
+      "description": "Simple NixOS Mailserver (GitLab): accounts (renamed from loginAccounts), aliases, sieveScript, x509 certs, Resend relay workaround."
     },
     "disko": {
-      "repository": "NixOS/disko",
+      "repository": "nix-community/disko",
       "description": "Disko partitioning and ZFS layout definitions."
     },
     "sops-nix": {
