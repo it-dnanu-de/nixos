@@ -8,6 +8,15 @@
 }:
 
 {
+  imports = [
+    ./disko.nix
+    ./hardware-configuration.nix
+    ../../modules/system/zfs.nix
+  ];
+
+  # Dell quirk (§2): lid closed ≠ suspend — the battery is a free UPS.
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
+
   networking.hostName = settings.hostName;
   networking.hostId = settings.hostId;
 
