@@ -10,7 +10,7 @@
       isNormalUser = true;
       hashedPassword = "$y$j9T$EK7M3B7ghhmEMMFP1p0v3/$QW85ZTYJgX.lCqFQMY0yDcHfjlhb4tPqoPsexc6bzE2";
       extraGroups = [ "wheel" ];
-      openssh.authorizedKeys.keys = []; # human adds ssh pubkey
+      openssh.authorizedKeys.keys = [ settings.sshPubKey ];
     };
   };
 

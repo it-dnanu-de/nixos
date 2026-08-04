@@ -12,6 +12,8 @@
   };
   networking.defaultGateway = settings.network.gateway;
 
+  time.timeZone = settings.timeZone;
+
   # Host uses AdGuard on loopback for split-horizon DNS correctness.
   networking.nameservers = [ "127.0.0.1" ];
   services.resolved.enable = false;
