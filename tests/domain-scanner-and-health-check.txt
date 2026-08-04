@@ -1,0 +1,78 @@
+
+Domain Scanner and Health Check
+Get an embed
+
+Scan your domain with EasyDMARC's Domain Tester and learn about any issues with DMARC, SPF and DKIM records.
+Enter your domain name
+Scanning results for dnanu.de domain
+
+Risk Assessment Level: Medium
+
+A medium security risk level signals notable SPF, DKIM, and DMARC issues, posing a potential risk of email spoofing; prompt resolution is recommended to strengthen overall security.
+Overall result
+DMARC Policy: Quarantine
+Score
+5
+of 10
+Valid
+
+SPF
+
+Sender Policy Framework
+Warning
+
+DMARC
+
+Domain-based Message Authentication, Reporting and Conformance
+Invalid
+
+DKIM
+
+DomainKeys Identified Mail
+Your Email Security Configuration Is Incomplete
+
+Create an account to get step-by-step plan to secure your domain with SPF, DKIM,
+and DMARC - free, in under 2 minutes.
+Continue with Google
+Continue with Microsoft
+Continue with Email
+Free | No Credit Card Required
+By continuing you agree to our Terms and Privacy Policy
+Overall detailed results for dnanu.de domain
+SPF
+Valid
+
+Your domain has a valid SPF record. You can track, manage and level up your email authentication standards by using our platform.
+Record value:
+v=spf1 -all
+DMARC
+Warning
+
+Your domain has a DMARC record, but there is some space for improvement. Look up your DMARC for more information.
+Record value:
+v=DMARC1; p=quarantine; rua=mailto:admin@nanulab.de
+Your DMARC record is missing the email address provided by our system in the "rua" tag! To access the full benefits of our platform, please sign up and follow the steps
+External verification failed! To receive DMARC Aggregate reports at "***@nanulab.de" email, you must publish a "v=DMARC1" TXT record for the "dnanu.de._report._dmarc.nanulab.de" subdomain. Ensure proper configuration for DMARC reporting.
+Your DMARC policy is set to 'Quarantine' (p=quarantine). This offers moderate protection against spoofing. Enhance your policy to 'Reject' (p=reject) for stronger enforcement by regularly monitoring legitimate email senders through DMARC Aggregate Reports.
+DKIM Not Detected Yet
+Undetected
+
+We couldn’t detect a DKIM record for your domain at this time.
+
+Detection typically requires active email traffic and DMARC reports.
+
+To monitor your domain's email authentication status continuously, sign up and enable aggregate reporting.
+Record value:
+DKIM selectors not yet detected
+
+Why is this showing as “Undetected”?
+
+If your domain is new or hasn’t sent enough email, DKIM detection might take time. Once we receive DMARC aggregate reports, we’ll automatically reassess this status.
+Two ways to take action
+
+Fix issues now with no commitment —
+or review the full report at your own pace.
+Fix My Domain Now
+
+No Credit Card Required
+
