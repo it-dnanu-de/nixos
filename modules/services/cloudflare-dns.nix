@@ -17,14 +17,21 @@ let
 
     upsert() {
       local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6
-      CURL "$API/$zone/dns_records?type=$type&name=$name" \
-        | ${pkgs.jq}/bin/jq -r '.result[].id' \
-        | while read -r id; do
-            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
-          done
-      CURL -X POST "$API/$zone/dns_records" \
-        -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
-        > /dev/null
+      local existing=$(CURL "$API/$zone/dns_records?type=$type&name=$name" | ${pkgs.jq}/bin/jq -r '.result | length')
+      if [ "$existing" -gt 0 ]; then
+        # Update in-place — don't delete (prevents gaps during API failures)
+        $CURL "$API/$zone/dns_records?type=$type&name=$name" \
+          | ${pkgs.jq}/bin/jq -r '.result[].id' \
+          | while read -r id; do
+              $CURL -X PATCH "$API/$zone/dns_records/$id" \
+                -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
+                > /dev/null 2>&1
+            done
+      else
+        $CURL -X POST "$API/$zone/dns_records" \
+          -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
+          > /dev/null
+      fi
     }
 
     TS_IP=$(tailscale ip -4 2>/dev/null || echo "")
