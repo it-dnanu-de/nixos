@@ -22,6 +22,7 @@
     ../../modules/networking/cloudflare.nix
     ../../modules/services/mail.nix
     ../../modules/services/cloudflare-dns.nix
+    ../../modules/services/ios-profile.nix
     ../../modules/system/users.nix
   ];
 
