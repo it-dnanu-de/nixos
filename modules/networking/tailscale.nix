@@ -10,6 +10,7 @@
     authKeyParameters.preauthorized = true;
     extraUpFlags = [
       "--advertise-routes=${settings.network.tailscaleRoutes}"
+      "--advertise-exit-node"
       "--advertise-tags=tag:server"
     ];
     openFirewall = true;
