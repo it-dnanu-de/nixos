@@ -50,6 +50,7 @@
         "@@||hdstreams.site^$important"
         "@@||resend.com^$important"
         "@@||ipify.org^$important"
+        "@@||tailscale.com^$important"
       ];
       filters = [
         { enabled = true; url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt";  name = "AdGuard DNS filter"; id = 1; }
