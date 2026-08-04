@@ -95,19 +95,19 @@
           {
             name = "Dumitru";
             ids = [ "10.0.0.100" "10.0.0.101" ];
-            tags = [{ name = "user_regular"; }];
+            tags = [ "user_regular" ];
             use_global_settings = true;
           }
           {
             name = "T";
             ids = [ "10.0.0.103" ];
-            tags = [{ name = "user_regular"; }];
+            tags = [ "user_regular" ];
             use_global_settings = true;
           }
           {
             name = "M";
             ids = [ "10.0.0.102" "10.0.0.104" "10.0.0.105" ];
-            tags = [{ name = "user_regular"; }];
+            tags = [ "user_regular" ];
             use_global_settings = true;
           }
         ];
