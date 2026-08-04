@@ -121,6 +121,7 @@ use case for a NixOS homelab.
   50. Books — *4 resources*
   51. Academic Papers — *7 resources*
   52. Awesome Lists — *3 resources*
+  53. Resend docs
 
 ---
 
@@ -11756,6 +11757,9 @@ view across the ecosystem.
 
 ---
 
+### Resend docs (Added by user)
+
+[Resend docs](https://resend.com/docs/introduction)
 
 ---
 
