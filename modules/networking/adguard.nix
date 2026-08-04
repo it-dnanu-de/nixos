@@ -87,6 +87,8 @@
           { mac = "da:08:7b:fe:cf:d7"; ip = "10.0.0.103"; hostname = "galaxys22u"; }
           { mac = "00:c3:f4:ea:fe:a6"; ip = "10.0.0.104"; hostname = "samsungtv"; }
           { mac = "68:79:c4:29:1d:44"; ip = "10.0.0.105"; hostname = "phillipsair"; }
+          { mac = "76:6f:b2:93:10:ce"; ip = "10.0.0.106"; hostname = "david"; }
+          { mac = "56:ea:b4:79:06:61"; ip = "10.0.0.107"; hostname = "ramona"; }
         ];
       };
       # Persistent clients — named, tagged, custom settings
