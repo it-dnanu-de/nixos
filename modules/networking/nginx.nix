@@ -21,5 +21,14 @@
       ];
       root = pkgs.writeTextDir "index.html" "<h1>dnanu.de — place-holder (Hugo lands in build step 7)</h1>";
     };
+
+    virtualHosts."adguard.${settings.domains.internal}" = {
+      forceSSL = true;
+      useACMEHost = settings.domains.internal;
+      locations."/" = {
+        proxyPass = "http://127.0.0.1:3000";
+        proxyWebsockets = true;
+      };
+    };
   };
 }
