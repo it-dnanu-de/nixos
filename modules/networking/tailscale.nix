@@ -15,4 +15,9 @@
     ];
     openFirewall = true;
   };
+
+  # NAT: masquerade exit-node traffic (100.x.x.x → public IP)
+  networking.nat.enable = true;
+  networking.nat.externalInterface = settings.network.interface;
+  networking.nat.internalInterfaces = [ "tailscale0" ];
 }
