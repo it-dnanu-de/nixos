@@ -21,7 +21,6 @@
     ../../modules/networking/nginx.nix
     ../../modules/networking/cloudflare.nix
     ../../modules/services/mail.nix
-    ../../modules/services/resend-forward.nix
     ../../modules/system/users.nix
   ];
 
