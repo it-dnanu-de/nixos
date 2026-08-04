@@ -13,6 +13,7 @@
       dns = {
         bind_hosts = [ "0.0.0.0" ];
         port = 53;
+        ratelimit = 0;  # disable rate limiting — Tailscale clients can burst DNS queries
         upstream_mode = "load_balance";
         upstream_dns = [
           "tls://one.one.one.one"
