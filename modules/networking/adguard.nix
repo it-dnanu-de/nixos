@@ -31,7 +31,6 @@
         protection_enabled = true;
         filtering_enabled = true;
         rewrites = [
-          { domain = "*.nanulab.de";  answer = settings.network.address; enabled = true; }
           { domain = "nanulab.de";    answer = settings.network.address; enabled = true; }
           { domain = settings.domains.mail; answer = settings.network.address; enabled = true; }
         ];
