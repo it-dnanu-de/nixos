@@ -1,6 +1,6 @@
 ;;
 ;; Domain:     dnanu.de.
-;; Exported:   2026-08-04 11:44:33
+;; Exported:   2026-08-04 19:33:23
 ;;
 ;; This file is intended for use for informational and archival
 ;; purposes ONLY and MUST be edited before use on a production
@@ -24,28 +24,31 @@
 ;;
 ;; Use at your own risk.
 ;; SOA Record
-dnanu.de	3600	IN	SOA	elijah.ns.cloudflare.com. dns.cloudflare.com. 2053751047 10000 2400 604800 3600
+dnanu.de	3600	IN	SOA	elijah.ns.cloudflare.com. dns.cloudflare.com. 2053753860 10000 2400 604800 3600
 
 ;; NS Records
 dnanu.de.	86400	IN	NS	elijah.ns.cloudflare.com.
 dnanu.de.	86400	IN	NS	jewel.ns.cloudflare.com.
 
 ;; A Records
-dnanu.de.	1	IN	A	91.22.152.126 ; cf_tags=cf-proxied:true
-mail.dnanu.de.	120	IN	A	91.22.152.126 ; cf_tags=cf-proxied:false
+dnanu.de.	1	IN	A	91.50.54.159 ; cf_tags=cf-proxied:true
+mail.dnanu.de.	120	IN	A	91.50.54.159 ; cf_tags=cf-proxied:false
+www.dnanu.de.	1	IN	A	91.50.54.159 ; cf_tags=cf-proxied:true
 
 ;; AAAA Records
 dnanu.de.	1	IN	AAAA	2003:c8:c742:641c:d267:e5ff:fe40:494e ; cf_tags=cf-proxied:true
+www.dnanu.de.	1	IN	AAAA	2003:c8:c742:641c:d267:e5ff:fe40:494e ; cf_tags=cf-proxied:true
 
 ;; CNAME Records
 track.dnanu.de.	3600	IN	CNAME	links1.resend-dns.com. ; cf_tags=cf-proxied:false
 
 ;; MX Records
-dnanu.de.	3600	IN	MX	10 inbound-smtp.eu-west-1.amazonaws.com.
+dnanu.de.	120	IN	MX	10 mail.dnanu.de.
 send.dnanu.de.	3600	IN	MX	10 feedback-smtp.eu-west-1.amazonses.com.
 
 ;; TXT Records
-_dmarc.dnanu.de.	120	IN	TXT	"v=DMARC1; p=quarantine; rua=mailto:admin@nanulab.de"
+_dmarc.dnanu.de.	120	IN	TXT	"v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:admin@dnanu.de"
 dnanu.de.	120	IN	TXT	"v=spf1 -all"
+mail._domainkey.dnanu.de.	120	IN	TXT	"mail._domainkey IN TXT ( v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtsS8kuE0TTyoZweQCV7w5FhcuULpcxoWmcGJYDC8XHuCVlrogAlvrg3Wo+Tn+vzr+TeAU+9EZ/SyaDwD7feywLFXRqabJevnBBJTKHRbav+4llag6b9bqo8GL34mEcT9rtV7OtxNrQkYzg4uJrCd9bRzGqApOjC53Qstlgbe" "xytJ5f5DkYrwKPOx4GLcR50YOCyLJMphCfau+To48Z7FkLZuvWe73VcfMPh1yklfENZi6GqchYjLH/1sFDC7gCCoW/XbZwTViL4rhISULlZ2FfauB2+gL9rUP10ACHQCxdgHBmpznLnQRxZ01bHZXPJVOUu5zsjFTFfKY7oyv+pyUQIDAQAB) ;"
 resend._domainkey.dnanu.de.	3600	IN	TXT	"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDctD5wJ4JrOPbaafJHF0qv1EVX3NArTHrn0uO4Cutqs89Kgf+l9qDjV/n3LhosulXxj3XHEKoKZTcxEir//6P29zRep0NuNAPTnyF5l6bLCYpWDmzHe47WwJTN1EkGbv1Dx91q5dMpZQdwxFy/L8BsKYeFwR2v7Wsrh253sudxCQIDAQAB"
 send.dnanu.de.	3600	IN	TXT	"v=spf1 include:amazonses.com ~all"

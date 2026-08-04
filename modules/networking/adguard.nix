@@ -96,19 +96,25 @@
         persistent = [
           {
             name = "Dumitru";
-            ids = [ "10.0.0.100" "10.0.0.101" ];
-            tags = [ "user_regular" ];
-            use_global_settings = true;
-          }
-          {
-            name = "T";
-            ids = [ "10.0.0.103" ];
+            ids = [ "10.0.0.100" "10.0.0.101" "iphone17pro" "arch" ];
             tags = [ "user_regular" ];
             use_global_settings = true;
           }
           {
             name = "M";
-            ids = [ "10.0.0.102" "10.0.0.104" "10.0.0.105" ];
+            ids = [ "10.0.0.102" "10.0.0.104" "10.0.0.105" "iphonexs" "samsungtv" "phillipsair" ];
+            tags = [ "user_regular" ];
+            use_global_settings = true;
+          }
+          {
+            name = "T";
+            ids = [ "10.0.0.103" "galaxys22u" ];
+            tags = [ "user_regular" ];
+            use_global_settings = true;
+          }
+          {
+            name = "Guests";
+            ids = [ "10.0.0.106" "10.0.0.107" "10.0.0.109" "david" "ramona" "a55-von-hicran" ];
             tags = [ "user_regular" ];
             use_global_settings = true;
           }

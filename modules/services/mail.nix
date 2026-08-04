@@ -25,15 +25,16 @@
         "contact@${settings.domains.public}" "partners@${settings.domains.public}"
       ];
       sieveScript = ''
-        require ["fileinto", "mailbox"];
-        if address :is "to" "it@${settings.domains.public}"       { fileinto :create "IT";       stop; }
-        if address :is "to" "health@${settings.domains.public}"   { fileinto :create "Health";   stop; }
-        if address :is "to" "wealth@${settings.domains.public}"   { fileinto :create "Wealth";   stop; }
-        if address :is "to" "creative@${settings.domains.public}" { fileinto :create "Creative"; stop; }
-        if address :is "to" "academic@${settings.domains.public}" { fileinto :create "Academic"; stop; }
-        if address :is "to" "accounts@${settings.domains.public}" { fileinto :create "Accounts"; stop; }
-        if address :is "to" "contact@${settings.domains.public}"  { fileinto :create "Contact";  stop; }
-        if address :is "to" "partners@${settings.domains.public}" { fileinto :create "Partners"; stop; }
+        require ["fileinto", "mailbox", "variables", "envelope"];
+        # Use envelope recipient (delivered-to) to catch aliases including +subaddressing
+        if envelope :matches "to" "it*@dnanu.de"       { fileinto :create "IT";       stop; }
+        if envelope :matches "to" "health*@dnanu.de"   { fileinto :create "Health";   stop; }
+        if envelope :matches "to" "wealth*@dnanu.de"   { fileinto :create "Wealth";   stop; }
+        if envelope :matches "to" "creative*@dnanu.de" { fileinto :create "Creative"; stop; }
+        if envelope :matches "to" "academic*@dnanu.de" { fileinto :create "Academic"; stop; }
+        if envelope :matches "to" "accounts*@dnanu.de" { fileinto :create "Accounts"; stop; }
+        if envelope :matches "to" "contact*@dnanu.de"  { fileinto :create "Contact";  stop; }
+        if envelope :matches "to" "partners*@dnanu.de" { fileinto :create "Partners"; stop; }
       '';
     };
 
