@@ -8,7 +8,7 @@ let
 
   dnsScript = pkgs.writeShellScriptBin "cloudflare-dns-sync" ''
     set -euo pipefail
-    TOKEN="$(${pkgs.coreutils}/bin/cat /run/secrets/cloudflare_api_token)"
+    TOKEN="$(${pkgs.coreutils}/bin/cat $CREDENTIALS_DIRECTORY/cloudflare_api_token)"
     CURL="${pkgs.curl}/bin/curl -s -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\""
     API="https://api.cloudflare.com/client/v4/zones"
 
@@ -57,7 +57,7 @@ in
     script = ''
       DKIM_FILE="/var/dkim/dnanu.de.mail.txt"
       [ ! -f "$DKIM_FILE" ] && exit 0
-      TOKEN="$(cat /run/secrets/cloudflare_api_token)"
+      TOKEN="$(cat $CREDENTIALS_DIRECTORY/cloudflare_api_token)"
       API="https://api.cloudflare.com/client/v4/zones"
       ZONE=$(curl -s -H "Authorization: Bearer $TOKEN" "$API?name=dnanu.de" | jq -r '.result[0].id')
       curl -s -H "Authorization: Bearer $TOKEN" \
