@@ -46,8 +46,8 @@ let
     fi
     upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120
   '';
-
-
+in
+{
   systemd.services.cloudflare-dkim-sync = {
     description = "Cloudflare DKIM TXT record";
     after = [ "dkim-setup.service" "network-online.target" ];

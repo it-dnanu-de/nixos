@@ -1,6 +1,6 @@
 # modules/system/users.nix
 # Human users — single-user system per OpenCode.md §1.
-{ ... }:
+{ settings, ... }:
 {
   users.users = {
     root = {
