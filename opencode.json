@@ -23,6 +23,15 @@
       "enabled": false,
       "timeout": 30000
     },
+    "resend": {
+      "type": "local",
+      "command": ["npx", "-y", "resend-mcp"],
+      "enabled": true,
+      "environment": {
+        "RESEND_API_KEY": "{env:RESEND_API_KEY}"
+      },
+      "timeout": 30000
+    },
     "ssh-homelab": {
       "type": "local",
       "command": [
