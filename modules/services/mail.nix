@@ -19,8 +19,10 @@
     accounts."hey@${settings.domains.public}" = {
       hashedPasswordFile = config.sops.secrets.mail_hey.path;
       aliases = [
-        "it@" "health@" "wealth@" "creative@" "academic@"
-        "accounts@" "contact@" "partners@"
+        "it@${settings.domains.public}" "health@${settings.domains.public}"
+        "wealth@${settings.domains.public}" "creative@${settings.domains.public}"
+        "academic@${settings.domains.public}" "accounts@${settings.domains.public}"
+        "contact@${settings.domains.public}" "partners@${settings.domains.public}"
       ];
       sieveScript = ''
         require ["fileinto", "mailbox"];
@@ -38,8 +40,9 @@
     accounts."admin@${settings.domains.public}" = {
       hashedPasswordFile = config.sops.secrets.mail_admin.path;
       aliases = [
-        "postmaster@" "hostmaster@" "webmaster@"
-        "abuse@" "security@"
+        "postmaster@${settings.domains.public}" "hostmaster@${settings.domains.public}"
+        "webmaster@${settings.domains.public}" "abuse@${settings.domains.public}"
+        "security@${settings.domains.public}"
       ];
     };
   };
