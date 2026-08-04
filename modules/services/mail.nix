@@ -75,7 +75,7 @@
 
   # Override SNM default: prevent auto-creating folders for +subaddressing
   # before sieve runs. Sieve's :create still works.
-  services.dovecot2.settings.lda_mailbox_autocreate = lib.mkForce false;
+  services.dovecot2.settings.lmtp_save_to_detail_mailbox = lib.mkForce false;
   services.nginx.virtualHosts."autoconfig.${settings.domains.public}" = {
     listen = [ { addr = "127.0.0.1"; port = 8080; } ];
     locations."/mail/config-v1.1.xml" = {
