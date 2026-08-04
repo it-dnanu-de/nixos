@@ -9,20 +9,20 @@ let
   dnsScript = pkgs.writeShellScriptBin "cloudflare-dns-sync" ''
     set -euo pipefail
     TOKEN="$(${pkgs.coreutils}/bin/cat $CREDENTIALS_DIRECTORY/cloudflare_api_token)"
-    CURL="${pkgs.curl}/bin/curl -s -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\""
     API="https://api.cloudflare.com/client/v4/zones"
+    CURL() { ${pkgs.curl}/bin/curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$@"; }
 
-    Z_DNANU=$($CURL "$API?name=${settings.domains.public}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
-    Z_NANULAB=$($CURL "$API?name=${settings.domains.internal}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
+    Z_DNANU=$(CURL "$API?name=${settings.domains.public}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
+    Z_NANULAB=$(CURL "$API?name=${settings.domains.internal}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
 
     upsert() {
       local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6
-      $CURL "$API/$zone/dns_records?type=$type&name=$name" \
+      CURL "$API/$zone/dns_records?type=$type&name=$name" \
         | ${pkgs.jq}/bin/jq -r '.result[].id' \
         | while read -r id; do
-            $CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
+            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
           done
-      $CURL -X POST "$API/$zone/dns_records" \
+      CURL -X POST "$API/$zone/dns_records" \
         -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
         > /dev/null
     }
