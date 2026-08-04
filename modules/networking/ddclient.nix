@@ -1,6 +1,6 @@
-# ddclient — dynamic DNS for mail.dnanu.de A record on Cloudflare.
+# ddclient — dynamic DNS for mail.dnanu.de A/AAAA records on Cloudflare.
 # OpenCode.md §3.2, §4.4. Protocol cloudflare, token auth, interval 5min.
-# Uses webv4 detection (ipify) by default — no explicit `use` needed.
+# Updates both IPv4 (via ipify-ipv4) and IPv6 (via ipify-ipv6).
 { config, settings, ... }:
 {
   services.ddclient = {
@@ -11,6 +11,5 @@
     zone = settings.domains.public;
     domains = [ settings.domains.mail ];
     interval = "5min";
-    usev6 = "";
   };
 }
