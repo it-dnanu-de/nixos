@@ -73,7 +73,9 @@
   sops.secrets.mail_hey.restartUnits = [ "dovecot.service" ];
   sops.secrets.mail_admin.restartUnits = [ "dovecot.service" ];
 
-  # ── Thunderbird autoconfig ────────────────────────────────
+  # Override SNM default: prevent auto-creating folders for +subaddressing
+  # before sieve runs. Sieve's :create still works.
+  services.dovecot2.settings.lda_mailbox_autocreate = lib.mkForce false;
   services.nginx.virtualHosts."autoconfig.${settings.domains.public}" = {
     listen = [ { addr = "127.0.0.1"; port = 8080; } ];
     locations."/mail/config-v1.1.xml" = {
