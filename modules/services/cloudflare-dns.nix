@@ -20,15 +20,15 @@ let
       local existing=$(CURL "$API/$zone/dns_records?type=$type&name=$name" | ${pkgs.jq}/bin/jq -r '.result | length')
       if [ "$existing" -gt 0 ]; then
         # Update in-place — don't delete (prevents gaps during API failures)
-        $CURL "$API/$zone/dns_records?type=$type&name=$name" \
+        CURL "$API/$zone/dns_records?type=$type&name=$name" \
           | ${pkgs.jq}/bin/jq -r '.result[].id' \
           | while read -r id; do
-              $CURL -X PATCH "$API/$zone/dns_records/$id" \
+              CURL -X PATCH "$API/$zone/dns_records/$id" \
                 -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
                 > /dev/null 2>&1
             done
       else
-        $CURL -X POST "$API/$zone/dns_records" \
+        CURL -X POST "$API/$zone/dns_records" \
           -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
           > /dev/null
       fi
@@ -37,10 +37,10 @@ let
     # Remove a record if present (idempotent) — used for records that must NOT exist publicly.
     deleteRecord() {
       local zone=$1 type=$2 name=$3
-      $CURL "$API/$zone/dns_records?type=$type&name=$name" \
+      CURL "$API/$zone/dns_records?type=$type&name=$name" \
         | ${pkgs.jq}/bin/jq -r '.result[].id' \
         | while read -r id; do
-            $CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null 2>&1
+            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null 2>&1
           done
     }
 
