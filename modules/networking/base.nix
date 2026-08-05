@@ -26,5 +26,12 @@
     allowedUDPPorts = [ 53 67 51820 ];
     # WireGuard interface — all traffic trusted (how admin UIs are reached, §3.3 superseded Tailscale).
     trustedInterfaces = [ "wg0" ];
+    # LAN/WiFi clients (no VPN) reach nginx TLS vhosts: AdGuard UI + profile.nanulab.de
+    # (QR onboarding). Restricted to the LAN subnet — the internet cannot reach 443
+    # (router forwards only 25/tcp + 51820/udp). VPN-only service vhosts are enforced
+    # separately at the nginx source-allowlist layer (§3.3).
+    extraInputRules = ''
+      ip saddr ${settings.network.subnet} tcp dport 443 accept;
+    '';
   };
 }

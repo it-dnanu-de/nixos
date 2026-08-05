@@ -24,6 +24,7 @@
     interface = "enp10s0";       # verified on Dell live-ISO, prod may differ
     address = "10.0.0.2";
     prefixLength = 24;
+    subnet = "10.0.0.0/24";      # LAN — allowed to reach local nginx TLS vhosts (AdGuard UI, profile)
     gateway = "10.0.0.1";
   };
 
