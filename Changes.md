@@ -40,3 +40,9 @@ History in OpenCode.md §17 "Session Log".
 - **DNS verified:** `vpn.dnanu.de` + `mail.dnanu.de` → home IP; bare `nanulab.de` A + AAAA + wildcard deleted from Cloudflare (authoritative zone clean, only MX + legacy imap/mx/smtp test records remain). AdGuard rewrites serve nanulab locally.
 - Known pre-existing failure: `cloudflared-tunnel-00000000...` (placeholder UUID, TODO Infrastructure item) — causes `nixos-rebuild switch` to exit non-zero but config applies fine.
 - Remaining for human: Tailscale console cleanup (revoke OAuth client + remove machines), delete old iOS `nanulab DNS` profile, distribute WG QRs + On-Demand toggles, Phase B AdGuard client ids (deferred).
+
+## 2026-08-06 — post-deploy fixes: profile page, AGH state
+- **profile.nanulab.de/wg/ returned 500 after basic auth** — `profile_basic_auth` sops secret was `0400 root:root`, nginx (user nginx) couldn't read it → Internal Server Error. Fixed: sops secret `owner=root group=nginx mode=0440`. Commit `a382cc6`. Page now renders all 12 QRs.
+- **adguardhome.service crash-looping** after the rebuild — a stale root-owned AGH process from an earlier generation (pid 72198, running 1d4h from `/var/lib/AdGuardHome/`) held port 53; the new DynamicUser-based unit couldn't read the old `nobody`-owned `/var/lib/private/AdGuardHome/data/leases.json`. Fix: killed stale process, wiped stale state dir, restarted → AGH active on :53, rewrites (nanulab.de/mail.dnanu.de → 10.0.0.2) intact, config regenerated from Nix (mutableSettings=false).
+- **Tailscale OAuth secret scrubbed** from sops + Memory.md (tailnet deleted). Commit `c6d96f7`.
+- Verified: profile page 200 w/ auth, AGH DNS serving, dig rewrites OK, `systemctl --failed` clean (except cloudflared placeholder).
