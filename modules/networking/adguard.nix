@@ -31,7 +31,8 @@
         protection_enabled = true;
         filtering_enabled = true;
         rewrites = [
-          { domain = "nanulab.de";    answer = settings.network.address; enabled = true; }
+          # Wildcard matches apex + all subdomains (*.nanulab.de → 10.0.0.2)
+          { domain = "*.${settings.domains.internal}"; answer = settings.network.address; enabled = true; }
           { domain = settings.domains.mail; answer = settings.network.address; enabled = true; }
         ];
         safe_search.enabled = true;
