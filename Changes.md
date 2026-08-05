@@ -32,3 +32,11 @@ History in OpenCode.md §17 "Session Log".
 - OpenCode.md: §3.2 (ports table: +51820/udp), §3.3 (Tailscale → **WireGuard ✅ LOCKED**, supersedes Tailscale SaaS), §3.4 (no public nanulab records, vpn.dnanu.de endpoint), §3.5 (IPv6 stays on, Speedport DHCPv4/DHCPv6 → AdGuard), §3.7 (nanulab has nothing to sign), §4.4 DNS table (+vpn.dnanu.de, −nanulab A), §6 tree (wireguard), §7 secrets (wireguard keys, −tailscale_oauth), §9 (WireGuard row, VPN-only URLs), §10 (dns.mobileconfig retired, /wg/ served), §12 (runbook: QR distribution + Tailscale console cleanup), §13 (WG verification), §15 (headscale fallback details), §16 (WireGuard/headscale/headplane refs).
 - `modules/services/cloudflare-dns.nix`: added `deleteRecord` helper — idempotently DELETEs `*.nanulab.de` + bare `nanulab.de` public A records (VPN-only services; AdGuard rewrites serve LAN/VPN locally). Upsert can't delete, so plain removal would have left the records forever.
 - Docs: README (WireGuard, ports, architect=GLM 5.2 fix, status), TODO.md (Phase B deferred, AdGuard consolidated), Memory.md (WG section already added; architect model ID note).
+
+## 2026-08-06 — Deployed to 10.0.0.2 (generation 35)
+- Human approved deploy + Phase B deferral + nanulab A-record deletion.
+- Pulled repo to server, `nixos-rebuild switch` → generation 35, wg0 up (server pubkey `BJRC2i...`, port 51820, 12 peers), tailscaled inactive, QR renderer output present at `/var/lib/mobileprofile/wg/`.
+- **Bug fixed during deploy:** `cloudflare-dns-sync` had been failing since 2026-08-05 — `CURL` defined as a function but called as `$CURL` (unbound variable under `set -u`). Fixed → sync now runs SUCCESS and applied all records. Commits `1b7c534`, `41564dc`.
+- **DNS verified:** `vpn.dnanu.de` + `mail.dnanu.de` → home IP; bare `nanulab.de` A + AAAA + wildcard deleted from Cloudflare (authoritative zone clean, only MX + legacy imap/mx/smtp test records remain). AdGuard rewrites serve nanulab locally.
+- Known pre-existing failure: `cloudflared-tunnel-00000000...` (placeholder UUID, TODO Infrastructure item) — causes `nixos-rebuild switch` to exit non-zero but config applies fine.
+- Remaining for human: Tailscale console cleanup (revoke OAuth client + remove machines), delete old iOS `nanulab DNS` profile, distribute WG QRs + On-Demand toggles, Phase B AdGuard client ids (deferred).
