@@ -4,6 +4,15 @@
 **Task source:** `inputs/Tailscale-Alternative-and-AdGuard-Fixes-for-GLM.md`
 **Status:** planning only — no code changed, no commits made.
 
+## Human annotations (2026-08-05) — override the plan text where they conflict
+
+| Where | Annotation | Consequence for the executor |
+|---|---|---|
+| §3 port mapping | UDP 51820 **already forwarded** to 10.0.0.2 on the router | Remove "forward UDP 51820" from the 1%-manual list; it's done |
+| §4.2 peer registry | Mirror the AdGuard DHCP static-lease layout with a **10.0.1.XXX base**: `iPhone17Pro` → 10.0.1.100, `arch` → 10.0.1.101, etc. `admin-iphone` peer **not needed** (delete). iPhone17Pro + arch are admins (the human) | Rewrite the peer list accordingly; name peer = DHCP hostname where one exists |
+| §4.1 onboarding/§3.4 | `*.nanulab.de` services should be **VPN-only**; AdGuard itself is a **home service reachable over WiFi for all devices without any VPN** | Split the trust domains: AdGuard DNS/DHCP reachable on LAN, `*.nanulab.de`/mail only via wg0 |
+| Phase B / Speedport | Human **can** set DHCPv4 + DHCPv6 servers on the Speedport to the AGH addresses (already set per the AGH setup guide) and **will not** disable IPv6 (mail + modern infra need it) | Replace "disable Speedport DHCP" and "disable IPv6/RA" steps with "verify Speedport DHCPv4+DCHPv6 DNS server = AdGuard addresses"; keep IPv6 on |
+
 ---
 
 ## 0. Order-of-work conflict resolution
@@ -100,7 +109,8 @@ Speedport (port fwd UDP 51820) ──► homelab wg0 (10.0.1.1/24)
 - Server endpoint name: **`vpn.dnanu.de`** — grey-cloud A record, ddclient-managed exactly like `mail.dnanu.de` (same Cloudflare token, one extra domain in the existing ddclient unit + the cloudflare-dns sync).
 - Onboarding: activation oneshot renders `/var/lib/mobileprofile/wg/<peer>.conf` + `<peer>.png` (via `pkgs.qrencode`), plus a tiny `index.html`; nginx serves `profile.nanulab.de/wg/` behind `auth_basic`.
 - iOS: install WireGuard app → scan QR (at home on WiFi, or from a printout) → in app: Edit → **On-Demand → WiFi + Cellular**. From then on the tunnel is always on; DNS always via AdGuard; `*.nanulab.de` and mail work everywhere. The old `nanulab-dns.mobileconfig` is retired (delete from devices).
-- Admin (the human) gets peers too (`admin-arch`, `admin-iphone`) — this preserves today's "reach everything over VPN" workflow including SSH, with Tailscale removed.
+- **Reachability split (human annotation):** `*.nanulab.de` service vhosts are **VPN-only** (firewalled to wg0 sources via nginx access control). **AdGuard UI (`adguard.nanulab.de`) and the profile vhost (`profile.nanulab.de` — QR download needs to work from plain home WiFi for onboarding) stay reachable over LAN without any VPN.**
+- Admin (the human) gets peers too (`iPhone17Pro`, `arch`) — this preserves today's "reach everything over VPN" workflow including SSH, with Tailscale removed.
 
 ### 4.2 `settings.nix` — replace `network.tailscaleRoutes` with
 ```nix
@@ -111,14 +121,19 @@ network.wireguard = {
   endpoint = "vpn.dnanu.de";     # grey-cloud A record, ddclient-managed
   peers = [
     # name = AdGuard label anchor; ip = static, declarative; publicKey filled by human (1% step)
-    { name = "admin-arch";      ip = "10.0.1.2";   publicKey = "REPLACE_ME"; }
-    { name = "admin-iphone";    ip = "10.0.1.3";   publicKey = "REPLACE_ME"; }
-    { name = "dumitru-iphone";  ip = "10.0.1.10";  publicKey = "REPLACE_ME"; }
-    { name = "dumitru-arch";    ip = "10.0.1.11";  publicKey = "REPLACE_ME"; }
-    { name = "m-iphonexs";      ip = "10.0.1.12";  publicKey = "REPLACE_ME"; }
-    { name = "t-galaxys22u";    ip = "10.0.1.13";  publicKey = "REPLACE_ME"; }
-    { name = "guest-1";         ip = "10.0.1.200"; publicKey = "REPLACE_ME"; }
-    { name = "guest-2";         ip = "10.0.1.201"; publicKey = "REPLACE_ME"; }
+    # Human annotation: mirror the DHCP static-lease layout on a 10.0.1.XXX base.
+    { name = "iPhone17Pro";    ip = "10.0.1.100"; publicKey = "REPLACE_ME"; } # admin (human)
+    { name = "arch";           ip = "10.0.1.101"; publicKey = "REPLACE_ME"; } # admin (human)
+    { name = "iphonexs";       ip = "10.0.1.102"; publicKey = "REPLACE_ME"; }
+    { name = "galaxys22u";     ip = "10.0.1.103"; publicKey = "REPLACE_ME"; }
+    { name = "samsungtv";      ip = "10.0.1.104"; publicKey = "REPLACE_ME"; }
+    { name = "phillipsair";    ip = "10.0.1.105"; publicKey = "REPLACE_ME"; }
+    { name = "david";          ip = "10.0.1.106"; publicKey = "REPLACE_ME"; }
+    { name = "ramona";         ip = "10.0.1.107"; publicKey = "REPLACE_ME"; }
+    { name = "tibisor";        ip = "10.0.1.108"; publicKey = "REPLACE_ME"; }
+    { name = "xbox";           ip = "10.0.1.109"; publicKey = "REPLACE_ME"; }
+    { name = "guest-1";        ip = "10.0.1.200"; publicKey = "REPLACE_ME"; }
+    { name = "guest-2";        ip = "10.0.1.201"; publicKey = "REPLACE_ME"; }
   ];
 };
 ```
@@ -153,7 +168,7 @@ PersistentKeepalive = 25
 ```
 
 ### 4.5 Other file changes (Phase A)
-- `modules/networking/base.nix` — firewall: `trustedInterfaces = [ "wg0" ];` (replaces `tailscale0`), `allowedUDPPorts = [ 53 67 51820 ];`, update comments.
+- `modules/networking/base.nix` — firewall: `trustedInterfaces = [ "wg0" ];` (replaces `tailscale0`), `allowedUDPPorts = [ 53 67 51820 ];`, keep `allowedTCPPorts` for AdGuard UI + profile vhost over LAN (443/3000 reachable on WiFi, no VPN) while `*.nanulab.de` service vhosts get nginx-level source allowlist `10.0.1.0/24` (VPN-only per human annotation), update comments.
 - `modules/networking/tailscale.nix` — **delete** (takes the NAT masquerade block with it).
 - `modules/networking/ddclient.nix` — `domains = [ settings.domains.mail "vpn.dnanu.de" ];` (add a `domains.vpn = "vpn.dnanu.de"` to settings.nix and reference it).
 - `modules/services/cloudflare-dns.nix` — mirror the existing `mail.dnanu.de` entry for `vpn.dnanu.de` (grey cloud, PATCH-upsert pattern already proven per Memory.md).
@@ -169,17 +184,17 @@ PersistentKeepalive = 25
 
 **Root causes (now provable):** the declarative side is already right — AGH DHCP (`dhcp.enabled = true`, `dhcpv4.gateway_ip = 10.0.0.1`) advertises itself, i.e. `10.0.0.2`, as DNS option 6; this cannot be misconfigured because AGH has no DNS-override knob. The noise comes from the **Speedport still answering DHCPv4 and IPv6 RA/RDNSS**, handing out `10.0.0.1` / `fe80::1` as DNS; the router then proxies queries to 10.0.0.2, collapsing all clients into `10.0.0.1`/`fe80::1` source addresses. Fixes:
 
-1. **1% manual (Speedport UI), enforcement of existing §3.1/§3.5 text:**
-   - Disable DHCPv4 server on the Speedport (OpenCode.md §3.1 already mandates this — it was never verified).
-   - Disable IPv6/RA on the Speedport (§3.5) → kills `fe80::1` RDNSS noise.
+1. **1% manual (Speedport UI), enforcing split domains per human annotation:**
+   - DHCPv4 + DHCPv6 servers on the Speedport: **keep enabled**, point their DNS server field at the AdGuard addresses (human already set these per the AGH setup guide — verify only). Do **not** disable them; the Speedport's own DNS must never be handed out.
+   - **IPv6 stays on** (human ruling — needed for mail + modern infra). `fe80::1` noise is accepted or mitigated via AdGuard persistent-client tagging of the router IP if the Speedport relays IPv6 DNS; the IPv6-only path is out of scope.
    - Renew leases on devices (toggle WiFi) → they get DNS `10.0.0.2` directly from AGH.
 2. **Declarative verification additions** (runbook/§13, no config diff): `nmap --script broadcast-dhcp-discover -e enp10s0` on the server must list **only** 10.0.0.2 answering; a fresh client shows `DNS: 10.0.0.2`; AdGuard query log shows LAN device names (persistent clients already match the static-lease IPs 10.0.0.100–109).
-3. **`adguard.nix` diff (small):** add WG peer IPs as ids to the existing person-clients so VPN-path queries get the same labels:
-   - `Dumitru` ids += `[ "10.0.1.10" "10.0.1.11" ]`
-   - `M` ids += `[ "10.0.1.12" ]`
-   - `T` ids += `[ "10.0.1.13" ]`
+3. **`adguard.nix` diff (small):** add WG peer IPs as ids to the existing person-clients so VPN-path queries get the same labels (mirrors the DHCP static-lease mapping, 10.0.1.x base):
+   - new client `Admin` ids `[ "10.0.1.100" "10.0.1.101" ]` (iPhone17Pro + arch — the human; tag `user_regular`, global settings)
+   - `Dumitru` ids += `[ "10.0.1.102" "10.0.1.103" ]` (iphonexs, galaxys22u)
+   - `M` ids += `[ "10.0.1.104" "10.0.1.105" ]` (samsungtv, phillipsair)
+   - `T` ids += `[ "10.0.1.106" "10.0.1.107" "10.0.1.108" ]` (david, ramona, tibisor)
    - `Guests` ids += `[ "10.0.1.200" "10.0.1.201" ]`
-   - new client `Admin` ids `[ "10.0.1.2" "10.0.1.3" ]` (tag `user_regular`, global settings)
    - Leave `clients.runtime_sources` as-is (`arp = false` was correct; `rdns`/`dhcp`/`hosts` harmless for 10.0.1.x).
 4. **No IPv6 filtering changes** (`aaaa_disabled` etc. deliberately not used — the noise is a source-address artifact, fixed at the router, not an AAAA problem).
 
@@ -193,13 +208,16 @@ PersistentKeepalive = 25
 > ### 3.3 WireGuard — remote-access VPN — ✅ LOCKED (2026-08-05, supersedes Tailscale SaaS)
 > - Kernel WireGuard, `networking.wireguard.interfaces.wg0`, server `10.0.1.1/24`. No SaaS control plane. **No exit node** (split-tunnel only) — kills the WhatsApp/adguard-reachability/blocking-rate issues.
 > - Peers fully declarative: names + static IPs + public keys in `settings.nix`; server private key, per-peer private keys and PSKs in sops.
-> - Endpoint `vpn.dnanu.de` (grey cloud, ddclient-managed) — router forwards **UDP 51820 → 10.0.0.2** (human ruling 2026-08-05 authorizes this port). WireGuard silently drops unauthenticated packets: the port answers no scans; no TLS/HTTP/control-plane surface exists.
+> - Endpoint `vpn.dnanu.de` (grey cloud, ddclient-managed) — router forwards **UDP 51820 → 10.0.0.2** (already done; human ruling 2026-08-05 authorizes this port). WireGuard silently drops unauthenticated packets: the port answers no scans; no TLS/HTTP/control-plane surface exists.
 > - Client configs push `DNS = 10.0.0.2` and `AllowedIPs = 10.0.0.0/24`: all DNS flows through the tunnel to AdGuard (per-device labels via static 10.0.1.x ids), internet traffic stays direct.
+> - Reachability split: `*.nanulab.de` service vhosts are **VPN-only** (nginx source allowlist `10.0.1.0/24`). AdGuard UI + `profile.nanulab.de` (QR onboarding) stay reachable over LAN/WiFi **without VPN**.
 > - Onboarding: activation oneshot renders per-peer `.conf` + QR PNGs → `profile.nanulab.de/wg/` behind `auth_basic`; iOS = official WireGuard app → scan QR → enable On-Demand (WiFi+Cellular) once.
 > - Former lock rationale (OAuth non-expiry, zero ports) superseded: exit-node side effects + dynamic 100.x IPs broke per-device DNS labeling; sovereignty preferred over zero-port purity.
 > - Fallback: headscale + headplane (both native modules, verified in pinned 26.05: headscale 0.28.0, headplane 0.6.2) if self-service multi-device enrollment is ever needed — §15.
 
-**§3.4:** delete the "Tailscale admin console DNS" bullet (replaced by "WG peer configs push `DNS = 10.0.0.2`; LAN devices get it from AdGuard DHCP"). Public wildcard `*.nanulab.de` A record → **recommend deleting it** (its only job was resolving to a Tailscale IP that no longer exists; without a tunnel the names are unreachable anyway, so resolving them publicly buys nothing and leaks internal naming). ⚠️ *flagged for human veto — if kept, repoint to `10.0.0.2`.* Update the "Result:" paragraph: "on VPN or LAN, `mail.dnanu.de`/`*.nanulab.de` hit 10.0.0.2 directly; off VPN, only `:25` exists."
+**§3.4:** delete the "Tailscale admin console DNS" bullet (replaced by "WG peer configs push `DNS = 10.0.0.2`; LAN devices get it from AdGuard DHCP (Speedport DHCPv4/DHCPv6 servers point at AdGuard, human-set)"). Public wildcard `*.nanulab.de` A record → **recommend deleting it** (its only job was resolving to a Tailscale IP that no longer exists; without a tunnel the names are unreachable anyway, so resolving them publicly buys nothing and leaks internal naming). ⚠️ *flagged for human veto — if kept, repoint to `10.0.0.2`.* Update the "Result:" paragraph: "on VPN or LAN, `mail.dnanu.de`/`*.nanulab.de` hit 10.0.0.2 directly; off VPN, only `:25` exists."
+
+**§3.5 (IPv6):** rewrite — IPv6 **stays enabled** (human ruling 2026-08-05: needed for mail + modern infra; Speedport cannot disable it anyway). `fe80::1` RDNSS noise is accepted; if the Speedport relays IPv6 DNS, mitigate via AdGuard persistent-client tagging of the router address. DNS correctness comes from the DHCPv4/DHCPv6 server fields pointing at AdGuard, not from disabling IPv6.
 
 **§6 tree:** `tailscale.nix` → `wireguard.nix` in the networking list.
 
@@ -207,9 +225,9 @@ PersistentKeepalive = 25
 
 **§10:** amend step 2/3: the standalone DNS mobileconfig is **retired** (DNS travels inside the WG peer config; on LAN, DHCP hands out AdGuard). `profile.nanulab.de` hosts (a) the signed mail/CalDAV/CardDAV `.mobileconfig` per original design (unsigned acceptable per human note) and (b) `/wg/` per-peer WireGuard configs/QRs; the whole vhost sits behind `auth_basic` (`profile_basic_auth`).
 
-**§12 (1% manual):** replace "approve Tailscale subnet route" with: *forward UDP 51820 → 10.0.0.2 on the Speedport; disable Speedport DHCPv4 + IPv6/RA (enforces §3.1/§3.5); generate WG keypairs (`wg genkey`/`wg genpsk`), private halves + PSKs → `sops secrets/secrets.yaml`, public halves → `settings.nix`; rebuild; distribute QRs (print or AirDrop); enable On-Demand in each iOS WireGuard app; revoke the Tailscale OAuth client + remove machines in the Tailscale console; delete the old `nanulab DNS` profile from iOS devices.*
+**§12 (1% manual):** replace "approve Tailscale subnet route" with: *UDP 51820 forward is already done on the Speedport (human confirmed) — verify only; keep Speedport DHCPv4/DHCPv6 servers enabled with AdGuard as their DNS (already set per AGH guide); keep IPv6 enabled (human ruling); generate WG keypairs (`wg genkey`/`wg genpsk`), private halves + PSKs → `sops secrets/secrets.yaml`, public halves → `settings.nix`; rebuild; distribute QRs (print or AirDrop); enable On-Demand in each iOS WireGuard app; revoke the Tailscale OAuth client + remove machines in the Tailscale console; delete the old `nanulab DNS` profile from iOS devices.*
 
-**§13:** replace Tailscale checks with: `wg show` (handshakes < 2 min old for active peers) · on cellular with tunnel up: `dig cloud.nanulab.de` → 10.0.0.2 and `curl -I https://cloud.nanulab.de` works · AdGuard query log shows `10.0.1.x` sources labeled with device names · LAN: `nmap --script broadcast-dhcp-discover` shows only AGH; fresh lease has DNS 10.0.0.2; no `fe80::1`/`127.0.0.1`/`10.0.0.1` entries in query log · torrent IP-leak test unchanged.
+**§13:** replace Tailscale checks with: `wg show` (handshakes < 2 min old for active peers) · on cellular with tunnel up: `dig cloud.nanulab.de` → 10.0.0.2 and `curl -I https://cloud.nanulab.de` works · AdGuard query log shows `10.0.1.x` sources labeled with device names · LAN: fresh lease has DNS 10.0.0.2 (Speedport DHCPv4/DHCPv6 → AdGuard); no `127.0.0.1`/`10.0.0.1` entries in query log (`fe80::1` IPv6 noise tolerated per §3.5) · torrent IP-leak test unchanged.
 
 **§15:** amend the Headscale line: "Headscale + headplane UI (both native, verified 26.05) if declarative WG peer management ever becomes a burden — would need TCP 8443 forward (control+embedded DERP), preauth keys or an OIDC IdP; iOS via Tailscale app's alternate-server setting."
 
@@ -258,7 +276,7 @@ PersistentKeepalive = 25
 11. `modules/networking/adguard.nix`: extend `clients.persistent` per §5.3 (add `Admin` client; append WG IPs to Dumitru/M/T/Guests ids). Comment above the block: *"WG peers (10.0.1.x) map to the same person as their LAN IPs — labels follow the human, not the path."*
 12. Eval/build; commit: `adguard: label WireGuard peer IPs as named persistent clients`.
 13. `OpenCode.md`: apply §6 amendments verbatim (§3.2, §3.3 replacement, §3.4, §6, §7, §10, §12, §13, §15, §16). Commit: `docs: lock WireGuard §3.3, update ports/DNS/secrets/runbook/verification`.
-14. `README.md`: update Status (phase note: "WireGuard replaces Tailscale; ports 25/tcp + 51820/udp") and the agent-facing description if it mentions Tailscale. `TODO.md`: tick the VPN-alternative + AdGuard items; move Speedport DHCP/IPv6 disable + key generation + QR distribution + Tailscale-console cleanup into the 1%-manual checklist. `Changes.md`: session entry. `Memory.md`: note new known facts (WG subnet 10.0.1.0/24, endpoint vpn.dnanu.de, profile.nanulab.de now auth_basic-protected, old dns.mobileconfig retired, headscale+headplane verified as fallback). Commit: `docs: session updates (README/TODO/Changes/Memory)`.
+14. `README.md`: update Status (phase note: "WireGuard replaces Tailscale; ports 25/tcp + 51820/udp; `*.nanulab.de` VPN-only, AdGuard + profile reachable on LAN") and the agent-facing description if it mentions Tailscale. `TODO.md`: tick the VPN-alternative + AdGuard items; move key generation + QR distribution + Tailscale-console cleanup into the 1%-manual checklist (Speedport DHCPv4/DHCPv6 DNS → AdGuard is already done, keep IPv6 on). `Changes.md`: session entry. `Memory.md`: note new known facts (WG subnet 10.0.1.0/24, endpoint vpn.dnanu.de, profile.nanulab.de now auth_basic-protected, old dns.mobileconfig retired, headscale+headplane verified as fallback, Speedport DHCPv4/DHCPv6 point at AdGuard, IPv6 stays on). Commit: `docs: session updates (README/TODO/Changes/Memory)`.
 15. Final report to human: build result, the exact 1% manual steps in order (keys → sops → port forward → Speedport DHCP/IPv6 off → deploy → QR distribution → On-Demand toggles → Tailscale console cleanup → remove old iOS DNS profile), and the §13 verification commands to run after deploy.
 
 ### Explicit non-goals for the executor
@@ -273,6 +291,6 @@ PersistentKeepalive = 25
 - **Risk: human locks themselves out remotely** — deploy while on LAN; keep physical/SSH-via-LAN access; Tailscale stays functional until the rebuild switches (old closure remains in boot menu). Rollback = boot previous generation or `git revert` Phase A commits + rebuild.
 - **Risk: peer private keys rendered server-side** — accepted (§3 posture); opt-in alternative documented (workstation-side keygen).
 - **Risk: `profile_basic_auth` secret format mismatch** — it must be htpasswd format for nginx `basicAuthFile`; executor must note this in the sops key comment/Changes.md.
-- **Risk: Speedport UI lacks full IPv6-off** — §3.5 fallback already accepted in OpenCode.md (bypass tolerated); LAN DNS fix (DHCP off) is independent and still works.
+- **Risk: Speedport UI lacks full IPv6-off** — **moot**: human ruling keeps IPv6 enabled (needed for mail + infra). `fe80::1` noise accepted; mitigated via AdGuard client tagging of the router address if it relays IPv6 DNS. LAN DNS fix (DHCPv4/DHCPv6 DNS-server fields → AdGuard) is independent and already in place.
 
 *(Plan ends. No code was modified; no commits created.)*
