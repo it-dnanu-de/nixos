@@ -34,12 +34,11 @@ let
       fi
     }
 
-    TS_IP=$(tailscale ip -4 2>/dev/null || echo "")
-
-    PUBLIC_IP4=$(${pkgs.curl}/bin/curl -s --interface enp10s0 https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
+    PUBLIC_IP4=$(${pkgs.curl}/bin/curl -s --interface ${settings.network.interface} https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
     if [ "$PUBLIC_IP4" != "0.0.0.0" ]; then
       upsert "$Z_DNANU" A "${settings.domains.public}" "$PUBLIC_IP4" true 1
       upsert "$Z_DNANU" A "www.${settings.domains.public}" "$PUBLIC_IP4" true 1
+      upsert "$Z_DNANU" A "${settings.domains.vpn}" "$PUBLIC_IP4" false 120
     fi
 
     upsert "$Z_DNANU" MX "${settings.domains.public}" "${settings.domains.mail}" false 120
@@ -47,9 +46,9 @@ let
     upsert "$Z_DNANU" TXT "_dmarc.${settings.domains.public}" \
       "v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:${settings.email.admin}" false 120
 
-    if [ -n "$TS_IP" ]; then
-      upsert "$Z_NANULAB" A "*.${settings.domains.internal}" "$TS_IP" false 120
-      upsert "$Z_NANULAB" A "${settings.domains.internal}" "$TS_IP" false 120
+    if [ "$PUBLIC_IP4" != "0.0.0.0" ]; then
+      upsert "$Z_NANULAB" A "*.${settings.domains.internal}" "$PUBLIC_IP4" false 120
+      upsert "$Z_NANULAB" A "${settings.domains.internal}" "$PUBLIC_IP4" false 120
     fi
     upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120
   '';
@@ -84,9 +83,9 @@ in
   systemd.services.cloudflare-dns-sync = {
     description = "Declarative Cloudflare DNS";
     wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" "tailscaled.service" ];
+    after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
-    path = with pkgs; [ tailscale ];
+    path = with pkgs; [ ];
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${dnsScript}/bin/cloudflare-dns-sync";

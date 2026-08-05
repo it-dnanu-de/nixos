@@ -9,9 +9,7 @@
 
       cloudflared_tunnel_cred = {};
 
-      tailscale_oauth = {
-        restartUnits = [ "tailscaled-autoconnect.service" ];
-      };
+
 
       resend_api_key = {};
       mail_hey = {};

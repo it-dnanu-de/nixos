@@ -1,6 +1,6 @@
 # Base networking: static IP, gateway, firewall, DNS.
 # OpenCode.md §3.1 — server is static 10.0.0.2/24, gw 10.0.0.1.
-# Zero open ports except what each service explicitly opens.
+# Open ports: 25/tcp (inbound SMTP), 51820/udp (WireGuard — §3.3).
 { settings, ... }:
 {
   networking.useDHCP = false;
@@ -22,9 +22,9 @@
     enable = true;
     # TCP 25: inbound SMTP, 53: AdGuard DNS, 465/587: submission, 993: IMAPS (LAN-only)
     allowedTCPPorts = [ 25 53 465 587 993 ];
-    # UDP 53: DNS, 67: AdGuard DHCP server.
-    allowedUDPPorts = [ 53 67 ];
-    # Tailscale interface — all traffic trusted (how admin UIs are reached).
-    trustedInterfaces = [ "tailscale0" ];
+    # UDP 53: DNS, 67: AdGuard DHCP server, 51820: WireGuard (remote-access VPN — §3.3)
+    allowedUDPPorts = [ 53 67 51820 ];
+    # WireGuard interface — all traffic trusted (how admin UIs are reached, §3.3 superseded Tailscale).
+    trustedInterfaces = [ "wg0" ];
   };
 }
