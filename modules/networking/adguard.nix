@@ -46,6 +46,7 @@
       user_rules = [
         "@@||hotstream.app^$important"
         "@@||icanhazip.com^$important"
+        "@@||hotplayer.app^$important"
         "@@||hdstreams.site^$important"
         "@@||resend.com^$important"
         "@@||ipify.org^$important"
@@ -89,6 +90,8 @@
           { mac = "68:79:c4:29:1d:44"; ip = "10.0.0.105"; hostname = "phillipsair"; }
           { mac = "76:6f:b2:93:10:ce"; ip = "10.0.0.106"; hostname = "david"; }
           { mac = "56:ea:b4:79:06:61"; ip = "10.0.0.107"; hostname = "ramona"; }
+          { mac = "26:05:a5:6c:e2:56"; ip = "10.0.0.108"; hostname = "tibisor"; }
+          { mac = "c4:9d:ed:c9:9a:13"; ip = "10.0.0.109"; hostname = "xbox"; }
         ];
       };
       # Persistent clients — named, tagged, custom settings
