@@ -34,6 +34,16 @@ let
       fi
     }
 
+    # Remove a record if present (idempotent) — used for records that must NOT exist publicly.
+    deleteRecord() {
+      local zone=$1 type=$2 name=$3
+      $CURL "$API/$zone/dns_records?type=$type&name=$name" \
+        | ${pkgs.jq}/bin/jq -r '.result[].id' \
+        | while read -r id; do
+            $CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null 2>&1
+          done
+    }
+
     PUBLIC_IP4=$(${pkgs.curl}/bin/curl -s --interface ${settings.network.interface} https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
     if [ "$PUBLIC_IP4" != "0.0.0.0" ]; then
       upsert "$Z_DNANU" A "${settings.domains.public}" "$PUBLIC_IP4" true 1
@@ -46,10 +56,11 @@ let
     upsert "$Z_DNANU" TXT "_dmarc.${settings.domains.public}" \
       "v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:${settings.email.admin}" false 120
 
-    if [ "$PUBLIC_IP4" != "0.0.0.0" ]; then
-      upsert "$Z_NANULAB" A "*.${settings.domains.internal}" "$PUBLIC_IP4" false 120
-      upsert "$Z_NANULAB" A "${settings.domains.internal}" "$PUBLIC_IP4" false 120
-    fi
+    # nanulab.de services are VPN-only (nginx source allowlist 10.0.1.0/24); AdGuard
+    # rewrites them locally to 10.0.0.2. Public A records must NOT exist (leaks
+    # internal naming, resolves to nothing reachable). Delete if present.
+    deleteRecord "$Z_NANULAB" A "*.${settings.domains.internal}"
+    deleteRecord "$Z_NANULAB" A "${settings.domains.internal}"
     upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120
   '';
 in

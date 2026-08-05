@@ -6,7 +6,7 @@ A 20-year NixOS homelab for **dnanu.de**. Single node, single user, 99% declarat
 
 ## What this repo is
 - The complete NixOS configuration for the homelab server: `flake.nix`, `settings.nix`, sops-encrypted `secrets/secrets.yaml`, `hosts/homelab`, and modular config under `modules/`.
-- ZFS + disko storage (`/fast`, `/slow`), a split-horizon DNS setup (AdGuard + Tailscale), a full mail stack (simple-nixos-mailserver + Resend relay), and a "feels like Netflix" media pipeline (Seerr -> \*arr -> Jellyfin/Navidrome/ABS/Booklore), all behind a zero-open-ports network (except 25/tcp).
+- ZFS + disko storage (`/fast`, `/slow`), a split-horizon DNS setup (AdGuard + WireGuard VPN), a full mail stack (simple-nixos-mailserver + Resend relay), and a "feels like Netflix" media pipeline (Seerr -> \*arr -> Jellyfin/Navidrome/ABS/Booklore), all behind a minimal-exposure network (25/tcp + 51820/udp only).
 - ~25 native NixOS services. One sanctioned container exception: Booklore.
 
 ## Agent tooling (opencode)
@@ -15,7 +15,7 @@ This repo ships with an opencode configuration so AI agents work the way this pr
 | Piece | Where | What it does |
 |---|---|---|
 | Main config | `opencode.json` | instructions, MCP servers, references, permissions |
-| Agents | `.opencode/agent/` | `architect` (T3 Kimi K3), `nixos-builder` (T2 DeepSeek V4 Pro), `verifier` (T1 DeepSeek V4 Flash), `security-reviewer` (T3 Kimi K3), `deployer` (T2 DeepSeek V4 Pro) |
+| Agents | `.opencode/agent/` | `architect` (T3 GLM 5.2), `nixos-builder` (T2 DeepSeek V4 Pro), `verifier` (T1 DeepSeek V4 Flash), `security-reviewer` (T3 Kimi K3), `deployer` (T2 DeepSeek V4 Pro) |
 | Commands | `.opencode/command/` | `/init`, `/deploy`, `/rebuild`, `/verify`, `/update`, `/secrets`, `/commit`, `/pr`, `/status` |
 | Skills | `.opencode/skills/` | nixos-flake, sops-secrets, mail-stack, zfs-disko, deployment, verification, security-hardening, git-workflow |
 | References | `@nixpkgs @snm @disko @sops-nix @nixos-anywhere @vpn-confinement` | pinned-channel verification sources |
@@ -32,8 +32,8 @@ Launch opencode in this directory and type `/init`. It:
 Prereqs for a live session: `HOMELAB_SSH_PASSWORD` must be set in the shell **before** launching opencode. It's exported automatically in fish via `~/.config/fish/conf.d/homelab.fish` (and was in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
 
 ## Status
-- **Phase:** Build step 3 complete (networking stack).
-- **What works:** Static IP `10.0.0.2/24` on enp10s0. AdGuard Home DNS + DHCP (declarative, split-horizon rewrites). Tailscale subnet router (OAuth auth). ddclient Cloudflare dynamic DNS for `mail.dnanu.de`. ACME DNS-01 wildcard certs for `*.nanulab.de` + `*.dnanu.de`. nginx loopback-only on 8080 (placeholder site). cloudflared tunnel for `dnanu.de`/`www`/`autoconfig`. Full system closure builds with zero deprecation warnings.
+- **Phase:** Build step 3 complete (networking stack). WireGuard VPN swap (Phase A) built and deployed.
+- **What works:** Static IP `10.0.0.2/24` on enp10s0. AdGuard Home DNS + DHCP (declarative, split-horizon rewrites). Declarative WireGuard VPN (`vpn.dnanu.de:51820`, 12 peers, QR onboarding on `profile.nanulab.de/wg/`). ddclient Cloudflare dynamic DNS for `mail.dnanu.de` + `vpn.dnanu.de`. ACME DNS-01 wildcard certs for `*.nanulab.de` + `*.dnanu.de`. nginx loopback-only on 8080 (placeholder site). cloudflared tunnel for `dnanu.de`/`www`/`autoconfig`. Full system closure builds with zero deprecation warnings.
 - **Next milestone:** Build step 4 — Mail (SNM + Resend relay + sieve rules + DNS records).
 
 ## License

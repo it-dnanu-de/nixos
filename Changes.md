@@ -26,3 +26,9 @@ History in OpenCode.md §17 "Session Log".
 - **Verified by Flash:** `nix build` passes, 12 peers on wg0 with correct IPs, 41 sops secrets, tailscale_oauth removed, push clean.
 - Remaining: Phase B (AdGuard persistent-client WG ids), OpenCode.md §3.2/§3.3/§3.4/§6/§7/§10/§12/§13/§15/§16 amendments, docs (README/TODO/Changes/Memory), then human-approved deploy.
 - NOTE: cloudflare-dns repointed `*.nanulab.de` + bare `nanulab.de` A records to PUBLIC_IP4 (not deleted as the plan recommended). Plan flagged deletion for human veto — the executor chose repoint-to-public instead. Flagged for review before deploy.
+
+## 2026-08-06 — OpenCode.md amendments (WireGuard LOCKED), docs, DNS record deletion
+- Human approved (2026-08-06): Phase B → deferred to TODO.md; lock WireGuard in OpenCode.md; update docs; deploy; **delete** `*.nanulab.de` + `nanulab.de` public A records.
+- OpenCode.md: §3.2 (ports table: +51820/udp), §3.3 (Tailscale → **WireGuard ✅ LOCKED**, supersedes Tailscale SaaS), §3.4 (no public nanulab records, vpn.dnanu.de endpoint), §3.5 (IPv6 stays on, Speedport DHCPv4/DHCPv6 → AdGuard), §3.7 (nanulab has nothing to sign), §4.4 DNS table (+vpn.dnanu.de, −nanulab A), §6 tree (wireguard), §7 secrets (wireguard keys, −tailscale_oauth), §9 (WireGuard row, VPN-only URLs), §10 (dns.mobileconfig retired, /wg/ served), §12 (runbook: QR distribution + Tailscale console cleanup), §13 (WG verification), §15 (headscale fallback details), §16 (WireGuard/headscale/headplane refs).
+- `modules/services/cloudflare-dns.nix`: added `deleteRecord` helper — idempotently DELETEs `*.nanulab.de` + bare `nanulab.de` public A records (VPN-only services; AdGuard rewrites serve LAN/VPN locally). Upsert can't delete, so plain removal would have left the records forever.
+- Docs: README (WireGuard, ports, architect=GLM 5.2 fix, status), TODO.md (Phase B deferred, AdGuard consolidated), Memory.md (WG section already added; architect model ID note).

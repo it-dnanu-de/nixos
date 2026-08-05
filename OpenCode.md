@@ -74,7 +74,7 @@ Dell-specific: `services.logind.lidSwitch = "ignore"` (lid closed ≠ suspend �
 ## 3. Network Architecture
 
 ### 3.1 Topology
-- Router: Telekom Speedport Smart 4 @ `10.0.0.1`. **DHCP disabled** (v4). Disable IPv6/RA if the UI allows (see §3.5).
+- Router: Telekom Speedport Smart 4 @ `10.0.0.1`. **DHCP (v4+v6) servers stay enabled but point their DNS server fields at AdGuard** (human-set per AGH setup guide, verified 2026-08-06). IPv6 stays on (mail + modern infra need it — §3.5).
 - Server: **static** `10.0.0.2/24`, gw `10.0.0.1`, declared in NixOS (`networking.interfaces.<if>.ipv4.addresses`). No ARP tricks.
 - AdGuard Home on the server becomes LAN DHCP + DNS.
 
@@ -82,17 +82,24 @@ Dell-specific: `services.logind.lidSwitch = "ignore"` (lid closed ≠ suspend �
 
 | Flow | Path | Ports open on router |
 |------|------|----------------------|
-| Inbound SMTP (server→server) | Internet → `mail.dnanu.de` (public A, **grey cloud**, ddclient-updated) → router fwd → `10.0.0.2:25` | **25/tcp only** |
+| Inbound SMTP (server→server) | Internet → `mail.dnanu.de` (public A, **grey cloud**, ddclient-updated) → router fwd → `10.0.0.2:25` | **25/tcp** |
 | Public blogs + autoconfig | Internet → Cloudflare edge → `cloudflared` tunnel → nginx `10.0.0.2:8080` | none |
-| Everything else (Nextcloud, Jellyfin, IMAP 993, submission 465, all admin UIs) | Device → Tailscale → `10.0.0.2` (subnet route) or `100.x` → nginx 443 / direct | none |
+| Remote access (all devices) | Internet → `vpn.dnanu.de` (grey cloud, ddclient) → router fwd UDP 51820 → `10.0.0.2:51820` (WireGuard) | **51820/udp** |
+| Everything else (Nextcloud, Jellyfin, IMAP 993, submission 465, all admin UIs) | Device → WireGuard tunnel → `10.0.0.2` (nginx 443 / mail 993+465 / admin UIs) | none |
 | Outbound mail | Postfix → `smtp.resend.com:465` (SMTPS, user `resend`, pass = API key) | none |
 | Torrent/Soulseek/Usenet | confined netns → AirVPN WireGuard | none |
 
-### 3.3 Tailscale (official SaaS) — ✅ LOCKED
-- `services.tailscale.enable = true; useRoutingFeatures = "server";`
-- `--advertise-routes=10.0.0.0/24` (subnet router). Approve route once in admin console.
-- Auth: Tailscale **OAuth client** credential (tagged `tag:server`) in sops → `services.tailscale.authKeyFile`. ⚠️ Pre-auth keys expire in ≤90 days; OAuth client secrets don't. Rebuilds years later must work.
-- Tailscale admin console DNS: global nameserver = `10.0.0.2` (AdGuard), "Override local DNS" ON → ad-blocking everywhere. Add `1.1.1.1` as second global NS so a dead server doesn't kill client DNS entirely.
+Router column total: **25/tcp + 51820/udp only**.
+
+### 3.3 WireGuard — remote-access VPN — ✅ LOCKED (2026-08-05, supersedes Tailscale SaaS)
+- Kernel WireGuard, `networking.wireguard.interfaces.wg0`, server `10.0.1.1/24`. No SaaS control plane. **No exit node** (split-tunnel only) — kills the WhatsApp/adguard-reachability/blocking-rate issues.
+- Peers fully declarative: names + static IPs + public keys in `settings.nix`; server private key, per-peer private keys and PSKs in sops.
+- Endpoint `vpn.dnanu.de` (grey cloud, ddclient-managed) — router forwards **UDP 51820 → 10.0.0.2** (already done, human confirmed 2026-08-05). WireGuard silently drops unauthenticated packets: the port answers no scans; no TLS/HTTP/control-plane surface exists.
+- Client configs push `DNS = 10.0.0.2` and `AllowedIPs = 10.0.0.0/24`: all DNS flows through the tunnel to AdGuard (per-device labels via static 10.0.1.x ids), internet traffic stays direct.
+- Reachability split: `*.nanulab.de` service vhosts are **VPN-only** (nginx source allowlist `10.0.1.0/24`). AdGuard UI + `profile.nanulab.de` (QR onboarding) stay reachable over LAN/WiFi **without VPN**.
+- Onboarding: activation oneshot (`wireguard-profile-render`) renders per-peer `.conf` + QR PNGs → `profile.nanulab.de/wg/` behind `auth_basic` (`profile_basic_auth`); iOS = official WireGuard app → scan QR → enable On-Demand (WiFi+Cellular) once. No accounts — possession of the private key IS identity.
+- Former lock rationale (OAuth non-expiry, zero ports) superseded: exit-node side effects + dynamic 100.x IPs broke per-device DNS labeling; sovereignty preferred over zero-port purity.
+- Fallback: headscale + headplane (both native modules, verified in pinned 26.05: headscale 0.28.0, headplane 0.6.2) if self-service multi-device enrollment is ever needed — §15.
 
 ### 3.4 Split-Horizon DNS — ✅ LOCKED (this is what makes iOS work)
 - **AdGuard DNS rewrites** (declarative, `mutableSettings = false`):
@@ -100,12 +107,13 @@ Dell-specific: `services.logind.lidSwitch = "ignore"` (lid closed ≠ suspend �
   - `mail.dnanu.de` → `10.0.0.2`
   - everything else → upstream (quad9)
 - Public Cloudflare DNS:
-  - `*.nanulab.de` A → server's Tailscale `100.x` IP (grey cloud). Publishing a CGNAT IP is harmless and makes names resolve even when AdGuard is bypassed.
+  - `*.nanulab.de` / bare `nanulab.de` → **no public A records** (deleted 2026-08-06 — services are VPN-only; resolving publicly leaks internal naming and reaches nothing). AdGuard rewrites serve LAN/VPN clients locally.
+  - `vpn.dnanu.de` A → dynamic home IP (grey cloud, ddclient). WireGuard endpoint.
   - `mail.dnanu.de` A → dynamic home IP (grey cloud, ddclient). **Must stay unproxied or SMTP dies.**
-- Result: on Tailscale, `mail.dnanu.de:993/465` hits `10.0.0.2` directly; off Tailscale, only `:25` exists. iOS Mail syncs when Tailscale is on — accepted behavior.
+- Result: on VPN or LAN, `mail.dnanu.de`/`*.nanulab.de` hit `10.0.0.2` directly; off VPN, only `:25` exists. iOS Mail syncs when WireGuard is on — accepted behavior.
 
 ### 3.5 LAN IPv6 caveat
-Speedport may still announce itself as IPv6 DNS. Devices using it bypass AdGuard. Mitigation: disable IPv6 on router if possible; otherwise accept bypass (services still resolve via public `*.nanulab.de` records → Tailscale IP).
+IPv6 **stays enabled** (human ruling 2026-08-05: needed for mail + modern infra; Speedport cannot disable it anyway). Speedport's DHCPv6 server points its DNS at AdGuard (human-set, verified 2026-08-06). Residual `fe80::1` RDNSS noise is accepted; if the Speedport relays IPv6 DNS, mitigate via AdGuard persistent-client tagging of the router address. DNS correctness comes from the DHCPv4/DHCPv6 server fields pointing at AdGuard, not from disabling IPv6.
 
 ### 3.6 Cloudflare Tunnel (blogs only)
 `services.cloudflared.tunnels."<id>"` with `credentialsFile` from sops; ingress: `dnanu.de`, `www.dnanu.de`, `autoconfig.dnanu.de` → `http://127.0.0.1:8080`; default `http_status:404`. Tunnel routes created once in CF dashboard (1% manual) or via API.
@@ -114,7 +122,7 @@ Speedport may still announce itself as IPv6 DNS. Devices using it bypass AdGuard
 - Enable DNSSEC on both Cloudflare zones (`dnanu.de`, `nanulab.de`). Algorithm: ECDSAP256SHA256 (CF-managed). Nameservers unchanged.
 - Publish the DS record (one per zone) at the `.de` registrar's DENIC interface. **1% manual**, added to §12.
 - Order: enable signing at Cloudflare first, **then** publish DS at registrar. Never withdraw signing while DS exists (bogus domain, full resolution failure).
-- No conflicts: grey-cloud `mail.dnanu.de` (dynamic IP) is re-signed automatically by Cloudflare; DNSSEC signs names, not IPs. Proxied records and wildcard `*.nanulab.de → 100.x` sign fine. AdGuard split-horizon rewrites are unsigned local answers (standard private-view behaviour, accepted).
+- No conflicts: grey-cloud `mail.dnanu.de` (dynamic IP) is re-signed automatically by Cloudflare; DNSSEC signs names, not IPs. Proxied records sign fine. `*.nanulab.de` has no public records (2026-08-06) — nothing to sign there. AdGuard split-horizon rewrites are unsigned local answers (standard private-view behaviour, accepted).
 - Phase-2 hook: DANE/TLSA for SMTP (joins MTA-STS/TLS-RPT in §15).
 - Verification: `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set), `delv dnanu.de`, dnsviz.net spot check.
 
@@ -169,12 +177,13 @@ services.postfix = {
 | Type | Name | Value |
 |------|------|-------|
 | A | `mail.dnanu.de` | home IP (ddclient-managed) |
+| A | `vpn.dnanu.de` | home IP (ddclient-managed, grey cloud) — WireGuard endpoint §3.3 |
 | MX | `dnanu.de` | `mail.dnanu.de` prio 10 |
 | MX | `nanulab.de` | `mail.dnanu.de` prio 10 |
 | TXT | `dnanu.de` | `v=spf1 -all` (nothing sends with envelope @dnanu.de; Resend uses its `send.` subdomain) ⚠️ VERIFY against Resend's domain-verification records and copy theirs exactly |
 | TXT/CNAME | per Resend dashboard | DKIM + SPF for `send.dnanu.de` |
 | TXT | `_dmarc.dnanu.de` | `v=DMARC1; p=quarantine; rua=mailto:admin@nanulab.de` → `p=reject` after 1 month |
-| A | `*.nanulab.de` | Tailscale `100.x` IP |
+| — | `*.nanulab.de` / `nanulab.de` | **no public A records** (VPN-only; AdGuard rewrites locally — §3.4) |
 | CNAME | `dnanu.de`, `www`, `autoconfig` | `<tunnel-id>.cfargotunnel.com` (proxied ✅) |
 
 `autoconfig.dnanu.de/mail/config-v1.1.xml`: static XML (Thunderbird auto-setup) served by the blogs nginx vhost.
@@ -211,7 +220,7 @@ nixos-homelab/
 │   ├── homelab/{configuration.nix,hardware-configuration.nix,disko.nix}
 │   └── installer/         # custom ISO w/ ssh key for nixos-anywhere
 └── modules/
-    ├── networking/{tailscale,cloudflare,nginx,ddclient,adguard}.nix
+    ├── networking/{wireguard,cloudflare,nginx,ddclient,adguard}.nix
     ├── services/{mail,nextcloud,media,arr-stack,vpn,vaultwarden,smart-home,monitoring}.nix
     ├── system/{zfs,users,backups,sops}.nix
     └── mobile-profile.nix
@@ -219,7 +228,7 @@ nixos-homelab/
 
 ## 7. Secrets Inventory (sops-nix)
 
-`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey_hash`, `mail_admin_hash`, `tailscale_oauth`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `profile_basic_auth`, `mobileca_key`, `mobileca_cert`.
+`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey_hash`, `mail_admin_hash`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `profile_basic_auth`, `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<name>_private`, `wireguard_peer_<name>_psk` (per WG peer — §3.3).
 
 ## 8. TLS
 
@@ -227,16 +236,16 @@ nixos-homelab/
 
 ## 9. Service Map — all native modules ⚠️ VERIFY each exists in pinned 26.05
 
-| Service | Module | URL (Tailscale only) | Notes |
+| Service | Module | URL (VPN only unless noted) | Notes |
 |---|---|---|---|
 | Nginx | `services.nginx` | — | reverse proxy, ACME integration |
-| AdGuard Home | `services.adguardhome` | `adguard.nanulab.de` | `mutableSettings=false`; DHCP declarative; disable `systemd-resolved` (port 53 clash) |
-| Tailscale | `services.tailscale` | — | §3.3 |
+| AdGuard Home | `services.adguardhome` | `adguard.nanulab.de` (LAN/WiFi, no VPN) | `mutableSettings=false`; DHCP declarative; disable `systemd-resolved` (port 53 clash) |
+| WireGuard | `networking.wireguard` | — | §3.3 |
 | ddclient | `services.ddclient` | — | protocol cloudflare, `passwordFile`=sops, interval 300s, `use=web` |
 | cloudflared | `services.cloudflared` | — | §3.6 |
 | Mail | SNM `mailserver.*` | `mail.dnanu.de` | §4 |
 | Nextcloud | `services.nextcloud` | `cloud.nanulab.de` | native pg + redis; `extraApps`: mail, calendar, contacts; `adminpassFile`=sops; `maxUploadSize="16G"` |
-| Collabora Online | `services.collabora-online` | `office.nanulab.de` | native module; Nextcloud Office backend; Tailscale-only |
+| Collabora Online | `services.collabora-online` | `office.nanulab.de` | native module; Nextcloud Office backend; VPN-only |
 | Immich | `services.immich` | `photos.nanulab.de` | `mediaLocation=/fast/immich`; ML off on Dell |
 | Vaultwarden | `services.vaultwarden` | `vault.nanulab.de` | `SIGNUPS_ALLOWED=false` |
 | Jellyfin | `services.jellyfin` | `watch.nanulab.de` | SNB iGPU: `intel-vaapi-driver`; prod: `intel-media-driver` |
@@ -259,8 +268,8 @@ nixos-homelab/
 
 1. Human generates a root CA **on the Mac** (`openssl` commands in README); key+cert stored in sops (`mobileca_*`). **Never** generate in a Nix build — `/nix/store` is world-readable. (I will not generate a root CA on my mac, mac's dead as of now, need to buy a new one, unsigned certs are also fine for now)
 2. Systemd oneshot renders a static `.mobileconfig` (payloads: IMAP `mail.dnanu.de:993` SSL, SMTP `mail.dnanu.de:465` SSL, CalDAV + CardDAV → `cloud.nanulab.de/remote.php/dav`, embedded CA cert payload, **no passwords** — iOS prompts at install), signs it via `openssl smime -sign` with the CA, writes to `/var/lib/mobileprofile/`.
-3. nginx serves it at `profile.nanulab.de` behind `auth_basic` (password in sops).
-4. Flow: Tailscale on → open `profile.nanulab.de` → basic auth → download → Settings → install → enable trust for the CA → Mail/Calendar/Contacts work (while Tailscale is on). Service TLS is real Let's Encrypt — the CA exists only for the "Verified" badge.
+3. nginx serves it at `profile.nanulab.de` behind `auth_basic` (`profile_basic_auth` in sops). The standalone DNS `.mobileconfig` was **retired 2026-08-06** — DNS now rides in the WireGuard peer configs (on LAN, DHCP hands out AdGuard). The `profile.nanulab.de` vhost also serves `/wg/` per-peer WireGuard configs + QR PNGs (wireguard-profile-render oneshot).
+4. Flow: VPN or LAN on → open `profile.nanulab.de` → basic auth → download → Settings → install → enable trust for the CA → Mail/Calendar/Contacts work (while WireGuard is on). Service TLS is real Let's Encrypt — the CA exists only for the "Verified" badge.
 
 ## 11. Backups (Restic → Backblaze B2)
 
@@ -275,11 +284,11 @@ nixos-homelab/
 
 **On the Mac (once):** generate age keypair (private → USB + password manager); generate mobile CA; clone repo; edit `settings.nix`; `sops secrets/secrets.yaml` to fill §7; commit.
 **Install:** boot NixOS ISO on Dell (ethernet) → start sshd, set password → from Mac: `nix run github:nix-community/nixos-anywhere -- --flake .#homelab --extra-files <dir-with-age-key> root@<ip>` → disko formats, installs, reboots.
-**1% manual (~45 min):** approve Tailscale subnet route; create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; publish DS records at registrar (both zones, §3.7).
+**1% manual (~45 min):** verify UDP 51820 forward (done 2026-08-05); keep Speedport DHCPv4/DHCPv6 pointing at AdGuard + IPv6 enabled; distribute WireGuard QRs (print/AirDrop) + enable On-Demand per device; revoke the Tailscale OAuth client + remove machines (Tailscale console); create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; publish DS records at registrar (both zones, §3.7).
 
 ## 13. Verification Suite (run after install)
 
-`zpool status` · `dig @10.0.0.2 mail.dnanu.de` (→10.0.0.2) · `dig mail.dnanu.de @1.1.1.1` (→home IP) · `swaks --to hey@dnanu.de --server <home-ip>` from outside · send via iOS → check Resend dashboard · `curl -I https://cloud.nanulab.de` over Tailscale · torrent IP-leak test in qBittorrent · `restic check` · lid-close test · `systemctl --failed` empty · `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set) · `delv dnanu.de`.
+`zpool status` · `wg show` (handshakes < 2 min old for active peers) · `dig @10.0.0.2 mail.dnanu.de` (→10.0.0.2) · `dig mail.dnanu.de @1.1.1.1` (→home IP) · `dig vpn.dnanu.de @1.1.1.1` (→home IP) · cellular with tunnel up: `dig cloud.nanulab.de` → 10.0.0.2 and `curl -I https://cloud.nanulab.de` works · AdGuard query log shows 10.0.1.x sources labeled with device names · `swaks --to hey@dnanu.de --server <home-ip>` from outside · send via iOS → check Resend dashboard · LAN: fresh lease has DNS 10.0.0.2, no `127.0.0.1`/`10.0.0.1` entries in query log (`fe80::1` IPv6 noise tolerated per §3.5) · torrent IP-leak test in qBittorrent · `restic check` · lid-close test · `systemctl --failed` empty · `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set) · `delv dnanu.de`.
 
 ## 14. Update Policy
 
@@ -287,7 +296,7 @@ Quarterly: `nix flake update` → build → test → switch. Rollback via boot m
 
 ## 15. Phase 2 Backlog (documented, NOT built)
 
-Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale (if Tailscale SaaS ever fails you), MTA-STS/TLS-RPT, multi-user mailboxes.
+Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale + headplane UI (both native, verified 26.05 — if declarative WG peer management ever becomes a burden; needs TCP 8443 forward, preauth keys or an OIDC IdP, iOS via Tailscale app's alternate-server setting), MTA-STS/TLS-RPT, multi-user mailboxes.
 
 ## 16. Key References
 
@@ -298,6 +307,7 @@ Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale (if Tailsca
 - disko: https://github.com/nix-community/disko · nixos-anywhere: https://github.com/nix-community/nixos-anywhere · sops-nix: https://github.com/Mic92/sops-nix
 - Beszel/slskd/seerr modules: nixpkgs `services.beszel.{hub,agent}`, `services.slskd`, `services.seerr` (26.05)
 - Booklore: https://github.com/booklore-app/booklore · soularr: https://github.com/mrusse/soularr · Hugo: https://gohugo.io · rreading-glasses mirror for Readarr metadata
+- WireGuard: https://www.wireguard.com · headscale: https://github.com/juanfont/headscale · headplane: https://github.com/tale/headplane (Tailscale/100.x links historical, pre-2026-08-05)
 - Beszel/slskd/seerr modules: nixpkgs `services.beszel.{hub,agent}`, `services.slskd`, `services.seerr` (26.05)
 # Ruling by Kimi K3 for Kimi K3 in Claude Code Harness
 ## Final Rulings (Blueprint v3)
@@ -343,7 +353,7 @@ One pinned container, one native DB. Acceptable; the alternative (dropping the a
 
 Talk needs a TURN server with open ports → violates the zero-port rule → **dropped, Phase 2 forever.**
 
-Office stays, and it works **without containers**: nixpkgs has a native `services.collabora-online` module. Nextcloud's Office app points at the local coolwsd endpoint; nginx proxies it at `office.nanulab.de` (Tailscale-only). ⚠️ VERIFY module name in pinned channel. On the Dell's 6GB this will be the heaviest thing after Immich — accepted, it's a test box.
+Office stays, and it works **without containers**: nixpkgs has a native `services.collabora-online` module. Nextcloud's Office app points at the local coolwsd endpoint; nginx proxies it at `office.nanulab.de` (VPN-only). ⚠️ VERIFY module name in pinned channel. On the Dell's 6GB this will be the heaviest thing after Immich — accepted, it's a test box.
 
 ### R4 — The `dnanu.de` website stack (answers A10): **Hugo**
 
@@ -390,7 +400,7 @@ websites/dnanu.de/
 
 1. `flake.nix` + `settings.nix` + sops skeleton
 2. `disko.nix` + ZFS + `hostId` + Dell quirks (lid, ARC)
-3. Networking: static IP, AdGuard, Tailscale, ddclient, cloudflared, nginx+ACME
+3. Networking: static IP, AdGuard, WireGuard, ddclient, cloudflared, nginx+ACME
 4. Mail (SNM + Resend relay + sieve + DNS table) ← **highest risk, verify earliest**
 5. Nextcloud (+Office) + Immich + Vaultwarden
 6. VPN-Confinement → downloaders → *arrs → players (incl. Booklore)
