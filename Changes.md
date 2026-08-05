@@ -16,3 +16,13 @@ History in OpenCode.md §17 "Session Log".
 - GLM 5.2 (architect subagent) wrote `outputs/Tailscale-Alternative-and-AdGuard-Fixes-plan-by-GLM.md`: **pure declarative WireGuard** (replaces Tailscale), one port UDP 51820, QR onboarding, Phase A (VPN swap) + Phase B (AdGuard fixes).
 - **Model routing bug found+fixed:** `architect.md` pinned `openrouter/glm-5.2` which does NOT exist on OpenRouter → subagent fell back to a wrong model (human saw Kimi K3 in API logs). Corrected to `openrouter/z-ai/glm-5.2` (verified in OpenRouter model list). All other agent model IDs verified valid. Commit `f500395`.
 - Human annotations folded into the plan: (1) UDP 51820 already forwarded on Speedport, (2) peers mirror DHCP static-lease layout on 10.0.1.XXX base (iPhone17Pro=10.0.1.100, arch=10.0.1.101, no admin-iphone), (3) `*.nanulab.de` VPN-only but AdGuard UI + profile.nanulab.de reachable over WiFi without VPN, (4) Speedport DHCPv4/DHCPv6 point at AdGuard (keep enabled, IPv6 stays on — mail + modern infra).
+
+## 2026-08-06 — Phase A executed (WireGuard swap), keys generated
+- Human approved the GLM 5.2 plan (with annotations) 2026-08-05.
+- Generated keypairs on the Arch workstation for server + all 12 peers (`nix shell nixpkgs#wireguard-tools`). Public halves → `settings.nix` `network.wireguard.peers`; private+PSK halves → sops (`wireguard_server_private`, `wireguard_peer_<name>_{private,psk}`). Committed `9cd8bba`.
+- Set `profile_basic_auth` = htpasswd `dnanu:<hash>` (password in Memory.md); it now actually guards profile.nanulab.de.
+- Removed `network.tailscaleRoutes`; added `domains.vpn = "vpn.dnanu.de"`.
+- **DeepSeek-V4-Pro (nixos-builder) executed Phase A** → commit `eeeba8e`: new `modules/networking/wireguard.nix` (wg0, 12 peers, sops keys, QR-render oneshot → profile.nanulab.de/wg/, /wg/ nginx location); base.nix trustedInterfaces wg0 + UDP 51820; deleted tailscale.nix (NAT masquerade gone); sops.nix dropped tailscale_oauth; ddclient + cloudflare-dns sync add vpn.dnanu.de (grey cloud) and repoint *.nanulab.de to PUBLIC_IP4; ios-profile.nix retired dns.mobileconfig + added basicAuthFile.
+- **Verified by Flash:** `nix build` passes, 12 peers on wg0 with correct IPs, 41 sops secrets, tailscale_oauth removed, push clean.
+- Remaining: Phase B (AdGuard persistent-client WG ids), OpenCode.md §3.2/§3.3/§3.4/§6/§7/§10/§12/§13/§15/§16 amendments, docs (README/TODO/Changes/Memory), then human-approved deploy.
+- NOTE: cloudflare-dns repointed `*.nanulab.de` + bare `nanulab.de` A records to PUBLIC_IP4 (not deleted as the plan recommended). Plan flagged deletion for human veto — the executor chose repoint-to-public instead. Flagged for review before deploy.
