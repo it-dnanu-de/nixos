@@ -6,6 +6,8 @@ Created 2026-08-05 by Flash per Session Workflow.
 ## Goal
 Replace the Tailscale exit-node/"VPN for all devices" approach with a solution that gives **per-device DNS tracking in AdGuard query logs** (no more `127.0.0.1`, `fe80::1`, `10.0.0.2` noise), and fix the LAN AdGuard client-tracking issues. This **reopens a ✅ LOCKED decision** (OpenCode.md §3.3 Tailscale SaaS) — the plan must explicitly justify overriding it.
 
+**Order of work (human ruling 2026-08-05):** solve the Tailscale → VPN alternative FIRST, then figure out AdGuard afterwards. Do not entangle the two.
+
 ## Problem statement (what the human is unhappy with)
 1. **AdGuard client tracking broken on LAN** — queries show `fe80::1`, `127.0.0.1`, `10.0.0.2` because devices use the Speedport router (`10.0.0.1`) as DNS, which proxies to `10.0.0.2`. TODO: "each device needs `10.0.0.2` as direct DNS" via DHCP advertising `10.0.0.2` (not `10.0.0.1`).
 2. **IPv6 `fe80::1` noise** — Speedport announces itself as IPv6 DNS; mitigation = disable IPv6/RA on router (1% manual) or accept bypass.
@@ -14,14 +16,14 @@ Replace the Tailscale exit-node/"VPN for all devices" approach with a solution t
 
 ## What to deliver
 A plan that:
-1. **Evaluates alternatives** — Headscale (self-hosted Tailscale), Netbird, Twingate, pure WireGuard (wg-easy/wireguard-ui?), vs fixing Tailscale. Criteria: native NixOS module availability in pinned `nixos-26.05`, per-device DNS source-IP visibility in AdGuard, iOS client story (didn't appstore/native WireGuard), user management for non-technical family members (Dumitru, M, T, guests), 20-year maintainability, security posture, zero open ports.
+1. **Evaluates alternatives** — Headscale (self-hosted Tailscale), Netbird, Twingate, pure WireGuard (wg-easy/wireguard-ui?), vs fixing Tailscale. Criteria: native NixOS module availability in pinned `nixos-26.05`, per-device DNS source-IP visibility in AdGuard, iOS client story (didn't appstore/native WireGuard), user management for non-technical family members (Dumitru, M, T, guests), 20-year maintainability, security posture, zero open ports. **Headscale UI:** `github.com/gurucomputing/headscale-ui` exists (nice-to-have, not required — headscale must work standalone; check if a nixpkg exists for the UI).
 2. **Recommends one**, with justification vs the LOCKED Tailscale decision (what changes in OpenCode.md §3.3/§3.4/§10).
 3. **Fixes AdGuard LAN tracking** regardless of VPN choice — DHCP option to advertise `10.0.0.2` as DNS; AdGuard `clients.runtime_sources`; how to tag persistent clients so query logs show device names.
 4. **Maps affected files** — `modules/networking/tailscale.nix`, `modules/networking/adguard.nix`, `modules/services/ios-profile.nix`, `settings.nix`, `flake.nix` (new inputs), OpenCode.md amendments, Memory.md/TODO.md updates.
 5. **Stages the work** so the human can approve incrementally (AdGuard DHCP fix first — low risk, then the VPN swap).
 
 ## Constraints
-- Zero open ports on router except 25/tcp (OpenCode.md §3.2).
+- Zero open ports on router except 25/tcp (OpenCode.md §3.2). **EXCEPTION (human ruling 2026-08-05): if we go with the WireGuard/headscale setup, opening ports for those services is explicitly allowed** — plan should state exactly which ports the chosen VPN needs forwarded.
 - No containers unless sanctioned (Booklore is the only exception). VPN-confinement namespaces stay for torrent clients.
 - Declarative only — no bootstrap scripts poking APIs.
 - 99% of evaluation must be verifiable against pinned `nixos-26.05` (module names/options) before implementation.
@@ -38,4 +40,5 @@ A plan that:
 - `secrets/secrets.yaml` — any new secrets (sops)
 
 ## Model recommendation
-**GLM 5.2 (architect)** — this is an architecture decision + research task (evaluate alternatives, override a LOCKED choice, security-relevant network design). Not a Flash/Pro execution task. Escalate to **Kimi K3** for a security audit of the final chosen VPN solution if the plan reveals deep exposure concerns.
+**GLM 5.2 (architect)** — this is an architecture decision + research task (evaluate alternatives, override a LOCKED choice, security-relevant network design). Not a Flash/Pro execution task. **Final — do not escalate to Kimi K3** (human ruling 2026-08-05).
+**Execution (after plan approval):** DeepSeek-V4-Pro (nixos-builder).
