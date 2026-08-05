@@ -20,10 +20,11 @@
 
   networking.firewall = {
     enable = true;
-    # TCP 25: inbound SMTP, 53: AdGuard DNS, 443: nginx TLS vhosts (AdGuard UI,
-    # profile.nanulab.de — reachable over LAN/WiFi without VPN; router forwards
-    # only 25/51820 so 443 is effectively LAN-only), 465/587: submission, 993: IMAPS (LAN-only)
-    allowedTCPPorts = [ 25 53 443 465 587 993 ];
+    # TCP 25: inbound SMTP, 53: AdGuard DNS, 80: HTTP→HTTPS redirect (LAN-only),
+    # 443: nginx TLS vhosts (AdGuard UI, profile.nanulab.de — reachable over LAN/WiFi
+    # without VPN; router forwards only 25/51820 so 80/443 are effectively LAN-only),
+    # 465/587: submission, 993: IMAPS (LAN-only)
+    allowedTCPPorts = [ 25 53 80 443 465 587 993 ];
     # UDP 53: DNS, 67: AdGuard DHCP server, 51820: WireGuard (remote-access VPN — §3.3)
     allowedUDPPorts = [ 53 67 51820 ];
     # WireGuard interface — all traffic trusted (how admin UIs are reached, §3.3 superseded Tailscale).

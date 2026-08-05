@@ -10,5 +10,9 @@
     forceSSL = true;
     useACMEHost = "nanulab.de";
     basicAuthFile = config.sops.secrets.profile_basic_auth.path;
+    # Bare / has no content — send users straight to the WG QR table.
+    locations."= /" = {
+      return = "301 /wg/";
+    };
   };
 }
