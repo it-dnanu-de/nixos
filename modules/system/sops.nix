@@ -21,7 +21,12 @@
       nextcloud_admin_pass = {};
       vaultwarden_admin_token = {};
       slskd_env = {};
-      profile_basic_auth = {};
+      profile_basic_auth = {
+        # nginx (user nginx) reads this for basic auth on profile.nanulab.de — must be group-readable
+        owner = "root";
+        group = "nginx";
+        mode = "0440";
+      };
       mobileca_key = {};
       mobileca_cert = {};
       booklore_db_password = {};
