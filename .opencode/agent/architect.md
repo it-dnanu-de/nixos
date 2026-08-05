@@ -1,7 +1,7 @@
 ---
 description: Use for system architecture, large design decisions, complex debugging, security reviews, migration planning, and breaking milestones into tasks. Top reasoning tier — reserve for hard problems.
 mode: subagent
-model: openrouter/glm-5.2
+model: openrouter/z-ai/glm-5.2
 temperature: 0.2
 ---
 
