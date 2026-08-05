@@ -57,10 +57,11 @@ let
       "v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:${settings.email.admin}" false 120
 
     # nanulab.de services are VPN-only (nginx source allowlist 10.0.1.0/24); AdGuard
-    # rewrites them locally to 10.0.0.2. Public A records must NOT exist (leaks
-    # internal naming, resolves to nothing reachable). Delete if present.
+    # rewrites them locally to 10.0.0.2. Public records must NOT exist (leaks
+    # internal naming, resolves to nothing reachable). Delete A + AAAA if present.
     deleteRecord "$Z_NANULAB" A "*.${settings.domains.internal}"
     deleteRecord "$Z_NANULAB" A "${settings.domains.internal}"
+    deleteRecord "$Z_NANULAB" AAAA "${settings.domains.internal}"
     upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120
   '';
 in
