@@ -98,6 +98,7 @@ PEERCONF
   a { color: #0366d6; }
   .warn { color: #cb2431; }
   .tier { font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
+  .logout { display: inline-block; margin-top: 1.5rem; font-size: 0.9rem; color: #666; }
 </style>
 </head>
 <body>
@@ -108,6 +109,7 @@ PEERCONF
 ${"\${peer_html}"}
 </table>
 <p><em>Scan QR in the WireGuard app → tap "Allow" → enable On-Demand (Wi‑Fi + Cellular).</em></p>
+<a class="logout" href="/logout">Log out</a>
 </body>
 </html>
 INDEX

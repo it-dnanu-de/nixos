@@ -48,6 +48,16 @@
       '';
     };
 
+    # Logout — clears the Authelia session cookie, then back to the login flow.
+    locations."= /logout" = {
+      extraConfig = ''
+        proxy_pass http://127.0.0.1:9091/authelia/api/logout;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+      '';
+    };
+
     # Everything else under the vhost: gate via Authelia and serve the AUTHENTICATED
     # user's own files. root derives from $auth_user. try_files: real files
     # (dumitru-phone-vpn.png/.conf, linked relatively from index.html) resolve to
