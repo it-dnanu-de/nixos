@@ -13,10 +13,12 @@
     # NO basicAuthFile — Authelia auth_request replaces shared basic auth (§10).
 
     # /auth — internal endpoint for nginx auth_request to Authelia's verify endpoint.
+    # Authelia is mounted at /authelia (server.address path), so verify lives at
+    # /authelia/api/verify.
     locations."= /auth" = {
       extraConfig = ''
         internal;
-        proxy_pass http://127.0.0.1:9091/api/verify;
+        proxy_pass http://127.0.0.1:9091/authelia/api/verify;
         proxy_pass_request_body off;
         proxy_set_header Content-Length "";
         proxy_set_header X-Original-URL $request_uri;
@@ -27,9 +29,9 @@
       '';
     };
 
-    # /authelia/ — proxy to Authelia login UI.
+    # /authelia/ — proxy to Authelia login UI (mounted at /authelia on 9091).
     locations."/authelia/" = {
-      proxyPass = "http://127.0.0.1:9091/";
+      proxyPass = "http://127.0.0.1:9091";
       proxyWebsockets = true;
       extraConfig = ''
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

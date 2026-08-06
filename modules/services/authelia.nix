@@ -13,7 +13,7 @@
     settings = {
       theme = "dark";
       default_2fa_method = "totp";
-      server.address = "tcp://127.0.0.1:9091/";
+      server.address = "tcp://127.0.0.1:9091/authelia";
       log = {
         level = "info";
         format = "text";
