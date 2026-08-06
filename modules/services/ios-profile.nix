@@ -14,14 +14,15 @@
 
     # /auth — internal endpoint for nginx auth_request to Authelia's verify endpoint.
     # Authelia is mounted at /authelia (server.address path), so verify lives at
-    # /authelia/api/verify.
+    # /authelia/api/verify. X-Original-URL must be the FULL absolute URL — Authelia
+    # rejects sessions whose scheme isn't https (relative $request_uri breaks it).
     locations."= /auth" = {
       extraConfig = ''
         internal;
         proxy_pass http://127.0.0.1:9091/authelia/api/verify;
         proxy_pass_request_body off;
         proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URL $request_uri;
+        proxy_set_header X-Original-URL $scheme://$host$request_uri;
         proxy_set_header X-Original-Method $request_method;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
