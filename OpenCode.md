@@ -79,10 +79,10 @@ Dell-specific: `services.logind.lidSwitch = "ignore"` (lid closed ≠ suspend �
 ## 3. Network Architecture
 
 ### 3.1 Topology
-- Router: Telekom Speedport Smart 4 @ `10.0.0.1`. **DHCP (v4+v6) servers stay enabled but point their DNS server fields at AdGuard** (human-set per AGH setup guide, verified 2026-08-06). IPv6 stays on (mail + modern infra need it — §3.5).
-- Server: **static** `10.0.0.2/24`, gw `10.0.0.1`, declared in NixOS (`networking.interfaces.<if>.ipv4.addresses`). No ARP tricks.
-- **v3 user-block addressing (2026-08-06):** `users.nix` is the single source of truth for IP allocation. User blocks: admin (10.0.0.3-8 / 10.0.10.3-8, admin0=net addr, admin1=router, admin2=homelab=WG server), dumitru (.9-19), adela (.20-29), tiberiu (.30-39), david (.40-49), ramona (.50-59), tibisor (.60-69), iza (.70-79), kerem (.80-89), hannah (.90-99), guests (.100-250, no VPN).
-- AdGuard Home on the server becomes LAN DHCP + DNS.
+- Router: Telekom Speedport Smart 4 @ `10.0.0.1`. **DHCPv4 must be disabled** (DHCPv6 disabled-if-possible, else harmless coexistence — Kea serves only ULA). IPv6 stays on (mail + modern infra need it — §3.5).
+- Server: **static** `10.0.0.2/24`, gw `10.0.0.1`, ULA `fd10::2/64`, declared in NixOS (`networking.interfaces.<if>.ipv4.addresses`). No ARP tricks.
+- **v4 user-block addressing (2026-08-06):** `users.nix` is the single source of truth for IP allocation. Blocks: admin (0-9, admin0=net addr, admin1=router, admin2=homelab=WG server, admin3-9=devices), dumitru (.10-19), adela (.20-29), tiberiu (.30-39), david (.40-49), ramona (.50-59), tibisor (.60-69), iza (.70-79), kerem (.80-89), hannah (.90-99). Naming: base=[user] (no number), then [user]1-9. guests (.100-200, Kea DHCP pool, no VPN), .201-.254 unassigned.
+- **Kea** (`services.kea.dhcp4` + `services.kea.dhcp6`) is the LAN DHCP server. AdGuard Home is DNS-only. Kea dhcp4: pool `.100-.200`, 10 host reservations (real MACs only). Kea dhcp6: stateful ULA `fd10::/64`, pool `fd10::100-200`, DNS = `fd10::2`. GUA via Speedport SLAAC (accept_ra=1, no v6 forwarding). Server static ULA `fd10::2/64`.
 
 ### 3.2 Ports & Exposure — ✅ LOCKED
 
@@ -97,13 +97,13 @@ Dell-specific: `services.logind.lidSwitch = "ignore"` (lid closed ≠ suspend �
 
 Router column total: **25/tcp + 51820/udp only**.
 
-### 3.3 WireGuard — remote-access VPN — ✅ LOCKED (2026-08-05, supersedes Tailscale SaaS; v3 2026-08-06)
+### 3.3 WireGuard — remote-access VPN — ✅ LOCKED (2026-08-05, supersedes Tailscale SaaS; v4 2026-08-06)
 - Kernel WireGuard, `networking.wireguard.interfaces.wg0`, server `10.0.10.2/24` (mirroring LAN 10.0.0.2). No SaaS control plane. **No exit node** (split-tunnel only) — kills the WhatsApp/adguard-reachability/blocking-rate issues.
-- Peers fully declarative: derived from `users.nix` (hostname-vpn naming: `admin3-vpn`, `dumitru1-vpn`, etc.); public keys in `settings.network.wireguard.peerPublicKeys`; private keys and PSKs in sops (`wireguard_peer_<hostname>-vpn_{private,psk}`).
+- **97 peers fully pre-provisioned** (7 admin admin3-9-vpn + 90 user [user]+[user]1-9-vpn) with real keypairs. Spare slots: MAC=TODO, QR pre-rendered; claim = fill MAC + rebuild. Peers derived from `users.nix` helpers (wgPeers/wgPeerNames). Public keys in generated `wireguard-pubkeys.nix` (97 entries, committed). Private keys + PSKs in sops (`wireguard_peer_<hostname>-vpn_{private,psk}`, **194 keys**). Keygen via `scripts/gen-wg-keys.sh` (idempotent, two-pass v3→v4 rename).
 - Endpoint `vpn.dnanu.de` (grey cloud, ddclient-managed) — router forwards **UDP 51820 → 10.0.0.2** (already done, human confirmed 2026-08-05). WireGuard silently drops unauthenticated packets: the port answers no scans; no TLS/HTTP/control-plane surface exists.
 - Client configs push `DNS = 10.0.0.2` and `AllowedIPs = 10.0.0.0/24`: all DNS flows through the tunnel to AdGuard (per-device labels via static 10.0.10.x ids), internet traffic stays direct.
-- Reachability split: `*.nanulab.de` service vhosts are **VPN-only** (nginx source allowlist derived from `users.nix` — admin VPN 10.0.10.3-8, user VPN 10.0.10.3-99). AdGuard UI is admin-only (10.0.0.3-8 + 10.0.10.3-8). `profile.dnanu.de` is reachable over LAN/WiFi **without VPN** (cloudflared tunnel + Authelia).
-- Onboarding: activation oneshot (`wireguard-profile-render`) renders per-user `.conf` + QR PNGs → `/var/lib/mobileprofile/wg/<user>/`; served at `profile.dnanu.de/<user>/` behind Authelia. iOS = official WireGuard app → scan QR → enable On-Demand (WiFi+Cellular) once. No accounts — possession of the private key IS identity.
+- Reachability split: `*.nanulab.de` service vhosts are **VPN-only** (nginx source allowlist derived from `users.nix` — admin LAN 10.0.0.1-9 + VPN 10.0.10.3-9, user LAN 10.0.0.10-99 + VPN 10.0.10.3-99). AdGuard UI is admin-tier (admin LAN/VPN only). `profile.dnanu.de` is reachable over LAN/WiFi **without VPN** (cloudflared tunnel + Authelia).
+- Onboarding: activation oneshot (`wireguard-profile-render`) renders per-user `.conf` + QR PNGs → `/var/lib/mobileprofile/wg/<user>/`; served at `profile.dnanu.de/<user>/` behind Authelia. iOS = official WireGuard app → scan QR → enable On-Demand (WiFi+Cellular) once. No accounts — possession of the private key IS identity. Admin page shows 7 QRs (admin3-9-vpn), user pages show 10 QRs (all slots).
 - Former lock rationale (OAuth non-expiry, zero ports) superseded: exit-node side effects + dynamic 100.x IPs broke per-device DNS labeling; sovereignty preferred over zero-port purity.
 - Fallback: headscale + headplane (both native modules, verified in pinned 26.05: headscale 0.28.0, headplane 0.6.2) if self-service multi-device enrollment is ever needed — §15.
 
@@ -117,10 +117,13 @@ Router column total: **25/tcp + 51820/udp only**.
   - `vpn.dnanu.de` A → dynamic home IP (grey cloud, ddclient). WireGuard endpoint.
   - `mail.dnanu.de` A → dynamic home IP (grey cloud, ddclient). **Must stay unproxied or SMTP dies.**
 - Result: on VPN or LAN, `mail.dnanu.de`/`*.nanulab.de` hit `10.0.0.2` directly; off VPN, only `:25` exists. iOS Mail syncs when WireGuard is on — accepted behavior.
-- AdGuard UI (`adguard.nanulab.de`) is **admin-IP-only** (nginx allowlist: 10.0.0.3-8 + 10.0.10.3-8). All LAN/VPN devices use AdGuard as DNS on :53 irrespective of tier.
+- AdGuard UI (`adguard.nanulab.de`) is **admin-IP-only** (nginx allowlist: 10.0.0.1-9 + 10.0.10.3-9). All LAN/VPN devices use AdGuard as DNS on :53 irrespective of tier.
+- **Dead-name handling:** `*.nanulab.de` wildcard rewrite kept (adguard + future services). nginx catch-all `default_server` on 0.0.0.0:443+:80 returns **404** — unmatched `*.nanulab.de` hosts (e.g. `profile.nanulab.de`) no longer leak the AdGuard dashboard. AGH DNS-only, `runtime_sources.dhcp=false` (Kea manages DHCP).
 
 ### 3.5 LAN IPv6 caveat
 IPv6 **stays enabled** (human ruling 2026-08-05: needed for mail + modern infra; Speedport cannot disable it anyway). Speedport's DHCPv6 server points its DNS at AdGuard (human-set, verified 2026-08-06). Residual `fe80::1` RDNSS noise is accepted; if the Speedport relays IPv6 DNS, mitigate via AdGuard persistent-client tagging of the router address. DNS correctness comes from the DHCPv4/DHCPv6 server fields pointing at AdGuard, not from disabling IPv6.
+
+Kea dhcp6: stateful ULA `fd10::/64`, pool `fd10::100-200`, v6 DNS = `fd10::2`, domain-search = `lan`. GUA via Speedport SLAAC unchanged (accept_ra=1, no v6 forwarding). Server static ULA `fd10::2/64`. Android ignores DHCPv6 → covered by v4 DNS (10.0.0.2 from Kea dhcp4). Coexistence with Speedport DHCPv6: disjoint namespaces (GUA vs ULA), both DNS → AdGuard — harmless.
 
 ### 3.6 Cloudflare Tunnel (blogs only)
 `services.cloudflared.tunnels."<id>"` with `credentialsFile` from sops; ingress: `dnanu.de`, `www.dnanu.de`, `autoconfig.dnanu.de` → `http://127.0.0.1:8080`; default `http_status:404`. Tunnel routes created once in CF dashboard (1% manual) or via API.
@@ -221,14 +224,16 @@ All media services + nextcloud + immich get supplementary group `media`; dirs `r
 nixos-homelab/
 ├── flake.nix              # inputs: nixpkgs(26.05), sops-nix, disko, vpn-confinement, simple-nixos-mailserver
 ├── settings.nix           # THE user file: domains, IPs, email, vpn.forwardedPort, zfsArcMax, sshPubKey, hostId
-├── users.nix              # v3: single source of truth for users, devices, and IP allocation
+├── users.nix              # v4: single source of truth for users, devices, and IP allocation (100 explicit entries)
+├── wireguard-pubkeys.nix  # GENERATED — 97 WG public keys (committed, not secret)
+├── scripts/gen-wg-keys.sh # idempotent WG key management script
 ├── secrets/secrets.yaml   # sops-encrypted, safe to commit
 ├── .sops.yaml             # age public key
 ├── hosts/
 │   ├── homelab/{configuration.nix,hardware-configuration.nix,disko.nix}
 │   └── installer/         # custom ISO w/ ssh key for nixos-anywhere
 └── modules/
-    ├── networking/{wireguard,cloudflare,nginx,ddclient,adguard}.nix
+    ├── networking/{wireguard,cloudflare,nginx,ddclient,adguard,kea}.nix
     ├── services/{mail,nextcloud,media,arr-stack,vpn,vaultwarden,smart-home,monitoring}.nix
     ├── system/{zfs,users,backups,sops}.nix
     └── mobile-profile.nix
@@ -236,7 +241,7 @@ nixos-homelab/
 
 ## 7. Secrets Inventory (sops-nix)
 
-`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey_hash`, `mail_admin_hash`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `authelia_jwt`, `authelia_storage_key`, `authelia_users_yaml` (10 users: admin + 9 regular), `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<hostname>-vpn_private`, `wireguard_peer_<hostname>-vpn_psk` (13 peers × 2, hostname-vpn naming — §3.3).
+`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey_hash`, `mail_admin_hash`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `authelia_jwt`, `authelia_storage_key`, `authelia_users_yaml` (10 users: admin + 9 regular), `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<hostname>-vpn_private`, `wireguard_peer_<hostname>-vpn_psk` (97 peers × 2 = **194** WG keys; `[user]-vpn`/`[user]1-9-vpn` naming — §3.3).
 
 ## 8. TLS
 
@@ -247,7 +252,8 @@ nixos-homelab/
 | Service | Module | URL (VPN only unless noted) | Notes |
 |---|---|---|---|
 | Nginx | `services.nginx` | — | reverse proxy, ACME integration |
-| AdGuard Home | `services.adguardhome` | `adguard.nanulab.de` (admin-IP-only) | `mutableSettings=false`; DHCP declarative; static leases via `leases.json` (AGH drops YAML key); disable `systemd-resolved` (port 53 clash) |
+| AdGuard Home | `services.adguardhome` | `adguard.nanulab.de` (admin-IP-only) | `mutableSettings=false`; DNS-only (DHCP retired to Kea — Decision B); binds `0.0.0.0` and `::`; persistent clients via isPeer + infra entry |
+| Kea | `services.kea.dhcp4` + `services.kea.dhcp6` | — | LAN DHCPv4 + DHCPv6 (ULA `fd10::/64`); 10 host reservations; ctrl-agent/dhcp-ddns disabled; note: option names carry no `-server` suffix (that's only systemd unit names) |
 | WireGuard | `networking.wireguard` | — | §3.3 |
 | ddclient | `services.ddclient` | — | protocol cloudflare, `passwordFile`=sops, interval 300s, `use=web` |
 | cloudflared | `services.cloudflared` | — | §3.6 |
@@ -276,7 +282,7 @@ nixos-homelab/
 
 1. Human generates a root CA **on the Mac** (`openssl` commands in README); key+cert stored in sops (`mobileca_*`). **Never** generate in a Nix build — `/nix/store` is world-readable. (I will not generate a root CA on my mac, mac's dead as of now, need to buy a new one, unsigned certs are also fine for now)
 2. Systemd oneshot renders a static `.mobileconfig` (payloads: IMAP `mail.dnanu.de:993` SSL, SMTP `mail.dnanu.de:465` SSL, CalDAV + CardDAV → `cloud.nanulab.de/remote.php/dav`, embedded CA cert payload, **no passwords** — iOS prompts at install), signs it via `openssl smime -sign` with the CA, writes to `/var/lib/mobileprofile/`.
-3. nginx serves it at `profile.dnanu.de` behind Authelia (`auth_request`). The standalone DNS `.mobileconfig` was **retired 2026-08-06** — DNS now rides in the WireGuard peer configs (on LAN, DHCP hands out AdGuard). The `profile.dnanu.de` vhost also serves per-user WireGuard configs + QR PNGs: `profile.dnanu.de/<user>/` (wireguard-profile-render oneshot). Authelia has 10 users (admin + 9 regular).
+3. nginx serves it at `profile.dnanu.de` behind Authelia (`auth_request`). The standalone DNS `.mobileconfig` was **retired 2026-08-06** — DNS now rides in the WireGuard peer configs (on LAN, DHCP hands out AdGuard). The `profile.dnanu.de` vhost also serves per-user WireGuard configs + QR PNGs: `profile.dnanu.de/<user>/` (wireguard-profile-render oneshot). Profile pages list ALL of a user's slots: admin sees 7 QRs (admin3-9-vpn), users see 10 QRs (all 10 slots). Spare slots (MAC=TODO) get pre-rendered QRs. Authelia has 10 users (admin + 9 regular).
 4. Flow: VPN or LAN on → open `profile.dnanu.de` → Authelia login → download → Settings → install → enable trust for the CA → Mail/Calendar/Contacts work (while WireGuard is on). Service TLS is real Let's Encrypt — the CA exists only for the "Verified" badge.
 
 ## 11. Backups (Restic → Backblaze B2)
@@ -292,11 +298,11 @@ nixos-homelab/
 
 **On the Mac (once):** generate age keypair (private → USB + password manager); generate mobile CA; clone repo; edit `settings.nix`; `sops secrets/secrets.yaml` to fill §7; commit.
 **Install:** boot NixOS ISO on Dell (ethernet) → start sshd, set password → from Mac: `nix run github:nix-community/nixos-anywhere -- --flake .#homelab --extra-files <dir-with-age-key> root@<ip>` → disko formats, installs, reboots.
-**1% manual (~45 min):** verify UDP 51820 forward (done 2026-08-05); keep Speedport DHCPv4/DHCPv6 pointing at AdGuard + IPv6 enabled; fill iza/kerem/hannah MACs in `users.nix`; distribute WireGuard QRs (new per-user URLs at `profile.dnanu.de/<user>/`) + enable On-Demand per device + distribute Authelia passwords (10 users: admin + 9 regular); revoke the Tailscale OAuth client + remove machines (Tailscale console); create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; publish DS records at registrar (both zones, §3.7).
+**1% manual (~45 min):** disable Speedport DHCPv4 (+DHCPv6 if UI allows); **switch dumitru iPhone off manual 10.0.0.3 → DHCP** (Kea reservation hands it 10.0.0.10 — arch and iPhone must not be on LAN together until this is done); verify UDP 51820 forward (done 2026-08-05); keep Speedport DHCPv4/DHCPv6 pointing at AdGuard + IPv6 enabled; fill iza/kerem/hannah MACs in `users.nix`; re-scan ALL WG QRs post-deploy (v4 names+IPs changed; deployed gen45 is v2 10.0.1.x so every device re-imports anyway); distribute Authelia passwords (10 users: admin + 9 regular); optional `rm /var/lib/AdGuardHome/leases.json` (stale, harmless in Kea era); revoke the Tailscale OAuth client + remove machines (Tailscale console); create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; publish DS records at registrar (both zones, §3.7).
 
 ## 13. Verification Suite (run after install)
 
-`zpool status` · `wg show` (handshakes < 2 min old for active peers, peers at 10.0.10.x) · `cat /var/lib/AdGuardHome/leases.json | jq '.leases[] | select(.static==true)'` (all static leases present) · `dig @10.0.0.2 mail.dnanu.de` (→10.0.0.2) · `dig mail.dnanu.de @1.1.1.1` (→home IP) · `dig vpn.dnanu.de @1.1.1.1` (→home IP) · cellular with tunnel up: `dig cloud.nanulab.de` → 10.0.0.2 and `curl -I https://cloud.nanulab.de` works · `curl -I https://profile.dnanu.de/admin/` (admin sees admin3-vpn QR) · nginx ACL: guest IP → 403 on all vhosts · AdGuard query log shows 10.0.10.x sources labeled with device names · `swaks --to hey@dnanu.de --server <home-ip>` from outside · send via iOS → check Resend dashboard · LAN: fresh lease has DNS 10.0.0.2, no `127.0.0.1`/`10.0.0.1` entries in query log (`fe80::1` IPv6 noise tolerated per §3.5) · torrent IP-leak test in qBittorrent · `restic check` · lid-close test · `systemctl --failed` empty · `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set) · `delv dnanu.de`.
+`zpool status` · `wg show` (handshakes < 2 min old for active peers, peers at 10.0.10.x, 97 peers listed) · `systemctl status kea-dhcp4-server kea-dhcp6-server` · Kea leases: arch=`10.0.0.3`, dumitru iPhone=`10.0.0.10`, Xbox=`10.0.0.41`, Samsung TV=`10.0.0.21` (`journalctl -u kea-dhcp4-server`) · `dig @10.0.0.2 mail.dnanu.de` (→10.0.0.2) · `dig mail.dnanu.de @1.1.1.1` (→home IP) · `dig vpn.dnanu.de @1.1.1.1` (→home IP) · `dig @fd10::2 cloud.nanulab.de` → 10.0.0.2 · cellular with tunnel up: `dig cloud.nanulab.de` → 10.0.0.2 and `curl -I https://cloud.nanulab.de` works · `curl -I https://profile.dnanu.de/admin/` (admin sees 7 QRs: admin3-9-vpn) · nginx ACL: guest IP → 403 on all vhosts · `curl -k https://profile.nanulab.de` → **404** (catch-all) · AdGuard query log shows 10.0.10.x sources labeled with device names · `swaks --to hey@dnanu.de --server <home-ip>` from outside · send via iOS → check Resend dashboard · LAN: fresh guest lease ∈ .100-.200 · torrent IP-leak test in qBittorrent · `restic check` · lid-close test · `systemctl --failed` empty · `dig +dnssec +adflag dnanu.de @9.9.9.9` (AD bit set) · `delv dnanu.de`.
 
 ## 14. Update Policy
 

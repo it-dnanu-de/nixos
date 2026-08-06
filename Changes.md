@@ -1,32 +1,34 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
-## 2026-08-06 — Network v3 executed (user-block addressing, users.nix, AGH DHCP fix, WG 10.0.10.x)
+## 2026-08-06 — Network v4 executed: [user]1-9 naming, 97-peer WG, Kea DHCP, AGH DNS-only
 
-### Phase A: `users.nix` + `flake.nix` + `settings.nix`
-- Created `users.nix` at repo root — single source of truth for 10 users, blocks, devices (hostname + MAC), `userToIps` helper.
-- `flake.nix`: `users = import ./users.nix;` in `specialArgs`.
-- `settings.nix`: WG subnet `10.0.10.0/24`, server `10.0.10.2`, `peerPublicKeys` map (hostname→public key), removed hardcoded `peers` + `adminLan`.
+### Phase A: users.nix v4 + 97-peer keygen + settings/wireguard v4
+- `users.nix` v4: 10 explicit device entries per user (100 total), base=[user] + [user]1-9. Blocks shifted: admin=0, dumitru=10, adela=20, ... hannah=90. admin0/1/2 have role=infra/server (not WG peers). Guests .100-.200.
+- Helpers in pure builtins: `isPeer`, `wgPeers` (97), `wgPeerNames`, `dhcpReservations` (10 real-MAC entries). `userToIps` unchanged.
+- `scripts/gen-wg-keys.sh`: idempotent two-pass v3→v4 rename (12 pairs × 2 suffixes = 20 keys staged/renamed, values preserved) + generate 84 missing peers (168 keys). Self-checks: 194 sops keys, 97 pubkeys.
+- `wireguard-pubkeys.nix`: 97 entries generated, committed (public keys are not secret).
+- `settings.nix`: peerPublicKeys = import ./wireguard-pubkeys.nix. Comment refreshed for v4.
+- `wireguard.nix`: peers = users.wgPeers (97). Strict publicKey lookup (no REPLACE_ME fallback).
+- Build: exit 0, zero new warnings. Commit: `9d5a473`
 
-### Phase B: AdGuard DHCP fix + `adguard.nix`
-- **AGH 0.107.78 root cause:** static_leases silently dropped from YAML (Go struct has no field).
-- **Fix:** removed `dhcp.static_leases`; added `systemd.services.adguardhome.preStart` writing `leases.json` from `users.nix` via `builtins.toJSON`. Only devices with real MACs (not `"TODO"`).
-- DHCP guest range: `10.0.0.100-250`.
-- Persistent clients: IP-only ids from `users.nix` (LAN+VPN), `user_admin`/`user_regular` tags.
+### Phase B: Kea DHCP migration (Decision B)
+- New `modules/networking/kea.nix`: services.kea.dhcp4 (pool .100-.200, 10 host reservations from users.nix dhcpReservations, options routers/domain-name-servers/domain-name) + services.kea.dhcp6 (ULA fd10::/64, pool fd10::100-200, dns-servers=fd10::2, domain-search=lan). Option names verified: NO -server suffix.
+- `adguard.nix`: removed dhcp block + leases.json preStart. bind_hosts += "::". runtime_sources.dhcp = false. Persistent clients rebuilt via isPeer filter + infra entry (router 10.0.0.1, server 10.0.0.2 + 10.0.10.2).
+- `base.nix`: ULA fd10::2/64 on enp10s0, accept_ra=1 sysctl (keep SLAAC GUA), firewall UDP 547.
+- `configuration.nix`: import kea.nix.
+- Build: exit 0, zero new warnings. Gates: kea.dhcp4.enable=true, 10 subnet4 reservations, AGH no dhcp key. Commit: `694ccc9`
 
-### Phase C: WireGuard v3 + sops rename
-- `wireguard.nix`: peers derived from `users.nix` (hostname-vpn naming: `admin3-vpn`, `dumitru1-vpn`, etc.), WG subnet `10.0.10.0/24`.
-- sops: 26 keys renamed (13 peers × 2), values preserved.
+### Phase C: nginx ACL v4 + dead-name catch-all
+- `nginx.nix`: ACL allowlists derived via isPeer filter. Admin: LAN .1-.9 + VPN 10.0.10.3-9. User: LAN .1-.99 + VPN 10.0.10.3-99.
+- Catch-all vhost: serverName "_", default=true on 0.0.0.0:443+80, addSSL with *.nanulab.de cert, return 404. Fixes dead-name fall-through (profile.nanulab.de was leaking AdGuard dashboard).
+- ios-profile.nix / authelia.nix verified consistent: per-user renderer shows all peers (admin=7 QRs, users=10 QRs).
+- Build: exit 0, zero new warnings. Commit: `46992dc`
 
-### Phase D: Authelia admin + nginx ACL v3
-- `authelia_users_yaml`: added 10th user `admin` (bcrypt hash, groups: [admin]). Password in Memory.md.
-- `nginx.nix`: ACL helpers derive admin/user allowlists from `users.nix`. Admins: 10.0.0.3-8 + 10.0.10.3-8. Users: 10.0.0.9-99 + 10.0.10.9-99. Guests denied.
-
-### Phase E: Docs
-- OpenCode.md §3.1, §3.3, §3.4, §6, §7, §9, §10, §12, §13 — v3 amendments.
-- README: status update. Memory.md: WG v3 + admin password. Changes.md (this file).
-
-**Build:** clean `nix build` exit 0, zero deprecation warnings.
-**Commit:** `bc4d815` — all 5 phases in one commit.
+### Phase D: Docs
+- OpenCode.md: §3.1 (Kea DHCP, v4 blocks, ULA), §3.3 (97 peers, full pre-provision), §3.4 (AGH DNS-only, catch-all 404), §3.5 (Kea DHCPv6, ULA), §6 (users.nix v4, wireguard-pubkeys.nix, scripts/), §7 (194 WG keys), §9 (Kea row, AGH DNS-only), §10 (profile pages list all slots), §12 (deploy: disable Speedport DHCPv4, iPhone DHCP, QR re-scan), §13 (Kea verification, catch-all 404, 97 peers check).
+- README: v4 status update.
+- Memory.md: v4 facts (naming, 97 peers, renames, Kea option-name correction, ULA fd10::/64, iPhone-manual-IP, AGH-DHCP-retired, sops set/unset workflow).
+- Changes.md: this file.
 
 ---
 (previous session history preserved below)
