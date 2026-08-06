@@ -221,7 +221,7 @@ in
       NoNewPrivileges = true;
       PrivateTmp = true;
     };
-    path = with pkgs; [ curl jq ];
+    path = with pkgs; [ curl jq inetutils ];
     script = ''
       set -euo pipefail
       body="cloudflare-tlsa-sync FAILED on $(hostname) — check journal for details."
