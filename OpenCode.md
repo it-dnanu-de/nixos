@@ -156,6 +156,7 @@ Speedport cannot disable it anyway).
 - **simple-nixos-mailserver** (Postfix + Dovecot + Rspamd): IMAP 993, submission 465 (SMTPS) + 587, LMTP, ManageSieve.
 - **Nextcloud** provides CalDAV/CardDAV/WebDAV + Mail web app. Stalwart is **not** used.
 - Inbound: port 25 direct. Outbound: Resend relay. No VPS relay. Accepted risk: Telekom inbound-25 flakiness → add Beszel/mail-queue health check.
+- **Hardening (2026-08-06):** postfix helo/sender/recipient RFC-conformance restrictions; rspamd reject=12 + stock RBLs (spamhaus off — public resolver path); TLS-RPT (`mailserver.tlsrpt`) + DMARC reporting (`mailserver.dmarcReporting`) both enabled; outbound Resend path pinned to `verify` via static tls_policy ahead of tlspol; DANE TLSA 3 1 1 auto-synced from the ACME cert; queue watchdog alerts via Resend API.
 
 ### 4.2 Accounts — ✅ LOCKED
 ```nix
@@ -185,13 +186,19 @@ SNM has no relay option; use Postfix directly:
 ```nix
 services.postfix = {
   mapFiles."sasl_passwd" = sopsTemplate; # "[smtp.resend.com]:465 resend:re_APIKEY" — rendered from sops, mode 0600
+  # Static TLS policy — verify (CA+hostname) beats the tlspol socketmap for the relay.
+  mapFiles."tls_policy" = pkgs.writeText "tls_policy" ''
+    [smtp.resend.com]:465 verify
+    smtp.resend.com verify
+  '';
   settings.main = {
     relayhost = "[smtp.resend.com]:465";
     smtp_sasl_auth_enable = "yes";
     smtp_sasl_password_maps = "hash:/etc/postfix/sasl_passwd";
     smtp_sasl_security_options = "noanonymous";
     smtp_tls_wrappermode = "yes";
-    smtp_tls_security_level = "encrypt";
+    # REMOVED: smtp_tls_security_level = "encrypt";  (global level now "dane" via SNM+tlspol; per-destination TLS via tls_policy+tlspol)
+    smtp_tls_policy_maps = lib.mkBefore [ "hash:/var/lib/postfix/conf/tls_policy" ];
   };
 };
 ```
@@ -208,11 +215,31 @@ services.postfix = {
 | MX | `nanulab.de` | `mail.dnanu.de` prio 10 |
 | TXT | `dnanu.de` | `v=spf1 -all` (nothing sends with envelope @dnanu.de; Resend uses its `send.` subdomain) ⚠️ VERIFY against Resend's domain-verification records and copy theirs exactly |
 | TXT/CNAME | per Resend dashboard | DKIM + SPF for `send.dnanu.de` |
-| TXT | `_dmarc.dnanu.de` | `v=DMARC1; p=quarantine; rua=mailto:admin@nanulab.de` → `p=reject` after 1 month |
+| TXT | `_dmarc.dnanu.de` | `v=DMARC1; p=quarantine; rua=mailto:admin@dnanu.de` → `p=reject` after 1 month |
+| TXT | `_mta-sts.dnanu.de` | `v=STSv1; id=20260806T000000` — MTA-STS policy lookup (RFC 8461) |
+| CNAME | `mta-sts.dnanu.de` | `<tunnel-id>.cfargotunnel.com` (proxied) — serves .well-known/mta-sts.txt |
+| TXT | `_smtp._tls.dnanu.de` | `v=TLSRPTv1; rua=mailto:admin@dnanu.de` — TLS-RPT reporting (RFC 8460) |
+| TLSA | `_25._tcp.mail.dnanu.de` | `3 1 1 <auto-synced SPKI hash>` — DANE EE (RFC 6698), auto-updated via cloudflare-tlsa-sync |
 | — | `*.nanulab.de` / `nanulab.de` | **no public A records** (VPN-only; AdGuard rewrites locally — §3.4) |
-| CNAME | `dnanu.de`, `www`, `autoconfig` | `<tunnel-id>.cfargotunnel.com` (proxied ✅) |
+| CNAME | `dnanu.de`, `www`, `autoconfig`, `mta-sts` | `<tunnel-id>.cfargotunnel.com` (proxied ✅) |
 
 `autoconfig.dnanu.de/mail/config-v1.1.xml`: static XML (Thunderbird auto-setup) served by the blogs nginx vhost.
+
+### 4.5 Hardening & monitoring notes
+
+**DANE TLSA (D1):** `3 1 1` (DANE-EE / SPKI / SHA-256), fully automated via `cloudflare-tlsa-sync` — computes cert SPKI hash, upserts TLSA record via CF API. Triggers: ACME `postRun` (renewal), daily persistent timer, boot. Gap: TTL 120s, DANE-enforcing senders tempfail+retry. **DANE only activates once the zone's DS record is published at DENIC** — until then, the unsigned zone means TLSA is ignored (safe to publish now).
+
+**RBL policy (D2):** rspamd-side only. Stock free lists (mailspike, dnswl, spameatingmonkey, blocklist.de, virusfree, SURBL/URIBL/DBL) active; spamhaus explicitly disabled (unreachable via public resolvers). No `reject_rbl_client` in postfix (duplicates rspamd, risks false-positives from block codes).
+
+**MTA-STS (D3):** Dedicated `mta-sts.dnanu.de` vhost on nginx 127.0.0.1:8080, fronted by cloudflared tunnel. Policy: `mode: enforce, max_age: 86400`. World-readable.
+
+**Postfix restrictions (D4):** RFC-conformance checks only — helo required, non-FQDN/invalid helo rejected, non-FQDN sender/recipient rejected, unknown sender/recipient domain rejected, unauth pipelining rejected. No `reject_unknown_helo_hostname` (legit-but-sloppy senders), no `strict_rfc821_envelopes`, no sender callout, no postscreen.
+
+**Outbound TLS (D5):** Static `verify` policy for `[smtp.resend.com]:465` in `tls_policy` map (prepended before tlspol socketmap). Upgrade from unverified encryption to CA+hostname-verified TLS on the money path.
+
+**Monitoring (D6):** `mail-queue-watch` timer (15 min) alerts via Resend HTTPS API to `hey@dnanu.de` if postfix/dovecot/rspamd down, queue >2, or oldest >30 min. Rate-limited (6 h cooldown). Independent of local postfix — works when queue IS the problem.
+
+**DMARC (D7):** `p=quarantine` now; flip to `p=reject` after 30-day clean report window.
 
 ## 5. Storage (ZFS + disko)
 
@@ -314,7 +341,7 @@ nixos-homelab/
 
 **On the Mac (once):** generate age keypair (private → USB + password manager); generate mobile CA; clone repo; edit `settings.nix`; `sops secrets/secrets.yaml` to fill §7; commit.
 **Install:** boot NixOS ISO on Dell (ethernet) → start sshd, set password → from Mac: `nix run github:nix-community/nixos-anywhere -- --flake .#homelab --extra-files <dir-with-age-key> root@<ip>` → disko formats, installs, reboots.
-**1% manual (~45 min):** disable Speedport DHCPv4 (+DHCPv6 if UI allows); **switch dumitru iPhone off manual 10.0.0.3 → DHCP** (Kea reservation hands it 10.0.0.10 — arch and iPhone must not be on LAN together until this is done); verify UDP 51820 forward (done 2026-08-05); keep Speedport DHCPv4/DHCPv6 pointing at AdGuard + IPv6 enabled; fill iza/kerem/hannah MACs in `users.nix`; re-scan ALL WG QRs post-deploy (v4 names+IPs changed; deployed gen45 is v2 10.0.1.x so every device re-imports anyway); distribute Authelia passwords (10 users: admin + 9 regular); optional `rm /var/lib/AdGuardHome/leases.json` (stale, harmless in Kea era); revoke the Tailscale OAuth client + remove machines (Tailscale console); create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; publish DS records at registrar (both zones, §3.7).
+**1% manual (~45 min):** disable Speedport DHCPv4 (+DHCPv6 if UI allows); **switch dumitru iPhone off manual 10.0.0.3 → DHCP** (Kea reservation hands it 10.0.0.10 — arch and iPhone must not be on LAN together until this is done); verify UDP 51820 forward (done 2026-08-05); keep Speedport DHCPv4/DHCPv6 pointing at AdGuard + IPv6 enabled; fill iza/kerem/hannah MACs in `users.nix`; re-scan ALL WG QRs post-deploy (v4 names+IPs changed; deployed gen45 is v2 10.0.1.x so every device re-imports anyway); distribute Authelia passwords (10 users: admin + 9 regular); optional `rm /var/lib/AdGuardHome/leases.json` (stale, harmless in Kea era); revoke the Tailscale OAuth client + remove machines (Tailscale console); create Nextcloud admin + link Mail app to local IMAP; Jellyfin/Navidrome/ABS/Booklore admin accounts + libraries; Prowlarr indexers; connect *arrs to qBittorrent/SABnzbd/slskd; Seerr↔Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key; **run mail-tester.com + internet.nl after mail deploy; flip DMARC to `p=reject` after 30 clean days; publish DS records at registrar (both zones, §3.7, activates DANE).**
 
 ## 13. Verification Suite (run after install)
 
@@ -326,7 +353,7 @@ Quarterly: `nix flake update` → build → test → switch. Rollback via boot m
 
 ## 15. Phase 2 Backlog (documented, NOT built)
 
-Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale + headplane UI (both native, verified 26.05 — if declarative WG peer management ever becomes a burden; needs TCP 8443 forward, preauth keys or an OIDC IdP, iOS via Tailscale app's alternate-server setting), MTA-STS/TLS-RPT, multi-user mailboxes.
+Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale + headplane UI (both native, verified 26.05 — if declarative WG peer management ever becomes a burden; needs TCP 8443 forward, preauth keys or an OIDC IdP, iOS via Tailscale app's alternate-server setting), multi-user mailboxes. DANE TLSA active once DS published at DENIC (§3.7).
 
 ## 16. Key References
 
@@ -338,7 +365,9 @@ Nextcloud Talk (needs TURN+ports), MeTube/Pinchflat, IPTV, Headscale + headplane
 - Beszel/slskd/seerr modules: nixpkgs `services.beszel.{hub,agent}`, `services.slskd`, `services.seerr` (26.05)
 - Booklore: https://github.com/booklore-app/booklore · soularr: https://github.com/mrusse/soularr · Hugo: https://gohugo.io · rreading-glasses mirror for Readarr metadata
 - WireGuard: https://www.wireguard.com · headscale: https://github.com/juanfont/headscale · headplane: https://github.com/tale/headplane (Tailscale/100.x links historical, pre-2026-08-05)
-- Beszel/slskd/seerr modules: nixpkgs `services.beszel.{hub,agent}`, `services.slskd`, `services.seerr` (26.05)
+- Mail hardening RFCs: RFC 8460 (TLS-RPT), RFC 8461 (MTA-STS), RFC 6698 (DANE TLSA), RFC 7489 (DMARC), RFC 7208 (SPF), RFC 6376 (DKIM)
+- Rspamd: https://rspamd.com · SNM rspamd integration: https://nixos-mailserver.readthedocs.io/en/latest/
+- Resend API (watchdog): https://resend.com/docs/api-reference/emails/send-email
 # Ruling by Kimi K3 for Kimi K3 in Claude Code Harness
 ## Final Rulings (Blueprint v3)
 

@@ -1,5 +1,44 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-06 — Enterprise Mail Hardening (Kimi K3 plan, nixos-builder execution)
+
+### Phase A: DNS records + MTA-STS serving + DKIM fix
+- `cloudflare-dns.nix`: Added upserts for _mta-sts TXT, _smtp._tls TXT, mta-sts CNAME.
+- `cloudflare-dns.nix`: Replaced cloudflare-dkim-sync — IDEMPOTENT grep-based parser (no paren bug),
+  Restart=on-failure (survives boot DNS races), after=rspamd.service, PATCH-in-place (no delete gap).
+- `cloudflare-dns.nix`: Added cloudflare-tlsa-sync service + timer (DANE 3 1 1, auto-synced from ACME cert).
+- `cloudflare.nix`: Added mta-sts.dnanu.de → 127.0.0.1:8080 ingress rule.
+- `mail.nix`: Added MTA-STS nginx vhost (world-readable, mode=enforce, serve via cloudflared).
+- Build: exit 0, zero warnings. Commit: `2a3b978`
+
+### Phase B: postfix/rspamd hardening
+- `mail.nix`: Added systemContact, tlsrpt.enable, dmarcReporting.enable to mailserver.
+- `mail.nix`: Static tls_policy map with `[smtp.resend.com]:465 verify` (upgraded from unverified encrypt).
+- `mail.nix`: Removed `smtp_tls_security_level = lib.mkForce "encrypt"` (tlspol + tls_policy handle it now).
+- `mail.nix`: RFC-conformance restrictions — helo_required + reject_non_fqdn_helo/invalid_helo/sender/recipient + unknown_sender/recipient_domain + unauth_pipelining. Minimal, FP-safe.
+- `mail.nix`: rspamd locals — reject 15→12 (actions.conf), spamhaus disabled (rbl.conf, unreachable via public resolvers).
+- Verified: services.tlsrpt.enable=true, dmarcReporting.enable=true, systemContact="admin@dnanu.de".
+- Build: exit 0, zero warnings. Commit: `4897a60`
+
+### Phase C: ACME TLSA hook
+- `acme.nix`: Added pkgs to module args; certs.mail.dnanu.de.postRun triggers cloudflare-tlsa-sync (--no-block, || true).
+- postRun fires only on actual renewal (nixpkgs checks for renewed marker dir).
+- Build: exit 0, zero warnings. Commit: `f1acb1b`
+
+### Phase D: Monitoring
+- `mail.nix`: mail-queue-watch oneshot + timer (every 15 min). Checks: postfix/dovecot2/rspamd active, queue >2, oldest >30 min.
+- Alerts via Resend HTTPS API (independent of local postfix). Rate-limited: one alert per 6h.
+- Added pkgs.postfix to service path (postqueue binary).
+- Build: exit 0, zero warnings. Commit: `4b69638`
+
+### Phase E: Docs
+- OpenCode.md: §4.1 hardening note, §4.3 updated relay config + tls_policy, §4.4 DNS table (MTA-STS/TLS-RPT/TLSA rows + DMARC rua fix), §4.5 new (D1-D7 hardening & monitoring notes), §12 1% manual (mail-tester/internet.nl + DMARC flip + DS/DANE activation note), §15 (remove MTA-STS/TLS-RPT from backlog, add DANE activation cross-note), §16 (RFC 8460/8461/6698/7489 references + Resend API).
+- README: Updated status — mail hardening phase, expanded "what works" with new features.
+- Changes.md: This session log.
+
+---
+(previous session history preserved below)
+
 ## 2026-08-06 — IPv6 GUA enabled + mail.dnanu.de AAAA
 
 - **Root cause:** Deployed Tailscale (gen 45) set `net.ipv6.conf.all.forwarding=1` which blocks SLAAC. Current repo has no Tailscale — v6 forwarding gone.
