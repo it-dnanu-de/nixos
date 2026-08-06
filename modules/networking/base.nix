@@ -30,6 +30,11 @@
   # No v6 forwarding enabled, so accept_ra=1 is honored.
   boot.kernel.sysctl."net.ipv6.conf.${settings.network.interface}.accept_ra" = 1;
 
+  # Explicitly disable IPv6 forwarding so SLAAC Router Advertisements are honored.
+  # WireGuard only needs v4 forwarding (net.ipv4.ip_forward=1 in wireguard.nix).
+  # This also defends against any future module that might enable v6 forwarding.
+  boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = false;
+
   networking.firewall = {
     enable = true;
     # TCP 25: inbound SMTP, 53: AdGuard DNS, 80: HTTP→HTTPS redirect (LAN-only),
