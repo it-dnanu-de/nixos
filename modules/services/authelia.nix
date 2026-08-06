@@ -44,6 +44,16 @@
       totp = {
         issuer = "nanulab";
       };
+      # No SMTP relay configured for Authelia (mail is a separate system).
+      # Filesystem notifier writes notification emails (TOTP enrollment links,
+      # password reset) to a local dir instead of sending them. Admin can read
+      # them if ever needed; users self-enroll TOTP interactively, so this is
+      # mostly a formality to satisfy Authelia's notifier requirement.
+      notifier = {
+        filesystem = {
+          filename = "/var/lib/authelia-main/notifications.txt";
+        };
+      };
     };
   };
 }
