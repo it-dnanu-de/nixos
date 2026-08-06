@@ -99,7 +99,8 @@ in
   systemd.services.cloudflare-dns-sync = {
     description = "Declarative Cloudflare DNS";
     wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
+    # sops-nix must materialize /run/secrets/cloudflare_api_token before this runs
+    after = [ "network-online.target" "sops-nix.service" ];
     wants = [ "network-online.target" ];
     path = with pkgs; [ ];
     serviceConfig = {
