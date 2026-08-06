@@ -49,17 +49,16 @@
     };
 
     # Everything else under the vhost: gate via Authelia and serve the AUTHENTICATED
-    # user's own directory. root is derived from $auth_user (set by auth_request), so
-    # no URL can reach another user's files — there is nothing to guess.
-    # (The earlier `if ($auth_user != $1)` pattern is broken in nginx: `if` runs in the
-    # rewrite phase before auth_request sets $auth_user, so it always returned 403.)
+    # user's own index. root derives from $auth_user; try_files with an absolute
+    # path (/index.html) resolves against root and IGNORES the request URI, so any
+    # URL serves that user's page. No URL can reach another user's files.
     locations."/" = {
       extraConfig = ''
         auth_request /auth;
         auth_request_set $auth_user $upstream_http_remote_user;
         error_page 401 = @authelia_login;
         root /var/lib/mobileprofile/wg/$auth_user;
-        index index.html;
+        try_files /index.html =404;
         autoindex off;
         add_header Cache-Control "no-store";
       '';
