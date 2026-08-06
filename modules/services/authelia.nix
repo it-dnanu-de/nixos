@@ -20,7 +20,10 @@
       };
       authentication_backend = {
         file = {
-          path = "/var/lib/authelia-main/users.yaml";
+          # Point directly at the sops-rendered users.yaml (0400 authelia-main).
+          # NOT /var/lib/authelia-main/users.yaml — that path holds Authelia's
+          # default template and would ignore our 9 users.
+          path = config.sops.secrets.authelia_users_yaml.path;
           watch = false;
           # Passwords + TOTP seeds live in sops (authelia_users_yaml, 0400 authelia-main).
           # File is rendered at activation; use restartTriggers to pick up changes.
