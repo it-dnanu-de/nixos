@@ -120,10 +120,24 @@ Router column total: **25/tcp + 51820/udp only**.
 - AdGuard UI (`adguard.nanulab.de`) is **admin-IP-only** (nginx allowlist: 10.0.0.1-9 + 10.0.10.3-9). All LAN/VPN devices use AdGuard as DNS on :53 irrespective of tier.
 - **Dead-name handling:** `*.nanulab.de` wildcard rewrite kept (adguard + future services). nginx catch-all `default_server` on 0.0.0.0:443+:80 returns **404** — unmatched `*.nanulab.de` hosts (e.g. `profile.nanulab.de`) no longer leak the AdGuard dashboard. AGH DNS-only, `runtime_sources.dhcp=false` (Kea manages DHCP).
 
-### 3.5 LAN IPv6 caveat
-IPv6 **stays enabled** (human ruling 2026-08-05: needed for mail + modern infra; Speedport cannot disable it anyway). Speedport's DHCPv6 server points its DNS at AdGuard (human-set, verified 2026-08-06). Residual `fe80::1` RDNSS noise is accepted; if the Speedport relays IPv6 DNS, mitigate via AdGuard persistent-client tagging of the router address. DNS correctness comes from the DHCPv4/DHCPv6 server fields pointing at AdGuard, not from disabling IPv6.
+### 3.5 LAN IPv6
+IPv6 **stays enabled** (human ruling 2026-08-05: needed for mail + modern infra;
+Speedport cannot disable it anyway).
 
-Kea dhcp6: stateful ULA `fd10::/64`, pool `fd10::100-200`, v6 DNS = `fd10::2`, domain-search = `lan`. GUA via Speedport SLAAC unchanged (accept_ra=1, no v6 forwarding). Server static ULA `fd10::2/64`. Android ignores DHCPv6 → covered by v4 DNS (10.0.0.2 from Kea dhcp4). Coexistence with Speedport DHCPv6: disjoint namespaces (GUA vs ULA), both DNS → AdGuard — harmless.
+- **GUA (SLAAC):** Server receives a public `2003:c8:...` GUA from the Speedport's
+  Router Advertisements. `net.ipv6.conf.all.forwarding=0` (explicitly set in
+  `base.nix`, 2026-08-06) ensures RAs are processed. No v6 forwarding — the
+  server is a v6 client, not a router.
+- **ULA (static):** `fd10::2/64` for Kea DHCPv6 DNS anchor (§3.1).
+- **DDNS:** ddclient publishes `mail.dnanu.de` + `vpn.dnanu.de` AAAA records
+  via ipify-ipv6 (web-based detection survives GUA renumber / privacy-extension
+  rotation). Default `usev6` in nixpkgs 26.05 — no custom config needed.
+- **Speedport:** DHCPv6 points DNS at AdGuard (already). GUA via SLAAC unchanged.
+- **Inbound v6 mail (`:25`):** Allowed in the host nftables firewall (inet family
+  covers both v4/v6). Speedport v6 pass-through is 1% manual in the router UI.
+- **Kea DHCPv6** (stateful ULA `fd10::/64`) + Speedport DHCPv6 (GUA) coexist
+  harmoniously — disjoint address spaces, both DNS → AdGuard. Android ignores
+  DHCPv6 → covered by v4 DNS (10.0.0.2 from Kea dhcp4).
 
 ### 3.6 Cloudflare Tunnel (blogs only)
 `services.cloudflared.tunnels."<id>"` with `credentialsFile` from sops; ingress: `dnanu.de`, `www.dnanu.de`, `autoconfig.dnanu.de` → `http://127.0.0.1:8080`; default `http_status:404`. Tunnel routes created once in CF dashboard (1% manual) or via API.
@@ -187,7 +201,9 @@ services.postfix = {
 | Type | Name | Value |
 |------|------|-------|
 | A | `mail.dnanu.de` | home IP (ddclient-managed) |
+| AAAA | `mail.dnanu.de` | home IPv6 GUA (ddclient-managed) |
 | A | `vpn.dnanu.de` | home IP (ddclient-managed, grey cloud) — WireGuard endpoint §3.3 |
+| AAAA | `vpn.dnanu.de` | home IPv6 GUA (ddclient-managed — dual-stack WG endpoint) |
 | MX | `dnanu.de` | `mail.dnanu.de` prio 10 |
 | MX | `nanulab.de` | `mail.dnanu.de` prio 10 |
 | TXT | `dnanu.de` | `v=spf1 -all` (nothing sends with envelope @dnanu.de; Resend uses its `send.` subdomain) ⚠️ VERIFY against Resend's domain-verification records and copy theirs exactly |

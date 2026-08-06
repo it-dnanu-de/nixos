@@ -1,5 +1,14 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-06 — IPv6 GUA enabled + mail.dnanu.de AAAA
+
+- **Root cause:** Deployed Tailscale (gen 45) set `net.ipv6.conf.all.forwarding=1` which blocks SLAAC. Current repo has no Tailscale — v6 forwarding gone.
+- **`base.nix`:** Added explicit `boot.kernel.sysctl."net.ipv6.conf.all.forwarding" = false` as defense-in-depth.
+- **ddclient:** Defaults `usev6=webv6,webv6=ipify-ipv6` — auto-publishes AAAA for `mail.dnanu.de` + `vpn.dnanu.de` once GUA is present.
+- **Firewall:** No change — nftables `inet` family already covers v6 :25.
+- **Cloudflare:** AAAA records created manually (ddclient needs pre-existing records to update). `mail.dnanu.de AAAA` → `2003:c8:c704:3584:...` resolves publicly.
+- **Deploy note:** After `nixos-rebuild switch`, default v6 route arrives from Speedport RA within ~30s. ddclient needs the default route to reach ipify-ipv6.
+
 ## 2026-08-06 — Network v4 executed: [user]1-9 naming, 97-peer WG, Kea DHCP, AGH DNS-only
 
 ### Phase A: users.nix v4 + 97-peer keygen + settings/wireguard v4
