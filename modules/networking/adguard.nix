@@ -1,10 +1,48 @@
 # AdGuard Home — LAN DNS + DHCP (replaces Speedport router).
 # OpenCode.md §3.2, §3.4. mutableSettings=false → fully declarative.
 #
-# v2 (2026-08-06): static leases + persistent clients keyed by user ([user]-[device]).
-# Guest range 10.0.0.50-250, DHCP-only (no persistent client — labeled dynamically
+# v3 (2026-08-06): static leases via leases.json (AGH 0.107.78 drops YAML static_leases
+# silently — static leases live in the JSON DB at /var/lib/AdGuardHome/leases.json).
+# Persistent clients and DHCP range generated from users.nix.
+# Guest range 10.0.0.100-250, DHCP-only (no persistent client — labeled dynamically
 # via runtime_sources.dhcp).
-{ settings, ... }:
+{ config, settings, users, lib, ... }:
+let
+  # Build the leases.json content from users.nix (static DHCP leases).
+  # Only devices with real MACs (not "TODO") are included.
+  staticLeases = lib.flatten (lib.mapAttrsToList (userName: userData:
+    lib.imap0 (idx: dev:
+      let ips = users.userToIps userName (idx + 1); in
+      lib.optional (dev.mac != "TODO") {
+        expires = "";
+        ip = ips.lan;
+        hostname = dev.hostname;
+        mac = dev.mac;
+        static = true;
+      }
+    ) userData.devices
+  ) users.users);
+
+  leasesJson = builtins.toJSON {
+    version = 1;
+    leases = staticLeases;
+  };
+
+  # Persistent clients — all users get named persistent clients keyed by IP (LAN+VPN).
+  persistentClients = lib.flatten (lib.mapAttrsToList (userName: userData:
+    let
+      ips = lib.flatten (lib.imap0 (idx: dev:
+        let ip = users.userToIps userName (idx + 1); in [ ip.lan ip.vpn ]
+      ) userData.devices);
+      tag = if userData.tier == "admin" then "user_admin" else "user_regular";
+    in [{
+      name = userName;
+      ids = ips;
+      tags = [ tag ];
+      use_global_settings = true;
+    }]
+  ) users.users);
+in
 {
   services.adguardhome = {
     enable = true;
@@ -79,69 +117,41 @@
         dhcpv4 = {
           gateway_ip = settings.network.gateway;
           subnet_mask = "255.255.255.0";
-          range_start = "10.0.0.50";   # guests start at .50 (users occupy .8-.20)
-          range_end = "10.0.0.250";
+          range_start = users.guests.lanStart;   # "10.0.0.100"
+          range_end   = users.guests.lanEnd;     # "10.0.0.250"
           lease_duration = 86400;
           icmp_timeout_msec = 1000;
         };
-        # v2: static leases keyed by [user]-[device], .8–.20 for named users.
-        # Iza/Kerem/Hannah have placeholder MACs (00:00:00:00:00:00) — human
-        # fills real MACs post-plan. The lease reserves IP but no device matches.
-        static_leases = [
-          { mac = "d0:67:e5:40:49:4e"; ip = "10.0.0.2";   hostname = "homelab"; }
-          # Dumitru (admin)
-          { mac = "f6:5b:6b:f3:0e:87"; ip = "10.0.0.8";   hostname = "dumitru-phone"; }
-          { mac = "2c:9c:58:60:c8:25"; ip = "10.0.0.9";   hostname = "dumitru-pc"; }
-          # Adela
-          { mac = "fe:02:26:df:0c:50"; ip = "10.0.0.10";  hostname = "adela-phone"; }
-          { mac = "00:c3:f4:ea:fe:a6"; ip = "10.0.0.11";  hostname = "adela-tv"; }
-          { mac = "68:79:c4:29:1d:44"; ip = "10.0.0.12";  hostname = "adela-air"; }
-          # Tiberiu
-          { mac = "da:08:7b:fe:cf:d7"; ip = "10.0.0.13";  hostname = "tiberiu-phone"; }
-          # David
-          { mac = "76:6f:b2:93:10:ce"; ip = "10.0.0.14";  hostname = "david-phone"; }
-          { mac = "c4:9d:ed:c9:9a:13"; ip = "10.0.0.15";  hostname = "david-xbox"; }
-          # Ramona
-          { mac = "56:ea:b4:79:06:61"; ip = "10.0.0.16";  hostname = "ramona-phone"; }
-          # Tibisor
-          { mac = "26:05:a5:6c:e2:56"; ip = "10.0.0.17";  hostname = "tibisor-phone"; }
-          # Iza / Kerem / Hannah — MACs missing, placeholder leases keep IPs reserved
-          # TODO: human fills real MACs (see inputs/Homelab-v2-… ruling #11).
-          # Lease with 00:00:00:00:00:00 is harmless (no device matches it)
-          # but reserves the IP in the table.
-          { mac = "00:00:00:00:00:00"; ip = "10.0.0.18";  hostname = "iza-phone"; }     # TODO MAC
-          { mac = "00:00:00:00:00:00"; ip = "10.0.0.19";  hostname = "kerem-phone"; }   # TODO MAC
-          { mac = "00:00:00:00:00:00"; ip = "10.0.0.20";  hostname = "hannah-phone"; }  # TODO MAC
-        ];
+        # NO static_leases — AGH 0.107.78 drops this YAML key silently.
+        # Static leases live in leases.json (written by preStart below).
       };
-      # v2: persistent clients keyed by user (9 users, LAN+VPN IPs + hostname ids).
-      # Tags: user_admin for dumitru, user_regular for all others.
-      # Guests (10.0.0.50-250) have NO persistent client — labeled dynamically via
-      # runtime_sources.dhcp (transient guests don't deserve per-client maintenance).
+      # v3: persistent clients keyed by user (10 users, LAN+VPN IPs — IP-only ids).
+      # Tags: user_admin for admin, user_regular for all others.
+      # Guests (10.0.0.100-250) have NO persistent client — labeled dynamically via
+      # runtime_sources.dhcp.
       clients = {
-        persistent = [
-          { name = "dumitru"; ids = [ "10.0.0.8" "10.0.0.9" "10.0.1.8" "10.0.1.9" "dumitru-phone" "dumitru-pc" ]; tags = [ "user_admin" ]; use_global_settings = true; }
-          { name = "adela";   ids = [ "10.0.0.10" "10.0.0.11" "10.0.0.12" "10.0.1.10" "10.0.1.11" "10.0.1.12" "adela-phone" "adela-tv" "adela-air" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "tiberiu"; ids = [ "10.0.0.13" "10.0.1.13" "tiberiu-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "david";   ids = [ "10.0.0.14" "10.0.0.15" "10.0.1.14" "10.0.1.15" "david-phone" "david-xbox" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "ramona";  ids = [ "10.0.0.16" "10.0.1.16" "ramona-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "tibisor"; ids = [ "10.0.0.17" "10.0.1.17" "tibisor-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "iza";     ids = [ "10.0.0.18" "10.0.1.18" "iza-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "kerem";   ids = [ "10.0.0.19" "10.0.1.19" "kerem-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          { name = "hannah";  ids = [ "10.0.0.20" "10.0.1.20" "hannah-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
-          # Guests: NO persistent client — labeled dynamically via runtime_sources.dhcp.
-          # The dhcp range (.50-.250) covers all transient guests without maintaining
-          # per-guest entries.
-        ];
-      };
-      # Runtime sources: DHCP + hosts + whois + rDNS. No ARP (stale clients).
-      clients.runtime_sources = {
-        whois = true;
-        arp = false;
-        rdns = true;
-        dhcp = true;
-        hosts = true;
+        persistent = persistentClients;
+        runtime_sources = {
+          whois = true;
+          arp = false;
+          rdns = true;
+          dhcp = true;
+          hosts = true;
+        };
       };
     };
   };
+
+  # Write declarative static leases to leases.json BEFORE AGH starts.
+  # AGH 0.107.78 does NOT read static_leases from YAML — they live in leases.json.
+  # See internal/dhcpd/db.go: dbLoad() loads this file at DHCP server startup.
+  # The NixOS module's preStart is typed as `lines` — our fragment appends cleanly
+  # after the module's installFresh. Both run as the DynamicUser.
+  systemd.services.adguardhome.preStart = ''
+    # Write declarative static leases (AGH loads leases.json on start).
+    # Derived from users.nix — only devices with real MACs (not "TODO") are included.
+    echo '${leasesJson}' > "$STATE_DIRECTORY/leases.json"
+    chmod 600 "$STATE_DIRECTORY/leases.json"
+    echo "adguardhome preStart: wrote static leases to leases.json" >&2
+  '';
 }

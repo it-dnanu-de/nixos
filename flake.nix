@@ -38,6 +38,7 @@
         system = "x86_64-linux";
         specialArgs = {
           settings = import ./settings.nix;
+          users = import ./users.nix;
         };
         modules = [
           disko.nixosModules.disko

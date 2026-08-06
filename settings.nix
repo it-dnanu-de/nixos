@@ -26,10 +26,7 @@
     prefixLength = 24;
     subnet = "10.0.0.0/24";      # LAN — allowed to reach local nginx TLS vhosts (AdGuard UI, profile)
     gateway = "10.0.0.1";
-    # Admin's LAN IPs (dumitru-phone/dumitru-pc static leases). iOS routes
-    # local-subnet traffic directly over LAN (never through the tunnel), so the
-    # admin allowlist must include these to reach admin UIs from home WiFi.
-    adminLan = [ "10.0.0.8" "10.0.0.9" ];
+    # Admin LAN IPs are now derived from users.nix (admin block 10.0.0.3-8).
   };
 
   hostId = "2f69efe2";           # ZFS requires stable host ID — generate once, keep forever
@@ -45,33 +42,33 @@
     forwardedPort = 0;           # placeholder — human sets from AirVPN dashboard (1% manual)
   };
 
-  # WireGuard remote-access VPN (OpenCode.md §3.3). Server 10.0.1.1/24, endpoint vpn.dnanu.de:51820.
-  # v2 (2026-08-06): two-tier — `admin = true` peers reach ALL *.nanulab.de incl. admin UIs;
-  # `admin = false` (user) peers reach user-facing services only. Enforcement = nginx source-IP
-  # allowlist by peer IP. Guests have NO WG peer. Peer name = [user]-[device]-vpn.
-  # Public keys are not secret; private keys + PSKs live in sops (wireguard_peer_<name>_{private,psk}).
+  # WireGuard remote-access VPN (OpenCode.md §3.3, v3 10.0.10.0/24).
+  # Server 10.0.10.2/24, endpoint vpn.dnanu.de:51820.
+  # Peers are now DERIVED from users.nix (hostname-vpn naming, e.g. admin3-vpn, dumitru1-vpn).
+  # Public keys are mapped per-device hostname below; private keys + PSKs live in sops
+  # (wireguard_peer_<hostname>-vpn_{private,psk}).
   network.wireguard = {
     port = 51820;
-    subnet = "10.0.1.0/24";
-    address = "10.0.1.1";
+    subnet = "10.0.10.0/24";
+    address = "10.0.10.2";
     endpoint = "vpn.dnanu.de";
-    peers = [
-      # Admin (Dumitru) — reaches ALL *.nanulab.de incl. admin UIs
-      { name = "dumitru-phone-vpn"; ip = "10.0.1.8";  admin = true;  user = "dumitru"; publicKey = "hgUar95LcXopyebZfGRDbe0lZndqDfHDp/1CiSg1qlo="; }
-      { name = "dumitru-pc-vpn";    ip = "10.0.1.9";  admin = true;  user = "dumitru"; publicKey = "iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo="; }
-      # User peers — user-facing services only
-      { name = "adela-phone-vpn";   ip = "10.0.1.10"; admin = false; user = "adela";   publicKey = "IKGIZcEp5jXPPhjD1y0yhH8NctiJOlCC0WEto6hNC2U="; }
-      { name = "adela-tv-vpn";      ip = "10.0.1.11"; admin = false; user = "adela";   publicKey = "WppvW2HLCQEl+7Q5CmSSKk9XOzAgf3wImZvGTGTGF1o="; }
-      { name = "adela-air-vpn";     ip = "10.0.1.12"; admin = false; user = "adela";   publicKey = "mLGb/B4MTy7lebFCtSsPLyZet2g/7RhVs2VGYw5lTFw="; }
-      { name = "tiberiu-phone-vpn"; ip = "10.0.1.13"; admin = false; user = "tiberiu"; publicKey = "021YHQrkW0jelFHbRaAYhMXr13XkC52MYFCTlMac3h8="; }
-      { name = "david-phone-vpn";   ip = "10.0.1.14"; admin = false; user = "david";   publicKey = "N/+2L7/gr4cNXh5QWlHlU/HP3JELEPq3yRqJiHRdm2A="; }
-      { name = "david-xbox-vpn";    ip = "10.0.1.15"; admin = false; user = "david";   publicKey = "vvL7s3DRtfeQPWFNG6rdh0g9+aCb2EuAePA9ytfo6iE="; }
-      { name = "ramona-phone-vpn";  ip = "10.0.1.16"; admin = false; user = "ramona";  publicKey = "4FNungU+bh000Xl1iK9M/IF6nyogsExGBxijnEQfIDc="; }
-      { name = "tibisor-phone-vpn"; ip = "10.0.1.17"; admin = false; user = "tibisor"; publicKey = "ACCujN9Qv0tt9TGW70faDP9lnMck7EFHa5dk/T5UMDU="; }
-      { name = "iza-phone-vpn";     ip = "10.0.1.18"; admin = false; user = "iza";     publicKey = "nBHQHSFHU/24IeKEJ0rFsV2xJTZCc4sRW/sI5/if+kc="; } # MAC TODO
-      { name = "kerem-phone-vpn";   ip = "10.0.1.19"; admin = false; user = "kerem";   publicKey = "zSoQM300aEExAnjUDwjHZi9r5tfrwsm4drEtrqVp90c="; } # MAC TODO
-      { name = "hannah-phone-vpn";  ip = "10.0.1.20"; admin = false; user = "hannah";  publicKey = "iRSXSbB/aiqXxRUyMLc2zfaJ+uARS9Jh5WOBwfQYkwU="; } # MAC TODO
-    ];
+    # Public keys per-device hostname (public — safe in git).
+    # Mapping from old peer names (v2) to new hostname-vpn naming (v3).
+    peerPublicKeys = {
+      admin3    = "iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo=";
+      dumitru1  = "hgUar95LcXopyebZfGRDbe0lZndqDfHDp/1CiSg1qlo=";
+      adela1    = "IKGIZcEp5jXPPhjD1y0yhH8NctiJOlCC0WEto6hNC2U=";
+      adela2    = "WppvW2HLCQEl+7Q5CmSSKk9XOzAgf3wImZvGTGTGF1o=";
+      adela3    = "mLGb/B4MTy7lebFCtSsPLyZet2g/7RhVs2VGYw5lTFw=";
+      tiberiu1  = "021YHQrkW0jelFHbRaAYhMXr13XkC52MYFCTlMac3h8=";
+      david1    = "N/+2L7/gr4cNXh5QWlHlU/HP3JELEPq3yRqJiHRdm2A=";
+      david2    = "vvL7s3DRtfeQPWFNG6rdh0g9+aCb2EuAePA9ytfo6iE=";
+      ramona1   = "4FNungU+bh000Xl1iK9M/IF6nyogsExGBxijnEQfIDc=";
+      tibisor1  = "ACCujN9Qv0tt9TGW70faDP9lnMck7EFHa5dk/T5UMDU=";
+      iza1      = "nBHQHSFHU/24IeKEJ0rFsV2xJTZCc4sRW/sI5/if+kc=";
+      kerem1    = "zSoQM300aEExAnjUDwjHZi9r5tfrwsm4drEtrqVp90c=";
+      hannah1   = "iRSXSbB/aiqXxRUyMLc2zfaJ+uARS9Jh5WOBwfQYkwU=";
+    };
   };
 
   sshPubKey = "ssh-ed25519 AAAA… placeholder";  # human populates with their real key

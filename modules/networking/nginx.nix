@@ -2,36 +2,48 @@
 # OpenCode.md §3.6, §9. Binds loopback-only on 8080 (cloudflared edge terminates TLS).
 # TLS vhosts for services arrive in build steps 4–7; autoconfig added in step 4.
 #
-# v2 (2026-08-06): mkAdminVhost / mkUserVhost helpers for two-tier VPN access control.
-# Admin vhosts: allow only admin VPN peers (10.0.1.8, 10.0.1.9), deny all.
-# User vhosts: allow LAN + all VPN (user + admin), deny internet.
-# IP-based ACL is stateless, zero-daemon, survives Authelia outages (§3.3 amended).
-{ pkgs, settings, ... }:
+# v3 (2026-08-06): ACL helpers derive IP allowlists from users.nix.
+# Admin vhosts: allow admin LAN (10.0.0.3-8) + admin VPN (10.0.10.3-8), deny all.
+# User vhosts: allow user LAN (10.0.0.9-99) + all VPN (10.0.10.3-99), deny all.
+# Guests (10.0.0.100-250) get NOTHING (no allow entry, denied by the final deny all).
+{ pkgs, settings, lib, users, ... }:
 let
-  peers = settings.network.wireguard.peers;
+  # Filter users by tier
+  adminUsers = lib.filterAttrs (n: u: u.tier == "admin") users.users;
+  regularUsers = lib.filterAttrs (n: u: u.tier == "user") users.users;
 
-  # Derive admin and user VPN IP lists from settings.nix peer registry.
-  adminVpnIps = builtins.filter (p: p.admin) peers;
-  userVpnIps = builtins.filter (p: !p.admin) peers;
+  # Derive all admin device IPs (LAN + VPN) from users.nix
+  adminIps = lib.flatten (lib.mapAttrsToList (userName: userData:
+    lib.flatten (lib.imap0 (idx: dev:
+      let ips = users.userToIps userName (idx + 1); in [ ips.lan ips.vpn ]
+    ) userData.devices)
+  ) adminUsers);
 
-  # Build nginx allow/deny directives from an IP list.
-  mkAllowString = ips: builtins.concatStringsSep "\n    " (map (p: "allow ${p.ip}/32;") ips) + "\n    deny all;";
+  # Derive all user device IPs (LAN + VPN) from users.nix
+  userIps = lib.flatten (lib.mapAttrsToList (userName: userData:
+    lib.flatten (lib.imap0 (idx: dev:
+      let ips = users.userToIps userName (idx + 1); in [ ips.lan ips.vpn ]
+    ) userData.devices)
+  ) regularUsers);
 
-  # Admin vhost ACL: admin VPN peers + admin's LAN IPs (iOS routes local-subnet
-  # traffic directly over LAN, bypassing the tunnel). Deny everything else.
+  # Admin allowlist: admin IPs only
   adminAllowlist = ''
-    ${mkAllowString adminVpnIps}
-    ${builtins.concatStringsSep "\n    " (map (ip: "allow ${ip}/32;") settings.network.adminLan)}
+    ${lib.concatStringsSep "\n    " (map (ip: "allow ${ip}/32;") adminIps)}
+    allow 10.0.0.1/32;      # router (no VPN, but accessible from admin LAN)
+    allow 10.0.0.2/32;      # homelab (server itself)
     deny all;
   '';
 
-  # User vhost ACL: LAN + all VPN peers (user + admin).
+  # User allowlist: user IPs + admin IPs (admins see everything).
+  # Guests (10.0.0.100-250) are NOT in any allow list → denied by final `deny all;`.
   userAllowlist = ''
-    allow ${settings.network.subnet};
-    ${mkAllowString (adminVpnIps ++ userVpnIps)}
+    ${lib.concatStringsSep "\n    " (map (ip: "allow ${ip}/32;") (userIps ++ adminIps))}
+    allow 10.0.0.1/32;      # router
+    allow 10.0.0.2/32;      # homelab
+    deny all;
   '';
 
-  # mkAdminVhost: forceSSL + admin-VPN-only allowlist + proxy to backend.
+  # mkAdminVhost: forceSSL + admin-IP-only allowlist + proxy to backend.
   mkAdminVhost = fqdn: backend: {
     forceSSL = true;
     useACMEHost = settings.domains.internal;
@@ -42,7 +54,7 @@ let
     };
   };
 
-  # mkUserVhost: forceSSL + LAN+VPN allowlist + proxy to backend.
+  # mkUserVhost: forceSSL + user+admin IP allowlist + proxy to backend.
   mkUserVhost = fqdn: backend: {
     forceSSL = true;
     useACMEHost = settings.domains.internal;

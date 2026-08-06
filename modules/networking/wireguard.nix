@@ -2,26 +2,41 @@
 # Replaces Tailscale SaaS. Kernel WireGuard, fully declarative peers,
 # split-tunnel only (no exit node/NAT). One silent UDP port 51820.
 #
-# v2 (2026-08-06): two-tier peers (admin/user). Per-user QR renderer writes
-# /var/lib/mobileprofile/wg/<user>/{<peer>.conf,<peer>.png,index.html}.
+# v3 (2026-08-06): 10.0.10.0/24 subnet, server 10.0.10.2. Peers derived from
+# users.nix (hostname-vpn naming: admin3-vpn, dumitru1-vpn, etc.).
+# Per-user QR renderer writes /var/lib/mobileprofile/wg/<user>/{<peer>.conf,<peer>.png,index.html}.
 # Served behind Authelia at profile.dnanu.de/<user>/.
 #
-# Peer data lives in settings.nix (public keys + IPs + admin flag + user name).
-# Private keys and PSKs are in sops (secrets.yaml).
+# Peer public keys are in settings.network.wireguard.peerPublicKeys.
+# Private keys and PSKs are in sops (wireguard_peer_<hostname>-vpn_{private,psk}).
 {
   config,
   lib,
   pkgs,
   settings,
+  users,
   ...
 }:
 let
-  inherit (lib) concatMap concatMapStringsSep groupBy nameValuePair mapAttrsToList;
+  inherit (lib) concatMap concatMapStringsSep groupBy mapAttrsToList nameValuePair;
 
   wgSettings = settings.network.wireguard;
-  peers = wgSettings.peers;
 
-  # Group peers by user (e.g. { dumitru = [...]; adela = [...]; })
+  # Derive peers from users.nix: one WG peer per device, hostname-vpn naming.
+  # Public keys come from settings.network.wireguard.peerPublicKeys (mapped by hostname).
+  peers = lib.flatten (lib.mapAttrsToList (userName: userData:
+    lib.imap0 (idx: dev:
+      let ips = users.userToIps userName (idx + 1); in {
+        name = "${dev.hostname}-vpn";       # e.g. "admin3-vpn"
+        ip = ips.vpn;
+        admin = userData.tier == "admin";
+        user = userName;
+        publicKey = wgSettings.peerPublicKeys.${dev.hostname} or "REPLACE_ME";
+      }
+    ) userData.devices
+  ) users.users);
+
+  # Group peers by user (e.g. { admin = [...]; dumitru = [...]; })
   peersByUser = groupBy (p: p.user) peers;
 
   # Build sops secret entries for every peer
@@ -65,7 +80,7 @@ PreDown  = ip route del 10.0.0.2/32 dev %i metric 50
 PublicKey           = $SERVER_PUB
 PresharedKey        = $(cat "$psk")
 AllowedIPs          = 10.0.0.0/24
-Endpoint            = $ENDPOINT
+EndPoint            = $ENDPOINT
 PersistentKeepalive = 25
 PEERCONF
 
@@ -147,7 +162,7 @@ in
   };
 
   # ── Per-user profile renderer: .conf + QR PNG + index.html ────────────
-  # v2: groups peers by user, writes per-user dirs under /var/lib/mobileprofile/wg/<user>/.
+  # v3: groups peers by user, writes per-user dirs under /var/lib/mobileprofile/wg/<user>/.
   # Each user sees only their own peers. Old shared /wg/index.html is removed.
   systemd.services.wireguard-profile-render = {
     description = "Render WireGuard peer configs and QR codes (per-user)";
