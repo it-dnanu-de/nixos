@@ -37,14 +37,39 @@
 
   networking.firewall = {
     enable = true;
-    # TCP 25: inbound SMTP, 53: AdGuard DNS, 80: HTTP→HTTPS redirect (LAN-only),
-    # 443: nginx TLS vhosts (AdGuard UI, profile.dnanu.de — LAN/VPN-only;
-    # router forwards only 25/51820 so 80/443 are effectively LAN-only),
-    # 465/587: submission, 993: IMAPS (LAN-only)
-    allowedTCPPorts = [ 25 53 80 443 465 587 993 ];
-    # UDP 53: DNS, 67: DHCPv4 (Kea), 547: DHCPv6 (Kea), 51820: WireGuard
-    allowedUDPPorts = [ 53 67 547 51820 ];
+    # Only ports reachable from the public internet:
+    # TCP 25 (inbound SMTP — MX), UDP 51820 (WireGuard endpoint).
+    # Every other port is source-scoped to LAN/ULA/link-local via extraCommands
+    # so the host enforces §3.2 itself, not just the router (defence-in-depth).
+    allowedTCPPorts = [ 25 ];
+    allowedUDPPorts = [ 51820 ];
     # WireGuard interface — all traffic trusted (how admin UIs are reached).
     trustedInterfaces = [ "wg0" ];
+
+    # ── Source-scoped service ports (OpenCode.md §3.2, audit Finding 1) ──
+    # extraCommands runs in the iptables backend context (just before the
+    # final reject rule).  Each uses explicit -w-wrapped iptables/ip6tables
+    # because source subnets differ between address families.
+    # wg0 is already trustedInterfaces and needs no extra rules here.
+    extraCommands = ''
+      # TCP 53 (AGH DNS), 80 (HTTP→HTTPS redirect), 443 (nginx TLS),
+      # 465 (submission SMTPS), 587 (submission), 993 (IMAPS)
+      # — scoped to LAN / ULA / link-local.
+      iptables  -w -A nixos-fw -p tcp -m multiport --dports 53,80,443,465,587,993 -s 10.0.0.0/24 -j nixos-fw-accept
+      ip6tables -w -A nixos-fw -p tcp -m multiport --dports 53,80,443,465,587,993 -s fd10::/64  -j nixos-fw-accept
+      ip6tables -w -A nixos-fw -p tcp -m multiport --dports 53,80,443,465,587,993 -s fe80::/64  -j nixos-fw-accept
+
+      # UDP 53 (AGH DNS) — same scope
+      iptables  -w -A nixos-fw -p udp --dport 53 -s 10.0.0.0/24 -j nixos-fw-accept
+      ip6tables -w -A nixos-fw -p udp --dport 53 -s fd10::/64  -j nixos-fw-accept
+      ip6tables -w -A nixos-fw -p udp --dport 53 -s fe80::/64  -j nixos-fw-accept
+
+      # UDP 67 (Kea DHCPv4) — LAN unicast + DHCPDISCOVER broadcast (src 0.0.0.0:68)
+      iptables -w -A nixos-fw -p udp --dport 67 -s 10.0.0.0/24 -j nixos-fw-accept
+      iptables -w -A nixos-fw -p udp --dport 67 -s 0.0.0.0 -d 255.255.255.255 -j nixos-fw-accept
+
+      # UDP 547 (Kea DHCPv6) — link-local scope (mirrors existing DHCPv6-client rule)
+      ip6tables -w -A nixos-fw -p udp --dport 547 -s fe80::/64 -j nixos-fw-accept
+    '';
   };
 }
