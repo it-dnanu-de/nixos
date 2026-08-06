@@ -49,16 +49,17 @@
     };
 
     # Everything else under the vhost: gate via Authelia and serve the AUTHENTICATED
-    # user's own index. root derives from $auth_user; try_files with an absolute
-    # path (/index.html) resolves against root and IGNORES the request URI, so any
-    # URL serves that user's page. No URL can reach another user's files.
+    # user's own files. root derives from $auth_user. try_files: real files
+    # (dumitru-phone-vpn.png/.conf, linked relatively from index.html) resolve to
+    # root + $uri; anything else falls back to that user's index.html. No URL can
+    # reach another user's files.
     locations."/" = {
       extraConfig = ''
         auth_request /auth;
         auth_request_set $auth_user $upstream_http_remote_user;
         error_page 401 = @authelia_login;
         root /var/lib/mobileprofile/wg/$auth_user;
-        try_files /index.html =404;
+        try_files $uri /index.html =404;
         autoindex off;
         add_header Cache-Control "no-store";
       '';
