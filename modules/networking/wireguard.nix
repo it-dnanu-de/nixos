@@ -2,13 +2,12 @@
 # Replaces Tailscale SaaS. Kernel WireGuard, fully declarative peers,
 # split-tunnel only (no exit node/NAT). One silent UDP port 51820.
 #
-# v3 (2026-08-06): 10.0.10.0/24 subnet, server 10.0.10.2. Peers derived from
-# users.nix (hostname-vpn naming: admin3-vpn, dumitru1-vpn, etc.).
-# Per-user QR renderer writes /var/lib/mobileprofile/wg/<user>/{<peer>.conf,<peer>.png,index.html}.
+# v4 (2026-08-06): 97 peers (7 admin admin3-9-vpn + 90 user), full pre-provision
+# with real keypairs. 10.0.10.0/24 subnet, server 10.0.10.2.
+# Peers derived from users.nix helpers (wgPeers/wgPeerNames).
+# Public keys in generated wireguard-pubkeys.nix.
+# Per-user QR renderer writes /var/lib/mobileprofile/wg/<user>/.
 # Served behind Authelia at profile.dnanu.de/<user>/.
-#
-# Peer public keys are in settings.network.wireguard.peerPublicKeys.
-# Private keys and PSKs are in sops (wireguard_peer_<hostname>-vpn_{private,psk}).
 {
   config,
   lib,
@@ -22,19 +21,13 @@ let
 
   wgSettings = settings.network.wireguard;
 
-  # Derive peers from users.nix: one WG peer per device, hostname-vpn naming.
-  # Public keys come from settings.network.wireguard.peerPublicKeys (mapped by hostname).
-  peers = lib.flatten (lib.mapAttrsToList (userName: userData:
-    lib.imap0 (idx: dev:
-      let ips = users.userToIps userName (idx + 1); in {
-        name = "${dev.hostname}-vpn";       # e.g. "admin3-vpn"
-        ip = ips.vpn;
-        admin = userData.tier == "admin";
-        user = userName;
-        publicKey = wgSettings.peerPublicKeys.${dev.hostname} or "REPLACE_ME";
-      }
-    ) userData.devices
-  ) users.users);
+  # Derive peers from users.nix: 97 WG peers (7 admin admin3-9 + 90 user).
+  # Public keys from the generated wireguard-pubkeys.nix (imported in settings.nix).
+  # Strict lookup — no fallback: a missing public key is an authoring bug that
+  # must fail at eval time rather than silently produce a broken WireGuard peer.
+  peers = map (p: p // {
+    publicKey = wgSettings.peerPublicKeys.${p.hostname};
+  }) users.wgPeers;
 
   # Group peers by user (e.g. { admin = [...]; dumitru = [...]; })
   peersByUser = groupBy (p: p.user) peers;

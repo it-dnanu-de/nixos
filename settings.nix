@@ -42,33 +42,21 @@
     forwardedPort = 0;           # placeholder — human sets from AirVPN dashboard (1% manual)
   };
 
-  # WireGuard remote-access VPN (OpenCode.md §3.3, v3 10.0.10.0/24).
+  # WireGuard remote-access VPN (OpenCode.md §3.3, v4 10.0.10.0/24).
   # Server 10.0.10.2/24, endpoint vpn.dnanu.de:51820.
-  # Peers are now DERIVED from users.nix (hostname-vpn naming, e.g. admin3-vpn, dumitru1-vpn).
-  # Public keys are mapped per-device hostname below; private keys + PSKs live in sops
-  # (wireguard_peer_<hostname>-vpn_{private,psk}).
+  # 97 peers (7 admin admin3-9-vpn + 90 user [user]+[user]1-9-vpn) —
+  # fully pre-provisioned with real keypairs. admin0/1/2 are infra/router/server.
+  # Naming: admin block .0-.9 (admin0=net addr, admin1=router, admin2=server,
+  # admin3-9=WG peers). Users: base=[user]@.10-90 step 10 + [user]1-9.
+  # Peers derived from users.nix; public keys in generated wireguard-pubkeys.nix.
+  # Private keys + PSKs in sops (wireguard_peer_<hostname>-vpn_{private,psk} × 194).
   network.wireguard = {
     port = 51820;
     subnet = "10.0.10.0/24";
     address = "10.0.10.2";
     endpoint = "vpn.dnanu.de";
-    # Public keys per-device hostname (public — safe in git).
-    # Mapping from old peer names (v2) to new hostname-vpn naming (v3).
-    peerPublicKeys = {
-      admin3    = "iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo=";
-      dumitru1  = "hgUar95LcXopyebZfGRDbe0lZndqDfHDp/1CiSg1qlo=";
-      adela1    = "IKGIZcEp5jXPPhjD1y0yhH8NctiJOlCC0WEto6hNC2U=";
-      adela2    = "WppvW2HLCQEl+7Q5CmSSKk9XOzAgf3wImZvGTGTGF1o=";
-      adela3    = "mLGb/B4MTy7lebFCtSsPLyZet2g/7RhVs2VGYw5lTFw=";
-      tiberiu1  = "021YHQrkW0jelFHbRaAYhMXr13XkC52MYFCTlMac3h8=";
-      david1    = "N/+2L7/gr4cNXh5QWlHlU/HP3JELEPq3yRqJiHRdm2A=";
-      david2    = "vvL7s3DRtfeQPWFNG6rdh0g9+aCb2EuAePA9ytfo6iE=";
-      ramona1   = "4FNungU+bh000Xl1iK9M/IF6nyogsExGBxijnEQfIDc=";
-      tibisor1  = "ACCujN9Qv0tt9TGW70faDP9lnMck7EFHa5dk/T5UMDU=";
-      iza1      = "nBHQHSFHU/24IeKEJ0rFsV2xJTZCc4sRW/sI5/if+kc=";
-      kerem1    = "zSoQM300aEExAnjUDwjHZi9r5tfrwsm4drEtrqVp90c=";
-      hannah1   = "iRSXSbB/aiqXxRUyMLc2zfaJ+uARS9Jh5WOBwfQYkwU=";
-    };
+    # Public keys per-device hostname (97 entries, generated — public, safe in git).
+    peerPublicKeys = import ./wireguard-pubkeys.nix;
   };
 
   sshPubKey = "ssh-ed25519 AAAA… placeholder";  # human populates with their real key
