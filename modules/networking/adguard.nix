@@ -1,5 +1,9 @@
 # AdGuard Home — LAN DNS + DHCP (replaces Speedport router).
 # OpenCode.md §3.2, §3.4. mutableSettings=false → fully declarative.
+#
+# v2 (2026-08-06): static leases + persistent clients keyed by user ([user]-[device]).
+# Guest range 10.0.0.50-250, DHCP-only (no persistent client — labeled dynamically
+# via runtime_sources.dhcp).
 { settings, ... }:
 {
   services.adguardhome = {
@@ -75,56 +79,62 @@
         dhcpv4 = {
           gateway_ip = settings.network.gateway;
           subnet_mask = "255.255.255.0";
-          range_start = "10.0.0.100";
+          range_start = "10.0.0.50";   # guests start at .50 (users occupy .8-.20)
           range_end = "10.0.0.250";
           lease_duration = 86400;
           icmp_timeout_msec = 1000;
         };
-        # Static DHCP leases — named devices with reservations
+        # v2: static leases keyed by [user]-[device], .8–.20 for named users.
+        # Iza/Kerem/Hannah have placeholder MACs (00:00:00:00:00:00) — human
+        # fills real MACs post-plan. The lease reserves IP but no device matches.
         static_leases = [
           { mac = "d0:67:e5:40:49:4e"; ip = "10.0.0.2";   hostname = "homelab"; }
-          { mac = "f6:5b:6b:f3:0e:87"; ip = "10.0.0.100"; hostname = "iphone17pro"; }
-          { mac = "2c:9c:58:60:c8:25"; ip = "10.0.0.101"; hostname = "arch"; }
-          { mac = "fe:02:26:df:0c:50"; ip = "10.0.0.102"; hostname = "iphonexs"; }
-          { mac = "da:08:7b:fe:cf:d7"; ip = "10.0.0.103"; hostname = "galaxys22u"; }
-          { mac = "00:c3:f4:ea:fe:a6"; ip = "10.0.0.104"; hostname = "samsungtv"; }
-          { mac = "68:79:c4:29:1d:44"; ip = "10.0.0.105"; hostname = "phillipsair"; }
-          { mac = "76:6f:b2:93:10:ce"; ip = "10.0.0.106"; hostname = "david"; }
-          { mac = "56:ea:b4:79:06:61"; ip = "10.0.0.107"; hostname = "ramona"; }
-          { mac = "26:05:a5:6c:e2:56"; ip = "10.0.0.108"; hostname = "tibisor"; }
-          { mac = "c4:9d:ed:c9:9a:13"; ip = "10.0.0.109"; hostname = "xbox"; }
+          # Dumitru (admin)
+          { mac = "f6:5b:6b:f3:0e:87"; ip = "10.0.0.8";   hostname = "dumitru-phone"; }
+          { mac = "2c:9c:58:60:c8:25"; ip = "10.0.0.9";   hostname = "dumitru-pc"; }
+          # Adela
+          { mac = "fe:02:26:df:0c:50"; ip = "10.0.0.10";  hostname = "adela-phone"; }
+          { mac = "00:c3:f4:ea:fe:a6"; ip = "10.0.0.11";  hostname = "adela-tv"; }
+          { mac = "68:79:c4:29:1d:44"; ip = "10.0.0.12";  hostname = "adela-air"; }
+          # Tiberiu
+          { mac = "da:08:7b:fe:cf:d7"; ip = "10.0.0.13";  hostname = "tiberiu-phone"; }
+          # David
+          { mac = "76:6f:b2:93:10:ce"; ip = "10.0.0.14";  hostname = "david-phone"; }
+          { mac = "c4:9d:ed:c9:9a:13"; ip = "10.0.0.15";  hostname = "david-xbox"; }
+          # Ramona
+          { mac = "56:ea:b4:79:06:61"; ip = "10.0.0.16";  hostname = "ramona-phone"; }
+          # Tibisor
+          { mac = "26:05:a5:6c:e2:56"; ip = "10.0.0.17";  hostname = "tibisor-phone"; }
+          # Iza / Kerem / Hannah — MACs missing, placeholder leases keep IPs reserved
+          # TODO: human fills real MACs (see inputs/Homelab-v2-… ruling #11).
+          # Lease with 00:00:00:00:00:00 is harmless (no device matches it)
+          # but reserves the IP in the table.
+          { mac = "00:00:00:00:00:00"; ip = "10.0.0.18";  hostname = "iza-phone"; }     # TODO MAC
+          { mac = "00:00:00:00:00:00"; ip = "10.0.0.19";  hostname = "kerem-phone"; }   # TODO MAC
+          { mac = "00:00:00:00:00:00"; ip = "10.0.0.20";  hostname = "hannah-phone"; }  # TODO MAC
         ];
       };
-      # Persistent clients — named, tagged, custom settings
+      # v2: persistent clients keyed by user (9 users, LAN+VPN IPs + hostname ids).
+      # Tags: user_admin for dumitru, user_regular for all others.
+      # Guests (10.0.0.50-250) have NO persistent client — labeled dynamically via
+      # runtime_sources.dhcp (transient guests don't deserve per-client maintenance).
       clients = {
         persistent = [
-          {
-            name = "Dumitru";
-            ids = [ "10.0.0.100" "10.0.0.101" "iphone17pro" "arch" ];
-            tags = [ "user_regular" ];
-            use_global_settings = true;
-          }
-          {
-            name = "M";
-            ids = [ "10.0.0.102" "10.0.0.104" "10.0.0.105" "iphonexs" "samsungtv" "phillipsair" ];
-            tags = [ "user_regular" ];
-            use_global_settings = true;
-          }
-          {
-            name = "T";
-            ids = [ "10.0.0.103" "galaxys22u" ];
-            tags = [ "user_regular" ];
-            use_global_settings = true;
-          }
-          {
-            name = "Guests";
-            ids = [ "10.0.0.106" "10.0.0.107" "10.0.0.109" "david" "ramona" "a55-von-hicran" ];
-            tags = [ "user_regular" ];
-            use_global_settings = true;
-          }
+          { name = "dumitru"; ids = [ "10.0.0.8" "10.0.0.9" "10.0.1.8" "10.0.1.9" "dumitru-phone" "dumitru-pc" ]; tags = [ "user_admin" ]; use_global_settings = true; }
+          { name = "adela";   ids = [ "10.0.0.10" "10.0.0.11" "10.0.0.12" "10.0.1.10" "10.0.1.11" "10.0.1.12" "adela-phone" "adela-tv" "adela-air" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "tiberiu"; ids = [ "10.0.0.13" "10.0.1.13" "tiberiu-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "david";   ids = [ "10.0.0.14" "10.0.0.15" "10.0.1.14" "10.0.1.15" "david-phone" "david-xbox" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "ramona";  ids = [ "10.0.0.16" "10.0.1.16" "ramona-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "tibisor"; ids = [ "10.0.0.17" "10.0.1.17" "tibisor-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "iza";     ids = [ "10.0.0.18" "10.0.1.18" "iza-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "kerem";   ids = [ "10.0.0.19" "10.0.1.19" "kerem-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          { name = "hannah";  ids = [ "10.0.0.20" "10.0.1.20" "hannah-phone" ]; tags = [ "user_regular" ]; use_global_settings = true; }
+          # Guests: NO persistent client — labeled dynamically via runtime_sources.dhcp.
+          # The dhcp range (.50-.250) covers all transient guests without maintaining
+          # per-guest entries.
         ];
       };
-      # Runtime sources: only DHCP + hosts (no ARP for stale/unknown clients)
+      # Runtime sources: DHCP + hosts + whois + rDNS. No ARP (stale clients).
       clients.runtime_sources = {
         whois = true;
         arp = false;
