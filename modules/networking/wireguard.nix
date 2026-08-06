@@ -118,7 +118,7 @@ PEERCONF
 ${"\${peer_html}"}
 </table>
 <p><em>Scan QR in the WireGuard app → tap "Allow" → enable On-Demand (Wi‑Fi + Cellular).</em></p>
-<form class="logout" method="post" action="/logout"><button type="submit">Log out</button></form>
+<form class="logout" method="post" action="/logout?rd=https://${settings.domains.public}/"><button type="submit">Log out</button></form>
 </body>
 </html>
 INDEX
