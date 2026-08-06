@@ -15,8 +15,8 @@ This repo ships with an opencode configuration so AI agents work the way this pr
 | Piece | Where | What it does |
 |---|---|---|
 | Main config | `opencode.json` | instructions, MCP servers, references, permissions |
-| Agents | `.opencode/agent/` | `architect` (T3 GLM 5.2), `nixos-builder` (T2 DeepSeek V4 Pro), `verifier` (T1 DeepSeek V4 Flash), `security-reviewer` (T3 Kimi K3), `deployer` (T2 DeepSeek V4 Pro) |
-| Commands | `.opencode/command/` | `/init`, `/deploy`, `/rebuild`, `/verify`, `/update`, `/secrets`, `/commit`, `/pr`, `/status` |
+| Agents | `.opencode/agent/` | `planner-low` (V4 Flash), `planner-med` (V4 Pro), `planner-high` (GLM 5.2), `planner-max` (Kimi K3), `nixos-builder`/executor (V4 Pro), `verifier` (V4 Flash), `security-reviewer` (Kimi K3), `deployer` (V4 Pro) |
+| Commands | `.opencode/command/` | `/task` (general workflow), `/init`, `/deploy`, `/rebuild`, `/verify`, `/update`, `/secrets`, `/commit`, `/pr`, `/status`, `/review` |
 | Skills | `.opencode/skills/` | nixos-flake, sops-secrets, mail-stack, zfs-disko, deployment, verification, security-hardening, git-workflow |
 | References | `@nixpkgs @snm @disko @sops-nix @nixos-anywhere @vpn-confinement` | pinned-channel verification sources |
 

@@ -4,14 +4,17 @@ description: Start a full working session. Loads context, probes the environment
 
 # Init
 
-You are the session orchestrator. You are the primary agent; delegate heavy or specialized work to the tiered subagents (architect / nixos-builder / verifier / security-reviewer / deployer) via the `task` tool. Route by task, not by mood:
+You are the session orchestrator. You are the primary agent; delegate heavy or specialized work to the tiered subagents (planner-low / planner-med / planner-high / planner-max / nixos-builder / verifier / security-reviewer / deployer) via the `task` tool. Route by task, not by mood:
 
 | Task | Route to |
 |---|---|
-| Planning, architecture, breaking down milestones, hard debugging | `architect` (T3, Kimi K3) |
-| Writing NixOS modules / flake / service config | `nixos-builder` (T2, DeepSeek V4 Pro) |
+| Planning, architecture, breaking down milestones, hard debugging | `planner-high` (GLM 5.2) |
+| Security audits, major restructures | `planner-max` (Kimi K3) |
+| Medium planning / debugging | `planner-med` (V4 Pro) |
+| Small fixes / doc updates | `planner-low` (V4 Flash) |
+| Writing NixOS modules / executing plans / service config | `nixos-builder` (T2, DeepSeek V4 Pro) |
 | Verifying an option/package exists in pinned 26.05 | `verifier` (T1, DeepSeek V4 Flash) |
-| Security audit: DNSSEC, TLS, firewall, sops hygiene | `security-reviewer` (T3, Kimi K3) |
+| Security audit: DNSSEC, TLS, firewall, sops hygiene | `security-reviewer` (Kimi K3) |
 | Rebuilding/deploying on 10.0.0.2 | `deployer` (T2, DeepSeek V4 Pro) |
 
 ## Step 0 — Context
@@ -41,7 +44,7 @@ Ask in ONE batch, at most 4-5 questions, then proceed. Do not re-ask what is alr
 ## Step 4 — Default first milestone (until the human overrides)
 1. Route the ⚠️ VERIFY sweep to `verifier` against the pinned `nixos-26.05` reference: every service module in §9, SNM `accounts`/`sieveScript`/`recipientDelimiter`/`x509`, Booklore, Collabora, and the packages (hugo, beets, intel-vaapi/media-driver). Collect results as the verification table.
 2. Present the table to the human and PAUSE for approval before writing any other code. The prompt in OpenCode.md is explicit: no other code until the table is approved.
-3. After approval, build order step 1 only: `flake.nix` + `settings.nix` + sops skeleton (`secrets/`, `.sops.yaml`). Use `architect` to confirm the flake input list, then `nixos-builder` to write it, `verifier` to re-check each referenced option, `security-reviewer` to sanity-check the sops skeleton. Commit after each coherent milestone.
+3. After approval, build order step 1 only: `flake.nix` + `settings.nix` + sops skeleton (`secrets/`, `.sops.yaml`). Use `planner-high` to confirm the flake input list, then `nixos-builder` to write it, `verifier` to re-check each referenced option, `security-reviewer` to sanity-check the sops skeleton. Commit after each coherent milestone.
 
 ## Step 5 — Session hygiene (required every session)
 - At the end, wipe Changes.md into OpenCode.md (fold durable decisions in, then truncate Changes.md).

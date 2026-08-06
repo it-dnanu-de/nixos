@@ -2,6 +2,14 @@
 
 History in OpenCode.md §17 "Session Log".
 
+## 2026-08-06 — New model-tiered workflow + /task command (human-driven redesign)
+- Human introduced a four-tier planning hierarchy and asked for a general-purpose workflow command with model variety across `/` and `@`.
+- **New planner agents** (`.opencode/agent/`): `planner-low` (V4 Flash), `planner-med` (V4 Pro), `planner-high` (GLM 5.2), `planner-max` (Kimi K3). Removed old `architect` (redundant with planner-high).
+- **New `/task` command** (`.opencode/command/task.md`): gather → write `inputs/` → recommend tier → human confirms → planner writes `outputs/` → human reviews → `nixos-builder` (V4 Pro) executes → Flash troubleshoots.
+- **Re-tiered `/` commands:** `/update` → planner-high (GLM), `/status` + `/verify` → planner-low (Flash), `/review` → new command → security-reviewer (Kimi K3); `/deploy`, `/rebuild` → deployer; `/commit`, `/pr`, `/secrets` → nixos-builder.
+- **`nixos-builder` re-roled as the executor** (reads `outputs/`, implements, verifies, commits).
+- Docs: OpenCode.md §Session Workflow (tier table + `/task`), README agent/command table, Memory.md model routing. Commits: `...`.
+
 ## 2026-08-06 — Homelab v2 access control (GLM 5.2 plan, DeepSeek-V4-Pro execution)
 - GLM 5.2 plan approved, DeepSeek-V4-Pro executed all phases A–D.
 - **Phase A (re-addressing):** adguard.nix updated with v2 DHCP static leases (10.0.0.8-20, iza/kerem/hannah placeholder MACs), guest range .50-.250, persistent clients keyed by 9 users (LAM+VPN IPs + hostname ids, tags user_admin/user_regular), guests removed from persistent clients (labeled dynamically via runtime_sources.dhcp). settings.nix already had v2 peers.

@@ -1,6 +1,6 @@
 ---
-description: Report the state of the repo, the homelab server, and the toolchain in one go.
-agent: nixos-builder
+description: Report the state of the repo, the homelab server, and the toolchain in one go. Routed to V4 Flash (planner-low) as a lightweight info-gathering task.
+agent: planner-low
 ---
 
 Give a concise status report covering:

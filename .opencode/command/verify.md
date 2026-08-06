@@ -1,6 +1,6 @@
 ---
-description: Run the §13 verification suite against the running homelab server and report results as a checklist.
-agent: verifier
+description: Run the §13 verification suite against the running homelab server and report results as a checklist. Routed to V4 Flash (planner-low) — a checklist task.
+agent: planner-low
 ---
 
 Run the verification suite from OpenCode.md §13 against the homelab server and report results.

@@ -19,36 +19,41 @@ I will basicall do this:
 6. and give you the credentials, which I will give you now ssh 10.0.0.2@nixos with password 123 or ssh 10.0.0.2@root with password 456
 7. if something doesnt work please tell me
 
-## Session Workflow (2026-08-05)
+## Session Workflow (2026-08-06)
 
-The human drives the session by annotating files in `~/nixos/`. The agent follows this flow:
+The human drives the session by annotating files in `~/nixos/` or invoking `/task`. The agent follows this flow:
 
-1. **Human marks up files** — highlights issues, features, bugs, or questions in repo files (OpenCode.md, TODO.md, settings.nix, etc.)
+1. **Human marks up files** — highlights issues, features, bugs, or questions in repo files (OpenCode.md, TODO.md, settings.nix, etc.) — or runs `/task`.
 2. **Agent creates task file** in `inputs/[Task]-for-[Model].md` — summarizes what needs to be done, which files are affected
-3. **Agent recommends a model** based on complexity:
-   - **Flash** (DeepSeek V4 Flash / MiMo V2.5) — small fixes, simple config changes, doc updates
-   - **Pro** (DeepSeek V4 Pro / MiMo V2.5 Pro) — module creation, multi-file changes, service config
-   - **GLM** (GLM 5.2) — debugging, architecture decisions, research
-   - **Kimi** (Kimi K3) — maximum reasoning, security audits, major restructures
-4. **Human approves or overrides** the model choice
-5. **Reasoning model writes plan** in `outputs/[Task]-plan-by-[Model].md` — concrete, executable steps
-6. **Human reviews plan** — can annotate the output file with changes
-7. **Flash executes** following the plan's instructions
+3. **Agent recommends a reasoning tier** based on complexity; **human approves or overrides**:
+   | Tier | Model | Agent | For |
+   |------|-------|-------|-----|
+   | Low | DeepSeek V4 Flash / MiMo V2.5 | `planner-low` | small fixes, simple config, docs |
+   | Medium | DeepSeek V4 Pro / MiMo V2.5 Pro | `planner-med` | module creation, multi-file, service config |
+   | High | GLM 5.2 | `planner-high` | architecture, hard debugging, locking decisions |
+   | Max | Kimi K3 | `planner-max` | security audits, major restructures |
+4. **Reasoning model writes plan** in `outputs/[Task]-plan-by-[Model].md` — concrete, executable steps
+5. **Human reviews plan** — can annotate the output file with changes
+6. **`nixos-builder` (DeepSeek V4 Pro) executes** following the plan's instructions
+7. **Orchestrator (Flash) troubleshoots** anything that breaks after execution
 
 ### `/` Commands
 
 | Command | What it does | Agent |
 |---------|-------------|-------|
+| `/task` | **General-purpose workflow** — gather → inputs → planner (by tier) → plan → review → execute | orchestrator |
 | `/deploy` | Deploy config to homelab (10.0.0.2), rebuild | deployer (Pro) |
 | `/rebuild` | Rebuild NixOS from latest committed config | deployer (Pro) |
-| `/verify` | Run §13 verification suite against running server | verifier (Flash) |
-| `/update` | Quarterly `nix flake update` (human-approved) | nixos-builder (Pro) |
+| `/verify` | Run §13 verification suite against running server | planner-low (Flash) |
+| `/update` | Quarterly `nix flake update` (human-approved) | planner-high (GLM 5.2) |
 | `/secrets` | Open sops secrets.yaml for editing | nixos-builder (Pro) |
 | `/commit` | Stage + commit changes with descriptive message | nixos-builder (Pro) |
 | `/pr` | Create or update a PR against the repo | nixos-builder (Pro) |
-| `/status` | Report repo state, homelab health, toolchain | nixos-builder (Pro) |
-| `/review` | Review uncommitted changes for bugs, security, structure | build agent |
+| `/status` | Report repo state, homelab health, toolchain | planner-low (Flash) |
+| `/review` | Review uncommitted changes for bugs, security, structure | security-reviewer (Kimi K3) |
 | `/init` | Full session start: probe env, route to model tiers, drive build order | orchestrator |
+
+Special-purpose commands (`/deploy`, `/review`, `/init`, etc.) serve their specific jobs. **`/task` is the general-purpose command** for everything else.
 
 ## 1. Philosophy & Hard Rules
 

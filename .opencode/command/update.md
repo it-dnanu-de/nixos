@@ -1,6 +1,6 @@
 ---
-description: Run the quarterly nix flake update workflow (human-approved, deliberate).
-agent: nixos-builder
+description: Run the quarterly nix flake update workflow (human-approved, deliberate). Routed to GLM 5.2 (planner-high) because the bump review is a decision-heavy task.
+agent: planner-high
 ---
 
 Run the quarterly flake update workflow from OpenCode.md §14.
