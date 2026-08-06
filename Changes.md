@@ -2,6 +2,15 @@
 
 History in OpenCode.md §17 "Session Log".
 
+## 2026-08-06 — Homelab v2 access control (GLM 5.2 plan, DeepSeek-V4-Pro execution)
+- GLM 5.2 plan approved, DeepSeek-V4-Pro executed all phases A–D.
+- **Phase A (re-addressing):** adguard.nix updated with v2 DHCP static leases (10.0.0.8-20, iza/kerem/hannah placeholder MACs), guest range .50-.250, persistent clients keyed by 9 users (LAM+VPN IPs + hostname ids, tags user_admin/user_regular), guests removed from persistent clients (labeled dynamically via runtime_sources.dhcp). settings.nix already had v2 peers.
+- **Phase B (Authelia + profile.dnanu.de):** New modules/services/authelia.nix (instance main, TOTP 2FA, file auth, profile.dnanu.de two_factor policy). sops.nix: authelia_jwt/authelia_storage_key/authelia_users_yaml added, profile_basic_auth removed. ios-profile.nix renamed to profile.dnanu.de (public via cloudflared, auth_request with per-user gate at /<username>/). wireguard.nix: per-user QR renderer grouping peers by user field, per-user index.html with tier notes. cloudflare.nix: profile.dnanu.de tunnel ingress. cloudflare-dns.nix: profile.dnanu.de CNAME → tunnel.
+- **Phase C (nginx ACL):** mkAdminVhost/mkUserVhost helpers derived from settings.network.wireguard.peers (admin/user filtering). adguard.nanulab.de rewritten via mkAdminVhost → admin-VPN-only.
+- **Build:** nix build passes, zero deprecation warnings. Authelia 4.39.20 from cache.
+- **Commits:** `89beb1f` (adguard v2), `1260fe3` (Phase B: authelia+profile+sops+wireguard+cloudflare), `dfe1755` (Phase C: nginx helpers).
+- **Not deployed.** Human must approve, then 1% manual: distribute Authelia passwords (bcrypt hashes in sops), fill real MACs for iza/kerem/hannah, distribute per-user profile URLs, revoke old profile.nanulab.de access.
+
 ## 2026-08-05 — session start: new workflow
 - Task-based workflow: human annotates → agent creates `inputs/[Task]-for-[Model].md` → reasoning model writes `outputs/[Task]-plan-by-[Model].md` → human reviews → Flash executes.
 - Model tiers: Flash (MDP) for small fixes, Pro (M2P) for modules, GLM for debugging, Kimi for architecture.
