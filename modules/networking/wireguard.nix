@@ -1,11 +1,13 @@
-# WireGuard — declarative remote-access VPN (OpenCode.md §3.3, 2026-08-05).
+# WireGuard — declarative remote-access VPN (OpenCode.md §3.3, amended 2026-08-06).
 # Replaces Tailscale SaaS. Kernel WireGuard, fully declarative peers,
 # split-tunnel only (no exit node/NAT). One silent UDP port 51820.
 #
-# Peer data lives in settings.nix (public keys + IPs).
-# Private keys and PSKs are in sops (secrets.yaml). The activation oneshot
-# renders per-peer .conf + QR PNGs + index.html → profile.nanulab.de/wg/
-# behind basic auth.
+# v2 (2026-08-06): two-tier peers (admin/user). Per-user QR renderer writes
+# /var/lib/mobileprofile/wg/<user>/{<peer>.conf,<peer>.png,index.html}.
+# Served behind Authelia at profile.dnanu.de/<user>/.
+#
+# Peer data lives in settings.nix (public keys + IPs + admin flag + user name).
+# Private keys and PSKs are in sops (secrets.yaml).
 {
   config,
   lib,
@@ -14,8 +16,13 @@
   ...
 }:
 let
-  inherit (lib) concatMap;
-  peers = settings.network.wireguard.peers;
+  inherit (lib) concatMap concatMapStringsSep groupBy nameValuePair mapAttrsToList;
+
+  wgSettings = settings.network.wireguard;
+  peers = wgSettings.peers;
+
+  # Group peers by user (e.g. { dumitru = [...]; adela = [...]; })
+  peersByUser = groupBy (p: p.user) peers;
 
   # Build sops secret entries for every peer
   peerSecretAttrs = concatMap (p: [
@@ -23,9 +30,10 @@ let
     { name = "wireguard_peer_${p.name}_psk"; value = { }; }
   ]) peers;
 
-  # Bash fragment that renders one peer. Called inside the oneshot script.
+  # Bash fragment that renders one peer's .conf + .png. Called inside the
+  # per-user loop. Sets MISSING if secrets are absent.
   renderPeerBlock = p: ''
-    echo "  -> peer ${p.name} (${p.ip})" >&2
+    echo "    -> peer ${p.name} (${p.ip})" >&2
     priv="/run/secrets/wireguard_peer_${p.name}_private"
     psk="/run/secrets/wireguard_peer_${p.name}_psk"
 
@@ -34,12 +42,12 @@ let
     [ ! -f "$psk" ]  && peer_missing="$peer_missing wireguard_peer_${p.name}_psk"
 
     if [ -n "$peer_missing" ]; then
-      echo "    WARNING: skipping — missing secrets:$peer_missing" >&2
+      echo "      WARNING: skipping — missing secrets:$peer_missing" >&2
       MISSING="$MISSING ${p.name}"
-      continue
+      return
     fi
 
-    conf="$OUT/${p.name}.conf"
+    conf="$user_out/${p.name}.conf"
     cat > "$conf" <<PEERCONF
 [Interface]
 PrivateKey = $(cat "$priv")
@@ -54,11 +62,55 @@ Endpoint            = $ENDPOINT
 PersistentKeepalive = 25
 PEERCONF
 
-    ${pkgs.qrencode}/bin/qrencode -t PNG -o "$OUT/${p.name}.png" < "$conf"
+    ${pkgs.qrencode}/bin/qrencode -t PNG -o "$user_out/${p.name}.png" < "$conf"
+  '';
 
-    cat >> "$INDEX" <<PEERROW
-    <tr><td>${p.name}</td><td><a href="${p.name}.conf">${p.name}.conf</a></td><td><img src="${p.name}.png" alt="QR for ${p.name}" width="200"></td></tr>
-PEERROW
+  # Generate per-user index.html — lists that user's peers only, with a tier note.
+  tierNote = admin: if admin then "Admin tier — reaches all services including admin UIs"
+                          else "User tier — reaches user-facing services (photos, vault, music, media, audio, books)";
+
+  # Bash heredoc for a single user's index.html
+  userIndexBlock = userName: userPeers: ''
+    # ── index.html for ${userName} ──
+    peer_html=""
+    ${
+      concatMapStringsSep "\n" (p: ''
+        if [[ "$MISSING" != *"${p.name}"* ]]; then
+          peer_html+="<tr><td>${p.name}</td><td><a href=\"${p.name}.conf\">${p.name}.conf</a></td><td><img src=\"${p.name}.png\" alt=\"QR for ${p.name}\" width=\"200\"></td></tr>"$'\n'
+        else
+          peer_html+="<tr><td>${p.name}</td><td colspan=\"2\" class=\"warn\">Config not available — secret keys missing</td></tr>"$'\n'
+        fi
+      '') (builtins.sort (a: b: a.name < b.name) userPeers)
+    }
+
+    tier="${tierNote (builtins.any (p: p.admin) userPeers)}"
+
+    cat > "$user_out/index.html" <<INDEX
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>WireGuard — ${userName}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 2rem; color: #222; }
+  table { border-collapse: collapse; width: 100%; max-width: 800px; }
+  th, td { padding: 0.75rem; border: 1px solid #ddd; text-align: left; }
+  th { background: #f5f5f5; }
+  img { max-width: 200px; height: auto; }
+  a { color: #0366d6; }
+  .warn { color: #cb2431; }
+  .tier { font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<h1>WireGuard — ${userName}</h1>
+<p class="tier">$tier</p>
+<table>
+<tr><th>Device</th><th>Config</th><th>QR Code</th></tr>
+${"\${peer_html}"}
+</table>
+<p><em>Scan QR in the WireGuard app → tap "Allow" → enable On-Demand (Wi‑Fi + Cellular).</em></p>
+</body>
+</html>
+INDEX
   '';
 in
 {
@@ -70,13 +122,12 @@ in
   };
 
   # ── IP forwarding so peers can reach other LAN hosts ──────────────────
-  # Same trust level that tailscale0 had; no NAT/exit-node.
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
   # ── WireGuard interface ───────────────────────────────────────────────
   networking.wireguard.interfaces.wg0 = {
-    ips = [ "${settings.network.wireguard.address}/24" ];
-    listenPort = settings.network.wireguard.port;
+    ips = [ "${wgSettings.address}/24" ];
+    listenPort = wgSettings.port;
     privateKeyFile = config.sops.secrets.wireguard_server_private.path;
     peers = map (p: {
       publicKey = p.publicKey;
@@ -86,9 +137,11 @@ in
     }) peers;
   };
 
-  # ── Profile renderer: per-peer .conf + QR PNG + index.html ───────────
+  # ── Per-user profile renderer: .conf + QR PNG + index.html ────────────
+  # v2: groups peers by user, writes per-user dirs under /var/lib/mobileprofile/wg/<user>/.
+  # Each user sees only their own peers. Old shared /wg/index.html is removed.
   systemd.services.wireguard-profile-render = {
-    description = "Render WireGuard peer configs and QR codes";
+    description = "Render WireGuard peer configs and QR codes (per-user)";
     after = [ "sops-nix.service" ];
     wantedBy = [ "multi-user.target" ];
     path = [ pkgs.wireguard-tools pkgs.qrencode pkgs.coreutils ];
@@ -100,11 +153,8 @@ in
       #!/usr/bin/env bash
       set -euo pipefail
 
-      OUT=/var/lib/mobileprofile/wg
-      mkdir -p "$OUT"
-      INDEX="$OUT/index.html"
-
-      echo "wireguard-profile-render: starting" >&2
+      BASE=/var/lib/mobileprofile/wg
+      echo "wireguard-profile-render: starting (per-user)" >&2
 
       # Derive server public key from the sops-decrypted private key
       SERVER_PRIV=/run/secrets/wireguard_server_private
@@ -113,71 +163,34 @@ in
         exit 1
       fi
       SERVER_PUB=$(wg pubkey < "$SERVER_PRIV")
-      ENDPOINT="${settings.network.wireguard.endpoint}:${toString settings.network.wireguard.port}"
+      ENDPOINT="${wgSettings.endpoint}:${toString wgSettings.port}"
+
+      # ── Per-user loop ──
+    '' + concatMapStringsSep "\n" ({ name, value }: let userName = name; userPeers = value; in ''
+      # ── User: ${userName} ──
+      echo "  user ${userName} (${toString (builtins.length userPeers)} peer(s))" >&2
+      user_out="$BASE/${userName}"
+      rm -rf "$user_out"
+      mkdir -p "$user_out"
 
       MISSING=""
+      ${concatMapStringsSep "\n  " renderPeerBlock (builtins.sort (a: b: a.name < b.name) userPeers)}
 
-      # Start index.html
-      cat > "$INDEX" <<'HTMLHEAD'
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"><title>WireGuard Profiles</title>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 2rem; color: #222; }
-  table { border-collapse: collapse; width: 100%; max-width: 800px; }
-  th, td { padding: 0.75rem; border: 1px solid #ddd; text-align: left; }
-  th { background: #f5f5f5; }
-  img { max-width: 200px; height: auto; }
-  a { color: #0366d6; }
-  .warn { color: #cb2431; }
-</style>
-</head>
-<body>
-<h1>WireGuard Profiles — nanulab</h1>
-<table>
-<tr><th>Device</th><th>Config</th><th>QR Code</th></tr>
-HTMLHEAD
-
-      # Render each peer
-    '' + lib.concatMapStrings renderPeerBlock peers + ''
-
-      # Close HTML
-      cat >> "$INDEX" <<'HTMLEND'
-</table>
-HTMLEND
+      ${userIndexBlock userName userPeers}
 
       if [ -n "$MISSING" ]; then
-        cat >> "$INDEX" <<MISSINGWARN
-<p class="warn"><strong>WARNING:</strong> Some peers skipped — secret keys not yet populated (placeholders in sops). Missing:$MISSING</p>
-MISSINGWARN
+        cat >> "$user_out/index.html" <<MISSINGWARN
+    <p class="warn"><strong>WARNING:</strong> Some peers skipped — secret keys not yet populated (placeholders in sops). Missing:$MISSING</p>
+    MISSINGWARN
       fi
+    '') (mapAttrsToList nameValuePair peersByUser) + ''
 
-      cat >> "$INDEX" <<'HTMLFOOT'
-<p><em>Scan QR in the WireGuard app → tap "Allow" → enable On-Demand (Wi‑Fi + Cellular).</em></p>
-</body>
-</html>
-HTMLFOOT
+      # Secure output: root:nginx, 750 per-user dir, 640 files
+      chown -R root:${config.users.groups.nginx.name} "$BASE"
+      find "$BASE" -type d -exec chmod 750 {} \;
+      find "$BASE" -type f -exec chmod 640 {} \;
 
-      # Secure output: root:nginx, 0640 for files, 0750 for the directory
-      chown -R root:${config.users.groups.nginx.name} "$OUT"
-      chmod 750 "$OUT"
-      find "$OUT" -type f -exec chmod 640 {} \;
-
-      echo "wireguard-profile-render: done ($(find "$OUT" -name '*.conf' | wc -l) peers rendered)" >&2
+      echo "wireguard-profile-render: done ($(find "$BASE" -name '*.conf' | wc -l) peers rendered)" >&2
     '';
-  };
-
-  # ── Serve profiles on the existing profile.nanulab.de vhost ───────────
-  # The vhost skeleton (forceSSL, useACMEHost, basicAuthFile) lives in
-  # ios-profile.nix — we add only the /wg/ location here. NixOS merges both
-  # contributions into a single vhost block.
-  services.nginx.virtualHosts."profile.${settings.domains.internal}" = {
-    locations."/wg/" = {
-      root = "/var/lib/mobileprofile";
-      extraConfig = ''
-        autoindex off;
-        add_header Cache-Control "no-store";
-      '';
-    };
   };
 }

@@ -49,6 +49,10 @@ let
       upsert "$Z_DNANU" A "${settings.domains.public}" "$PUBLIC_IP4" true 1
       upsert "$Z_DNANU" A "www.${settings.domains.public}" "$PUBLIC_IP4" true 1
       upsert "$Z_DNANU" A "${settings.domains.vpn}" "$PUBLIC_IP4" false 120
+      # profile.dnanu.de — CNAME to tunnel, proxied (cloudflared ingress §3.6)
+      deleteRecord "$Z_DNANU" A "profile.${settings.domains.public}"
+      upsert "$Z_DNANU" CNAME "profile.${settings.domains.public}" \
+        "${settings.cloudflare.tunnelId}.cfargotunnel.com" true 1
     fi
 
     upsert "$Z_DNANU" MX "${settings.domains.public}" "${settings.domains.mail}" false 120

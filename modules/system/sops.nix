@@ -21,11 +21,16 @@
       nextcloud_admin_pass = {};
       vaultwarden_admin_token = {};
       slskd_env = {};
-      profile_basic_auth = {
-        # nginx (user nginx) reads this for basic auth on profile.nanulab.de — must be group-readable
-        owner = "root";
-        group = "nginx";
-        mode = "0440";
+      # Authelia authentication (OpenCode.md §7, plan §3)
+      authelia_jwt = {
+        owner = "authelia-main";
+      };
+      authelia_storage_key = {
+        owner = "authelia-main";
+      };
+      authelia_users_yaml = {
+        owner = "authelia-main";
+        mode = "0400";
       };
       mobileca_key = {};
       mobileca_cert = {};
