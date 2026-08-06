@@ -1,5 +1,34 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-07 — Kimi K3 Mail Security Audit — fix implementation (nixos-builder)
+
+### Batch 1: MUST-FIX — Finding 1: Firewall scope
+- `base.nix`: Global allowedTCPPorts → [25]; allowedUDPPorts → [51820].
+- extraCommands (iptables backend): TCP 53,80,443,465,587,993 + UDP 53/67/547 source-scoped to LAN/ULA/link-local.
+- Verified generated firewall script — rules land before final reject, NOT extraInputRules.
+- Commit: `1cc615f`
+
+### Batch 2: SHOULD-FIX — Findings 2+3: DNS upsert + visibility
+- upsert() now PATCHes first match, DELETEs remaining (multi-record clobber guard).
+- CURL() added --fail; removed stderr suppression; Restart=on-failure + daily timer.
+- Commit: `2862d23`
+
+### Batch 3: SHOULD-FIX — Finding 7: TLSA-sync failure alert
+- cloudflare-tlsa-alert.service: Resend API alert on TLSA sync failure.
+- OnFailure= wired on cloudflare-tlsa-sync.service.
+- Commit: `b2f70eb`
+
+### Batch 4: NICE-TO-HAVE — Findings 4,6,8,9,10
+- F4: watchdog uses -H @tempfile (key off /proc/*/cmdline).
+- F6: deleteRecord covers wildcard AAAA for *.nanulab.de.
+- F8: sieve interpolates ${settings.domains.public} (not hardcoded dnanu.de).
+- F9: sops template group=postfix, mode=0440 for postfix-sasl-passwd.
+- F10: OpenCode.md §7 (mail_hey → mail_hey), §8 (cert group claim corrected).
+- F5 (Cloudflare token argv): SKIPPED — LOW, sub-second oneshot, single-user box.
+- Commit: `446b74d`
+
+### Final build: exit 0, zero warnings.
+
 ## 2026-08-06 — Enterprise Mail Hardening (Kimi K3 plan, nixos-builder execution)
 
 ### Phase A: DNS records + MTA-STS serving + DKIM fix
