@@ -1,6 +1,6 @@
 # profile.dnanu.de — per-user WireGuard configs + (future) mail/CalDAV/CardDAV .mobileconfig.
 # OpenCode.md §10 (amended 2026-08-06). Public via cloudflared tunnel, guarded by Authelia
-# (TOTP 2FA). Per-user pages at /<username>/ serve only that user's WG peers.
+# (TOTP 2FA). Each authenticated user is served ONLY their own peers' dir.
 #
 # DNS now rides inside WG peer configs; the old standalone dns.mobileconfig is retired.
 # WireGuard peer configs and QR codes are rendered by wireguard-profile-render oneshot
@@ -38,27 +38,27 @@
       '';
     };
 
-    # per-user page: /<username>/ → /var/lib/mobileprofile/wg/<username>/
-    # Only served if the Authelia-authenticated $auth_user matches the URL username.
-    locations."~ ^/([a-z]+)/?\$" = {
+    # Named location: unauth'd requests land here → Authelia login with rd= return-to.
+    locations."@authelia_login" = {
       extraConfig = ''
-        auth_request /auth;
-        auth_request_set $auth_user $upstream_http_remote_user;
-        # Only serve if the URL username matches the authenticated username.
-        if ($auth_user != $1) { return 403; }
-        alias /var/lib/mobileprofile/wg/$1/;
-        try_files index.html =404;
-        autoindex off;
-        add_header Cache-Control "no-store";
+        return 302 /authelia/?rd=$scheme://$host$request_uri;
       '';
     };
 
-    # Root → redirect to /<auth_user>/
-    locations."= /" = {
+    # Everything else under the vhost: gate via Authelia and serve the AUTHENTICATED
+    # user's own directory. root is derived from $auth_user (set by auth_request), so
+    # no URL can reach another user's files — there is nothing to guess.
+    # (The earlier `if ($auth_user != $1)` pattern is broken in nginx: `if` runs in the
+    # rewrite phase before auth_request sets $auth_user, so it always returned 403.)
+    locations."/" = {
       extraConfig = ''
         auth_request /auth;
         auth_request_set $auth_user $upstream_http_remote_user;
-        return 302 /$auth_user/;
+        error_page 401 = @authelia_login;
+        root /var/lib/mobileprofile/wg/$auth_user;
+        index index.html;
+        autoindex off;
+        add_header Cache-Control "no-store";
       '';
     };
   };
