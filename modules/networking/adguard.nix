@@ -1,47 +1,36 @@
-# AdGuard Home — LAN DNS + DHCP (replaces Speedport router).
+# AdGuard Home — LAN DNS only (DHCP retired to Kea, 2026-08-06).
 # OpenCode.md §3.2, §3.4. mutableSettings=false → fully declarative.
 #
-# v3 (2026-08-06): static leases via leases.json (AGH 0.107.78 drops YAML static_leases
-# silently — static leases live in the JSON DB at /var/lib/AdGuardHome/leases.json).
-# Persistent clients and DHCP range generated from users.nix.
-# Guest range 10.0.0.100-250, DHCP-only (no persistent client — labeled dynamically
-# via runtime_sources.dhcp).
+# v4 (2026-08-06): DHCP migrated to Kea. AdGuard is DNS-only.
+# Binds on 0.0.0.0:53 and [::]:53 for IPv6/ULA queries.
+# Persistent clients derived from users.nix (isPeer filtered) +
+# one static infra entry (router + server labeled in dashboard).
+# runtime_sources.dhcp = false — no AGH lease DB; guest labels
+# degrade to IP-only via rdns (accepted).
 { config, settings, users, lib, ... }:
 let
-  # Build the leases.json content from users.nix (static DHCP leases).
-  # Only devices with real MACs (not "TODO") are included.
-  staticLeases = lib.flatten (lib.mapAttrsToList (userName: userData:
-    lib.imap0 (idx: dev:
-      let ips = users.userToIps userName (idx + 1); in
-      lib.optional (dev.mac != "TODO") {
-        expires = "";
-        ip = ips.lan;
-        hostname = dev.hostname;
-        mac = dev.mac;
-        static = true;
-      }
-    ) userData.devices
-  ) users.users);
-
-  leasesJson = builtins.toJSON {
-    version = 1;
-    leases = staticLeases;
-  };
-
   # Persistent clients — all users get named persistent clients keyed by IP (LAN+VPN).
+  # Only device slots (isPeer=true), plus one static infra entry for router+server.
   persistentClients = lib.flatten (lib.mapAttrsToList (userName: userData:
     let
       ips = lib.flatten (lib.imap0 (idx: dev:
-        let ip = users.userToIps userName (idx + 1); in [ ip.lan ip.vpn ]
+        let ip = users.userToIps userName (idx + 1);
+        in if users.isPeer dev then [ ip.lan ip.vpn ] else [ ]
       ) userData.devices);
       tag = if userData.tier == "admin" then "user_admin" else "user_regular";
-    in [{
+    in lib.optional (ips != []) {
       name = userName;
       ids = ips;
       tags = [ tag ];
       use_global_settings = true;
-    }]
-  ) users.users);
+    }
+  ) users.users) ++ [{
+    # Static infra entry: router (10.0.0.1) + server LAN (10.0.0.2) + server VPN (10.0.10.2)
+    name = "infra";
+    ids = [ "10.0.0.1" "10.0.0.2" "10.0.10.2" ];
+    tags = [ "user_admin" ];
+    use_global_settings = true;
+  }];
 in
 {
   services.adguardhome = {
@@ -52,7 +41,7 @@ in
     settings = {
       users = [];
       dns = {
-        bind_hosts = [ "0.0.0.0" ];
+        bind_hosts = [ "0.0.0.0" "::" ];
         port = 53;
         ratelimit = 0;
         upstream_mode = "load_balance";
@@ -110,48 +99,19 @@ in
         { enabled = true; url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_59.txt"; name = "AdGuard DNS Popup Hosts filter"; id = 1785782589; }
         { enabled = true; url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_39.txt"; name = "Dandelion Sprout's Anti Push Notifications"; id = 1785782602; }
       ];
-      dhcp = {
-        enabled = true;
-        interface_name = settings.network.interface;
-        local_domain_name = "lan";
-        dhcpv4 = {
-          gateway_ip = settings.network.gateway;
-          subnet_mask = "255.255.255.0";
-          range_start = users.guests.lanStart;   # "10.0.0.100"
-          range_end   = users.guests.lanEnd;     # "10.0.0.250"
-          lease_duration = 86400;
-          icmp_timeout_msec = 1000;
-        };
-        # NO static_leases — AGH 0.107.78 drops this YAML key silently.
-        # Static leases live in leases.json (written by preStart below).
-      };
-      # v3: persistent clients keyed by user (10 users, LAN+VPN IPs — IP-only ids).
-      # Tags: user_admin for admin, user_regular for all others.
-      # Guests (10.0.0.100-250) have NO persistent client — labeled dynamically via
-      # runtime_sources.dhcp.
+      # NO dhcp block — DHCP migrated to Kea (Decision B, 2026-08-06).
+      # Persistent clients keyed by user (10 users, LAN+VPN IPs — IP-only ids).
+      # Guests (10.0.0.100-200) have NO persistent client — labeled dynamically via rdns.
       clients = {
         persistent = persistentClients;
         runtime_sources = {
           whois = true;
           arp = false;
           rdns = true;
-          dhcp = true;
+          dhcp = false;   # Kea manages DHCP — no AGH lease DB to read
           hosts = true;
         };
       };
     };
   };
-
-  # Write declarative static leases to leases.json BEFORE AGH starts.
-  # AGH 0.107.78 does NOT read static_leases from YAML — they live in leases.json.
-  # See internal/dhcpd/db.go: dbLoad() loads this file at DHCP server startup.
-  # The NixOS module's preStart is typed as `lines` — our fragment appends cleanly
-  # after the module's installFresh. Both run as the DynamicUser.
-  systemd.services.adguardhome.preStart = ''
-    # Write declarative static leases (AGH loads leases.json on start).
-    # Derived from users.nix — only devices with real MACs (not "TODO") are included.
-    echo '${leasesJson}' > "$STATE_DIRECTORY/leases.json"
-    chmod 600 "$STATE_DIRECTORY/leases.json"
-    echo "adguardhome preStart: wrote static leases to leases.json" >&2
-  '';
 }

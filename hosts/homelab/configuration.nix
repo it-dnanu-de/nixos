@@ -15,6 +15,7 @@
     ../../modules/system/sops.nix
     ../../modules/networking/base.nix
     ../../modules/networking/adguard.nix
+    ../../modules/networking/kea.nix
     ../../modules/networking/wireguard.nix
     ../../modules/networking/ddclient.nix
     ../../modules/networking/acme.nix
