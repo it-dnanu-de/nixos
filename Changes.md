@@ -32,3 +32,9 @@
 
 ---
 (previous session history preserved below)
+
+## 2026-08-06 — Network v4 post-deploy fixes (verification round)
+- **Logout 405 fixed:** Authelia `/api/logout` is POST-only; the link was a GET. Fixed in two passes: (1) form→POST, (2) since Authelia needs `{"targetURL":...}` in the POST body (returns only `safeTargetURL`, frontend JS does the redirect), reverted an invalid `error_page 200` nginx approach (nginx only accepts 300-599) and instead added a tiny inline JS logout (`fetch` POST with targetURL body → redirect to root). Commits `1339005`, `11cde3b` (reverted), `3004661`.
+- **Verified end-to-end:** logout → `{"status":"OK","data":{"safeTargetURL":true}}`, session cleared, next request 302 → login. nginx healthy.
+- **Step-10 verification all green:** Kea leases (arch 10.0.0.3, iPhone 10.0.0.10) · adguard 200 on LAN+WG for admin · profile admin=7 QRs / dumitru=10 QRs · dead name 404 · guest 403 · iPhone cellular adblock via WG · WG handshake <5s.
+- **Arch client:** needed `pacman -S openresolv` for wg-quick DNS (resolvconf) — now up as admin3-vpn.
