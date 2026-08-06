@@ -284,11 +284,11 @@ nixos-homelab/
 
 ## 7. Secrets Inventory (sops-nix)
 
-`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey_hash`, `mail_admin_hash`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `authelia_jwt`, `authelia_storage_key`, `authelia_users_yaml` (10 users: admin + 9 regular), `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<hostname>-vpn_private`, `wireguard_peer_<hostname>-vpn_psk` (97 peers × 2 = **194** WG keys; `[user]-vpn`/`[user]1-9-vpn` naming — §3.3).
+`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey`, `mail_admin`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `authelia_jwt`, `authelia_storage_key`, `authelia_users_yaml` (10 users: admin + 9 regular), `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<hostname>-vpn_private`, `wireguard_peer_<hostname>-vpn_psk` (97 peers × 2 = **194** WG keys; `[user]-vpn`/`[user]1-9-vpn` naming — §3.3).
 
 ## 8. TLS
 
-`security.acme` DNS-01 via Cloudflare (lego): `*.nanulab.de`, `*.dnanu.de`, `mail.dnanu.de`. Cert group readable by nginx, dovecot2, postfix; `reloadServices` set. No HTTP-01 (port 80 closed).
+`security.acme` DNS-01 via Cloudflare (lego): `*.nanulab.de`, `*.dnanu.de`, `mail.dnanu.de`. Cert dir owned `acme:acme`; only nginx is in the `acme` group. Postfix/Dovecot read certs during root-init before privilege drop — verified working end-to-end (live TLSv1.3 on all ports). `reloadServices` set. No HTTP-01 (port 80 closed).
 
 ## 9. Service Map — all native modules ⚠️ VERIFY each exists in pinned 26.05
 

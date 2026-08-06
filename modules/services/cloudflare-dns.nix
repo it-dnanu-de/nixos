@@ -75,11 +75,12 @@ let
     upsert "$Z_DNANU" CNAME "mta-sts.${settings.domains.public}" \
       "${settings.cloudflare.tunnelId}.cfargotunnel.com" true 1
 
-    # nanulab.de services are VPN-only (nginx source allowlist 10.0.1.0/24); AdGuard
+    # nanulab.de services are VPN-only (nginx source allowlist); AdGuard
     # rewrites them locally to 10.0.0.2. Public records must NOT exist (leaks
     # internal naming, resolves to nothing reachable). Delete A + AAAA if present.
     deleteRecord "$Z_NANULAB" A "*.${settings.domains.internal}"
     deleteRecord "$Z_NANULAB" A "${settings.domains.internal}"
+    deleteRecord "$Z_NANULAB" AAAA "*.${settings.domains.internal}"
     deleteRecord "$Z_NANULAB" AAAA "${settings.domains.internal}"
     upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120
   '';

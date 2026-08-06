@@ -30,14 +30,14 @@
       sieveScript = ''
         require ["fileinto", "mailbox"];
         # :matches with * handles both bare alias and +subaddressing
-        if address :matches "to" "it*@dnanu.de"       { fileinto :create "IT";       stop; }
-        if address :matches "to" "health*@dnanu.de"   { fileinto :create "Health";   stop; }
-        if address :matches "to" "wealth*@dnanu.de"   { fileinto :create "Wealth";   stop; }
-        if address :matches "to" "creative*@dnanu.de" { fileinto :create "Creative"; stop; }
-        if address :matches "to" "academic*@dnanu.de" { fileinto :create "Academic"; stop; }
-        if address :matches "to" "accounts*@dnanu.de" { fileinto :create "Accounts"; stop; }
-        if address :matches "to" "contact*@dnanu.de"  { fileinto :create "Contact";  stop; }
-        if address :matches "to" "partners*@dnanu.de" { fileinto :create "Partners"; stop; }
+        if address :matches "to" "it*@${settings.domains.public}"       { fileinto :create "IT";       stop; }
+        if address :matches "to" "health*@${settings.domains.public}"   { fileinto :create "Health";   stop; }
+        if address :matches "to" "wealth*@${settings.domains.public}"   { fileinto :create "Wealth";   stop; }
+        if address :matches "to" "creative*@${settings.domains.public}" { fileinto :create "Creative"; stop; }
+        if address :matches "to" "academic*@${settings.domains.public}" { fileinto :create "Academic"; stop; }
+        if address :matches "to" "accounts*@${settings.domains.public}" { fileinto :create "Accounts"; stop; }
+        if address :matches "to" "contact*@${settings.domains.public}"  { fileinto :create "Contact";  stop; }
+        if address :matches "to" "partners*@${settings.domains.public}" { fileinto :create "Partners"; stop; }
       '';
     };
 
@@ -56,6 +56,8 @@
   # then postfix-setup.service reads it + runs postmap.
   sops.templates."postfix-sasl-passwd" = {
     content = "[smtp.resend.com]:465 resend:${config.sops.placeholder.resend_api_key}";
+    group = "postfix";
+    mode = "0440";
     restartUnits = [ "postfix-setup.service" "postfix.service" ];
   };
 
@@ -153,13 +155,19 @@
 
       if [ -n "$problems" ] && [ $((now - last)) -gt 21600 ]; then
         body="homelab mail watchdog:$problems"
+        # Render the Resend auth header to a temp file so the API key
+        # stays out of /proc/*/cmdline while curl runs (Finding 4).
+        AUTH_FILE=$(mktemp)
+        printf "Authorization: Bearer %s" "$(cat "$CREDENTIALS_DIRECTORY/resend_api_key")" > "$AUTH_FILE"
         if curl -sS --fail -X POST "https://api.resend.com/emails" \
-            -H "Authorization: Bearer $(cat "$CREDENTIALS_DIRECTORY/resend_api_key")" \
+            -H @"$AUTH_FILE" \
             -H "Content-Type: application/json" \
             -d "$(jq -nc --arg b "$body" '{from:"alert@dnanu.de",to:["hey@dnanu.de"],subject:"[homelab] mail watchdog",text:$b}')" > /dev/null; then
+          rm -f "$AUTH_FILE"
           echo "$now" > "$STATE"
           echo "alert sent:$problems"
         else
+          rm -f "$AUTH_FILE"
           echo "alert FAILED:$problems"; exit 1
         fi
       else
