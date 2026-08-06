@@ -181,10 +181,10 @@ in
       HASH=$(openssl x509 -in "$CERT" -pubkey -noout \
              | openssl pkey -pubin -outform DER \
              | openssl dgst -sha256 -r | cut -d' ' -f1)
-      # Cloudflare's TLSA records use structured fields (usage/selector/
-      # matching_type/certificate), NOT a freeform "3 1 1 <hash>" content string.
-      # A generic {content: "3 1 1 …"} POST/PATCH returns 400 "usage is a
-      # required data field".
+      # Cloudflare's TLSA records use a nested `data` object
+      # (usage/selector/matching_type/certificate). A freeform "3 1 1 <hash>"
+      # content string, or top-level usage/selector fields, both return 400
+      # "usage is a required data field".
       CONTENT="3 1 1 $HASH"
       NAME="_25._tcp.${settings.domains.mail}"
       TOKEN="$(cat "$CREDENTIALS_DIRECTORY/cloudflare_api_token")"
@@ -194,14 +194,12 @@ in
       ZONE=$(CURL "$API?name=${settings.domains.public}" | jq -r '.result[0].id')
       REC=$(CURL "$API/$ZONE/dns_records?type=TLSA&name=$NAME")
       ID=$(echo "$REC" | jq -r '.result[0].id // empty')
-      CUR=$(echo "$REC" | jq -r '.result[0].data.usage // empty' 2>/dev/null)
-      # Compare using the structured certificate field; the string form is
-      # "3 1 1 <hex>" which we recompute on every run for the comparison.
+      # Compare via the structured certificate field (survives field ordering).
       CUR_CERT=$(echo "$REC" | jq -r '.result[0].data.certificate // empty' 2>/dev/null)
       if [ "$CUR_CERT" = "$HASH" ]; then echo "TLSA up to date"; exit 0; fi
-      # TLSA fields for DANE-EE / SPKI / SHA-256 = 3 1 1
+      # TLSA for DANE-EE / SPKI / SHA-256 = usage 3, selector 1, matching_type 1.
       BODY=$(jq -nc --arg n "$NAME" --arg c "$HASH" \
-        '{type:"TLSA",name:$n,usage:3,selector:1,matching_type:1,certificate:$c,ttl:120}')
+        '{type:"TLSA",name:$n,data:{usage:3,selector:1,matching_type:1,certificate:$c},ttl:120}')
       if [ -n "$ID" ]; then
         CURL -X PATCH "$API/$ZONE/dns_records/$ID" -d "$BODY" > /dev/null
         echo "TLSA updated: $CONTENT"
