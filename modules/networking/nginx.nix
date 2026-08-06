@@ -17,8 +17,13 @@ let
   # Build nginx allow/deny directives from an IP list.
   mkAllowString = ips: builtins.concatStringsSep "\n    " (map (p: "allow ${p.ip}/32;") ips) + "\n    deny all;";
 
-  # Admin vhost ACL: only admin VPN peers.
-  adminAllowlist = mkAllowString adminVpnIps;
+  # Admin vhost ACL: admin VPN peers + admin's LAN IPs (iOS routes local-subnet
+  # traffic directly over LAN, bypassing the tunnel). Deny everything else.
+  adminAllowlist = ''
+    ${mkAllowString adminVpnIps}
+    ${builtins.concatStringsSep "\n    " (map (ip: "allow ${ip}/32;") settings.network.adminLan)}
+    deny all;
+  '';
 
   # User vhost ACL: LAN + all VPN peers (user + admin).
   userAllowlist = ''

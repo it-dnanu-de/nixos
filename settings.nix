@@ -26,6 +26,10 @@
     prefixLength = 24;
     subnet = "10.0.0.0/24";      # LAN — allowed to reach local nginx TLS vhosts (AdGuard UI, profile)
     gateway = "10.0.0.1";
+    # Admin's LAN IPs (dumitru-phone/dumitru-pc static leases). iOS routes
+    # local-subnet traffic directly over LAN (never through the tunnel), so the
+    # admin allowlist must include these to reach admin UIs from home WiFi.
+    adminLan = [ "10.0.0.8" "10.0.0.9" ];
   };
 
   hostId = "2f69efe2";           # ZFS requires stable host ID — generate once, keep forever
