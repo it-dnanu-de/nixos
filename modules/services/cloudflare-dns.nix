@@ -10,23 +10,28 @@ let
     set -euo pipefail
     TOKEN="$(${pkgs.coreutils}/bin/cat $CREDENTIALS_DIRECTORY/cloudflare_api_token)"
     API="https://api.cloudflare.com/client/v4/zones"
-    CURL() { ${pkgs.curl}/bin/curl -s -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$@"; }
+    # --fail exits non-zero on HTTP 4xx/5xx so set -e catches API failures.
+    # -sS keeps stderr visible (errors land in the journal — audit Finding 3).
+    CURL() { ${pkgs.curl}/bin/curl -sS --fail -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$@"; }
 
     Z_DNANU=$(CURL "$API?name=${settings.domains.public}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
     Z_NANULAB=$(CURL "$API?name=${settings.domains.internal}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
 
     upsert() {
       local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6
-      local existing=$(CURL "$API/$zone/dns_records?type=$type&name=$name" | ${pkgs.jq}/bin/jq -r '.result | length')
+      local response=$(CURL "$API/$zone/dns_records?type=$type&name=$name")
+      local existing=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result | length')
       if [ "$existing" -gt 0 ]; then
-        # Update in-place — don't delete (prevents gaps during API failures)
-        CURL "$API/$zone/dns_records?type=$type&name=$name" \
-          | ${pkgs.jq}/bin/jq -r '.result[].id' \
-          | while read -r id; do
-              CURL -X PATCH "$API/$zone/dns_records/$id" \
-                -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
-                > /dev/null 2>&1
-            done
+        # PATCH first match in-place, DELETE any extras (multi-record clobber guard — Finding 2)
+        local first_id=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result[0].id')
+        CURL -X PATCH "$API/$zone/dns_records/$first_id" \
+          -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
+          > /dev/null
+        if [ "$existing" -gt 1 ]; then
+          echo "$response" | ${pkgs.jq}/bin/jq -r '.result[1:][].id' | while read -r id; do
+            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
+          done
+        fi
       else
         CURL -X POST "$API/$zone/dns_records" \
           -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
@@ -40,11 +45,11 @@ let
       CURL "$API/$zone/dns_records?type=$type&name=$name" \
         | ${pkgs.jq}/bin/jq -r '.result[].id' \
         | while read -r id; do
-            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null 2>&1
+            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
           done
     }
 
-    PUBLIC_IP4=$(${pkgs.curl}/bin/curl -s --interface ${settings.network.interface} https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
+    PUBLIC_IP4=$(${pkgs.curl}/bin/curl -sS --fail --interface ${settings.network.interface} https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
     if [ "$PUBLIC_IP4" != "0.0.0.0" ]; then
       upsert "$Z_DNANU" A "${settings.domains.public}" "$PUBLIC_IP4" true 1
       upsert "$Z_DNANU" A "www.${settings.domains.public}" "$PUBLIC_IP4" true 1
@@ -134,7 +139,18 @@ in
       ExecStart = "${dnsScript}/bin/cloudflare-dns-sync";
       LoadCredential = "cloudflare_api_token:${cfToken}";
       RemainAfterExit = true;
+      # --fail + set -e means HTTP errors are caught;
+      # Restart=on-failure ensures convergence after transient API outages.
+      Restart = "on-failure";
+      RestartSec = "60s";
+      StartLimitBurst = 5;
     };
+  };
+
+  # Daily convergence timer — catches manual dashboard drift (Finding 3).
+  systemd.timers.cloudflare-dns-sync = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = { OnCalendar = "daily"; Persistent = true; RandomizedDelaySec = "1h"; };
   };
 
   # DANE TLSA (3 1 1 SPKI SHA-256) — auto-synced from the ACME cert.
