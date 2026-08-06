@@ -27,7 +27,7 @@ type ServerConfig struct {
 
 **Static leases live in a separate JSON database file** (`internal/dhcpd/db.go`):
 - File: `leases.json` in AGH's working directory (`/var/lib/AdGuardHome/leases.json`)
-- Format: `{"version": 1, "leases": [{"expires": "", "ip": "10.0.0.3", "hostname": "admin1", "mac": "2c:9c:58:60:c8:25", "static": true}]}`
+- Format: `{"version": 1, "leases": [{"expires": "", "ip": "10.0.0.3", "hostname": "admin3", "mac": "2c:9c:58:60:c8:25", "static": true}]}`
 - Loaded by `server.dbLoad()` during `dhcpd.Create()` (before the DHCP server starts serving)
 - Written by `server.dbStore()` on lease changes (static + dynamic sorted by hostname)
 
@@ -87,7 +87,9 @@ ssh ... 'grep static_leases /var/lib/AdGuardHome/AdGuardHome.yaml || echo "OK: n
 # (WG peers + QR renderer), nginx.nix (ACL allowlists), authelia.nix (user list).
 #
 # IP allocation (derived, not hardcoded):
-#   admin   → LAN 10.0.0.3-8   · VPN 10.0.10.3-8
+#   admin   → LAN 10.0.0.1-8   · VPN 10.0.10.3-8 (admin0=10.0.0.0 net addr,
+#             admin1=router 10.0.0.1, admin2=homelab 10.0.0.2 = WG server 10.0.10.2;
+#             admin3-8 = VPN devices, name↔IP aligned)
 #   dumitru → LAN 10.0.0.9-19  · VPN 10.0.10.9-19
 #   adela   → LAN 10.0.0.20-29 · VPN 10.0.10.20-29
 #   tiberiu → LAN 10.0.0.30-39 · VPN 10.0.10.30-39
@@ -105,7 +107,7 @@ ssh ... 'grep static_leases /var/lib/AdGuardHome/AdGuardHome.yaml || echo "OK: n
 {
   # User block base offsets (LAN = base, VPN = base + 10.0.10.x mirroring)
   blocks = {
-    admin   = { lan = 3;  vpn = 3;  };  # admin1-6 → .3-.8
+    admin   = { lan = 3;  vpn = 3;  };  # admin3-8 → .3-.8 (admin0/1/2 = net/router/homelab, no VPN)
     dumitru = { lan = 9;  vpn = 9;  };  # dumitru1-11 → .9-.19
     adela   = { lan = 20; vpn = 20; };
     tiberiu = { lan = 30; vpn = 30; };
@@ -121,7 +123,7 @@ ssh ... 'grep static_leases /var/lib/AdGuardHome/AdGuardHome.yaml || echo "OK: n
     admin = {
       tier = "admin";
       devices = [
-        { hostname = "admin1"; mac = "2c:9c:58:60:c8:25"; }  # Arch PC
+        { hostname = "admin3"; mac = "2c:9c:58:60:c8:25"; }  # Arch PC
       ];
     };
     dumitru = {
@@ -310,7 +312,7 @@ network.wireguard = {
 peers = lib.flatten (lib.mapAttrsToList (userName: userData:
   lib.imap0 (idx: dev:
     let ips = users.userToIps userName (idx + 1); in {
-      name = "${dev.hostname}-vpn";     # e.g. "admin1-vpn"
+      name = "${dev.hostname}-vpn";     # e.g. "admin3-vpn"
       ip = ips.vpn;
       admin = userData.tier == "admin";
       user = userName;
@@ -324,7 +326,7 @@ peers = lib.flatten (lib.mapAttrsToList (userName: userData:
 
 | Old peer name | New hostname | Public key (unchanged) |
 |---|---|---|
-| dumitru-pc-vpn | admin1 | `iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo=` |
+| dumitru-pc-vpn | admin3 | `iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo=` |
 | dumitru-phone-vpn | dumitru1 | `hgUar95LcXopyebZfGRDbe0lZndqDfHDp/1CiSg1qlo=` |
 | adela-phone-vpn | adela1 | `IKGIZcEp5jXPPhjD1y0yhH8NctiJOlCC0WEto6hNC2U=` |
 | adela-tv-vpn | adela2 | `WppvW2HLCQEl+7Q5CmSSKk9XOzAgf3wImZvGTGTGF1o=` |
@@ -344,7 +346,7 @@ Old sops key names → new sops key names (13 peers × 2 = 26 keys renamed):
 
 | Old sops key | New sops key |
 |---|---|
-| `wireguard_peer_dumitru-pc-vpn_{private,psk}` | `wireguard_peer_admin1-vpn_{private,psk}` |
+| `wireguard_peer_dumitru-pc-vpn_{private,psk}` | `wireguard_peer_admin3-vpn_{private,psk}` |
 | `wireguard_peer_dumitru-phone-vpn_{private,psk}` | `wireguard_peer_dumitru1-vpn_{private,psk}` |
 | `wireguard_peer_adela-phone-vpn_{private,psk}` | `wireguard_peer_adela1-vpn_{private,psk}` |
 | ... | ... (pattern: `<hostname>-vpn` replaces `<user>-<device>-vpn`) |
@@ -354,12 +356,12 @@ Old sops key names → new sops key names (13 peers × 2 = 26 keys renamed):
 2. For each of the 13 peers: copy the old key's value to the new key name, then delete the old key.
 3. Save.
 
-The `wireguard.nix` `peerSecretAttrs` already derives secret names from `p.name`, so once `p.name` = `"admin1-vpn"` etc., the sops keys must match.
+The `wireguard.nix` `peerSecretAttrs` already derives secret names from `p.name`, so once `p.name` = `"admin3-vpn"` etc., the sops keys must match.
 
 ### QR renderer (deliverable #5)
 
-The existing per-user renderer in `wireguard.nix` already groups by `p.user`. With the new peer names (`admin1-vpn`, `dumitru1-vpn`, etc.), the renderer writes:
-- `/var/lib/mobileprofile/wg/admin/admin1-vpn.conf` + `.png` + `index.html`
+The existing per-user renderer in `wireguard.nix` already groups by `p.user`. With the new peer names (`admin3-vpn`, `dumitru1-vpn`, etc.), the renderer writes:
+- `/var/lib/mobileprofile/wg/admin/admin3-vpn.conf` + `.png` + `index.html`
 - `/var/lib/mobileprofile/wg/dumitru/dumitru1-vpn.conf` + `.png` + `index.html`
 - etc.
 
@@ -398,7 +400,7 @@ users:
   # ... 8 more users
 ```
 
-**Profile page mapping:** `profile.dnanu.de/admin/` serves `admin1-vpn` QR; `profile.dnanu.de/dumitru/` serves `dumitru1-vpn` QR. The existing nginx `root /var/lib/mobileprofile/wg/$auth_user` + `try_files` already handles this — the renderer writes per-user dirs named after the `user` field (`admin`, `dumitru`, etc.). No nginx change needed.
+**Profile page mapping:** `profile.dnanu.de/admin/` serves `admin3-vpn` QR; `profile.dnanu.de/dumitru/` serves `dumitru1-vpn` QR. The existing nginx `root /var/lib/mobileprofile/wg/$auth_user` + `try_files` already handles this — the renderer writes per-user dirs named after the `user` field (`admin`, `dumitru`, etc.). No nginx change needed.
 
 ### `authelia.nix` — no structural change
 
@@ -526,7 +528,7 @@ All other secrets unchanged. `wireguard_server_private` unchanged (server keypai
    - `sops secrets/secrets.yaml`
    - For each of the 13 peers: copy `wireguard_peer_<old-name>_<private|psk>` value to `wireguard_peer_<new-hostname>-vpn_<private|psk>`, then delete the old key.
    - Mapping table (old → new):
-     - `dumitru-pc-vpn` → `admin1-vpn`
+     - `dumitru-pc-vpn` → `admin3-vpn`
      - `dumitru-phone-vpn` → `dumitru1-vpn`
      - `adela-phone-vpn` → `adela1-vpn`
      - `adela-tv-vpn` → `adela2-vpn`
@@ -588,7 +590,7 @@ All other secrets unchanged. `wireguard_server_private` unchanged (server keypai
 
 | User | Tier | Hostname | LAN IP | VPN IP | sops key stem | Profile page |
 |---|---|---|---|---|---|---|
-| admin | admin | admin1 | 10.0.0.3 | 10.0.10.3 | `wireguard_peer_admin1-vpn_{private,psk}` | `/admin/` |
+| admin | admin | admin3 | 10.0.0.3 | 10.0.10.3 | `wireguard_peer_admin3-vpn_{private,psk}` | `/admin/` |
 | dumitru | user | dumitru1 | 10.0.0.9 | 10.0.10.9 | `wireguard_peer_dumitru1-vpn_{private,psk}` | `/dumitru/` |
 | adela | user | adela1 | 10.0.0.20 | 10.0.10.20 | `wireguard_peer_adela1-vpn_{private,psk}` | `/adela/` |
 | adela | user | adela2 | 10.0.0.21 | 10.0.10.21 | `wireguard_peer_adela2-vpn_{private,psk}` | `/adela/` |
@@ -608,14 +610,14 @@ All other secrets unchanged. `wireguard_server_private` unchanged (server keypai
 
 | Section | Change |
 |---|---|
-| §3.1 | Replace v2 addressing (10.0.0.8-20 / 10.0.1.x) with v3 user-block layout: admin .3-8, dumitru .9-19, adela .20-29, …, hannah .90-99, guests .100-250. WG subnet 10.0.10.0/24, server 10.0.10.2. Note `users.nix` as the single source of truth for IP allocation. |
-| §3.3 | Update WG peer naming from `[user]-[device]-vpn` to `[hostname]-vpn` (e.g. `admin1-vpn`, `dumitru1-vpn`). Server is 10.0.10.2 (was 10.0.1.1). Peers derived from `users.nix`. Admin tier = `admin` user (separate from `dumitru` who is now a normal user). |
-| §3.4 | AdGuard UI (`adguard.nanulab.de`) = admin IPs only (10.0.0.3 + 10.0.10.3). LAN devices still use AdGuard as DNS on :53. |
+| §3.1 | Replace v2 addressing (10.0.0.8-20 / 10.0.1.x) with v3 user-block layout: admin0-2 infra (net/router/homelab, no VPN), admin3-8, dumitru .9-19, adela .20-29, …, hannah .90-99, guests .100-250. WG subnet 10.0.10.0/24, server 10.0.10.2. Note `users.nix` as the single source of truth for IP allocation. |
+| §3.3 | Update WG peer naming from `[user]-[device]-vpn` to `[hostname]-vpn` (e.g. `admin3-vpn`, `dumitru1-vpn`). Server is 10.0.10.2 (was 10.0.1.1). Peers derived from `users.nix`. Admin tier = `admin` user (separate from `dumitru` who is now a normal user). |
+| §3.4 | AdGuard UI (`adguard.nanulab.de`) = admin IPs only (10.0.0.1-8 + 10.0.10.3-8). LAN devices still use AdGuard as DNS on :53. |
 | §7 | Rename WG peer secrets to `wireguard_peer_<hostname>-vpn_{private,psk}`. Add `authelia` admin user (10th). No new secret names. |
 | §9 | Mark AdGuard UI as admin-IP-only. Note AGH static leases via `leases.json` (not YAML). |
-| §10 | `profile.dnanu.de/<user>/` serves per-user WG peers. `/admin/` serves admin1-vpn; `/dumitru/` serves dumitru1-vpn; etc. Authelia has 10 users (admin + 9 regular). |
+| §10 | `profile.dnanu.de/<user>/` serves per-user WG peers. `/admin/` serves admin3-vpn; `/dumitru/` serves dumitru1-vpn; etc. Authelia has 10 users (admin + 9 regular). |
 | §12 | 1%-manual: rename sops WG keys (if executor didn't); generate admin Authelia password; distribute new profile URLs; fill iza/kerem/hannah MACs in `users.nix`. |
-| §13 | Add: `cat /var/lib/AdGuardHome/leases.json | jq '.leases[] | select(.static==true)'` (verify static leases); `wg show` (peers at 10.0.10.x); `curl -I https://profile.dnanu.de/admin/` (admin sees admin1-vpn QR); nginx ACL: guest IP → 403 on all vhosts. |
+| §13 | Add: `cat /var/lib/AdGuardHome/leases.json | jq '.leases[] | select(.static==true)'` (verify static leases); `wg show` (peers at 10.0.10.x); `curl -I https://profile.dnanu.de/admin/` (admin sees admin3-vpn QR); nginx ACL: guest IP → 403 on all vhosts. |
 
 ---
 
