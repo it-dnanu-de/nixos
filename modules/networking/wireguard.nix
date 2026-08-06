@@ -53,6 +53,13 @@ let
 PrivateKey = $(cat "$priv")
 Address    = ${p.ip}/32
 DNS        = 10.0.0.2
+# On a LAN client, DHCP adds a /32 host route for 10.0.0.2 (the DNS) that is MORE
+# specific than AllowedIPs' /24 tunnel route, so WG traffic would still leave via
+# WiFi/LAN and the peer IP never becomes the tunnel IP. Force the server IP through
+# the tunnel with a low-metric PostUp route (and clean it on PreDown). wg-quick
+# supports these directives; iOS ignores them (it routes AllowedIPs natively).
+PostUp   = ip route add 10.0.0.2/32 dev %i metric 50
+PreDown  = ip route del 10.0.0.2/32 dev %i metric 50
 
 [Peer]
 PublicKey           = $SERVER_PUB
