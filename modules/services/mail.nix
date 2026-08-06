@@ -109,4 +109,19 @@
       extraConfig = "add_header Content-Type application/xml;";
     };
   };
+
+  # MTA-STS policy host (§3.2, D3) — world-readable, served via cloudflared tunnel.
+  # RFC 8461: senders fetch https://mta-sts.dnanu.de/.well-known/mta-sts.txt
+  services.nginx.virtualHosts."mta-sts.${settings.domains.public}" = {
+    listen = [ { addr = "127.0.0.1"; port = 8080; } ];
+    locations."= /.well-known/mta-sts.txt" = {
+      root = pkgs.writeTextDir ".well-known/mta-sts.txt" ''
+        version: STSv1
+        mode: enforce
+        mx: ${settings.domains.mail}
+        max_age: 86400
+      '';
+    };
+    locations."/".return = "404";
+  };
 }

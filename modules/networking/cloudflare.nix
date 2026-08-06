@@ -16,6 +16,7 @@
         "${settings.domains.public}" = "http://127.0.0.1:8080";
         "www.${settings.domains.public}" = "http://127.0.0.1:8080";
         "autoconfig.${settings.domains.public}" = "http://127.0.0.1:8080";
+        "mta-sts.${settings.domains.public}" = "http://127.0.0.1:8080";
         "profile.${settings.domains.public}" = "https://127.0.0.1:443";
       };
       default = "http_status:404";
