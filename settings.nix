@@ -74,7 +74,7 @@
   # Note: SSH password authentication remains enabled — intentional by human ruling.
 
   cloudflare = {
-    tunnelId = "00000000-0000-0000-0000-000000000000"; # placeholder — human sets real tunnel UUID (1% manual)
+    tunnelId = "62ab1635-c6ea-44bc-a702-1bff07f392f7"; # real tunnel (created 2026-08-06 via dashboard token)
   };
 
   timeZone = "Europe/Berlin";
