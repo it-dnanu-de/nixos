@@ -55,7 +55,10 @@
       "command": [
         "npx",
         "-y",
-        "@playwright/mcp@latest"
+        "@playwright/mcp@latest",
+        "--browser",
+        "webkit",
+        "--headless"
       ],
       "enabled": true,
       "timeout": 30000
