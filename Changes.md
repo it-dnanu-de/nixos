@@ -76,3 +76,9 @@ History in OpenCode.md §17 "Session Log".
 - **Playwright:** MCP pointed at chrome (not installable on Arch) → switched to `--browser webkit --headless` (commit `5b125fd`). Needs opencode restart to take effect.
 - **Verified:** tunnel registered at fra07/fra18/muc01/muc03; `profile.dnanu.de` public → 302 to `/authelia/?rd=...`; Authelia login UI 200 via tunnel; `systemctl --failed` clean (no placeholder unit). `dnanu.de` 522 = placeholder 8080 vhost (blog lands Phase 5+).
 - **Remaining:** fill iza/kerem/hannah MACs; distribute Authelia passwords + TOTP; confirm profile.dnanu.de from cellular; dnanu.de/www/autoconfig hostname routes in tunnel (dashboard) if not auto.
+
+## 2026-08-06 — Authelia blank login page fixed (subpath mount)
+- profile.dnanu.de/authelia rendered a **blank page**: nginx proxied `/authelia/` → `127.0.0.1:9091/` (trailing slash strips the prefix), so Authelia emitted `<base href=".../">` and its assets loaded from `/static/...` at the root — blocked by the auth-protected `/` location → blank.
+- Fix: mount Authelia at a base path (`server.address = "tcp://127.0.0.1:9091/authelia"`), verify endpoint → `/authelia/api/verify`, proxy `/authelia/` without trailing slash. Commit `3314981`. Assets now 200 at `/authelia/static/...`; `data-basepath="/authelia"` correct.
+- **Verified via public tunnel:** /dumitru unauth'd → 302 to login; login page renders; 1FA (dumitru) → HTTP 200 + session cookie (domain=dnanu.de); nginx /auth with 1FA session → 302 (two_factor policy → TOTP required — correct).
+- Cellular unreachability: likely the blank-page session; retest on cellular now. If still failing, likely dnanu.de/www/autoconfig hostname routes missing in the tunnel dashboard.
