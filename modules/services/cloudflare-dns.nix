@@ -163,6 +163,9 @@ in
     wants = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
     path = with pkgs; [ curl jq coreutils openssl ];
+    # Failures after DS-lands-at-DENIC mean hard delivery failures from
+    # DANE-enforcing senders — wire a Resend-based alert (Finding 7).
+    onFailure = [ "cloudflare-tlsa-alert.service" ];
     serviceConfig = {
       Type = "oneshot";
       Restart = "on-failure";
@@ -204,6 +207,31 @@ in
     timerConfig = { OnCalendar = "daily"; Persistent = true; RandomizedDelaySec = "1h"; };
   };
 
+  # TLSA-sync failure alert (Finding 7) — fires via OnFailure= on
+  # cloudflare-tlsa-sync.  Sends a one-line email via Resend HTTPS API
+  # (same channel as mail-queue-watch, zero marginal cost).
+  # Critical after DS records land at DENIC: a stale TLSA means
+  # DANE-enforcing senders see hard delivery failures.
+  systemd.services.cloudflare-tlsa-alert = {
+    description = "TLSA sync failure alert (Resend API)";
+    serviceConfig = {
+      Type = "oneshot";
+      LoadCredential = "resend_api_key:${config.sops.secrets.resend_api_key.path}";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+    };
+    path = with pkgs; [ curl jq ];
+    script = ''
+      set -euo pipefail
+      body="cloudflare-tlsa-sync FAILED on $(hostname) — check journal for details."
+      curl -sS --fail -X POST "https://api.resend.com/emails" \
+        -H "Authorization: Bearer $(cat "$CREDENTIALS_DIRECTORY/resend_api_key")" \
+        -H "Content-Type: application/json" \
+        -d "$(jq -nc --arg b "$body" '{from:"alert@dnanu.de",to:["hey@dnanu.de"],subject:"[homelab] TLSA sync failure",text:$b}')" \
+        > /dev/null
+      echo "TLSA-failure alert sent"
+    '';
+  };
 
   environment.systemPackages = [ pkgs.jq ];
 }
