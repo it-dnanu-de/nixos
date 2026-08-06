@@ -55,3 +55,17 @@ History in OpenCode.md §17 "Session Log".
 - **adguardhome.service crash-looping** after the rebuild — a stale root-owned AGH process from an earlier generation (pid 72198, running 1d4h from `/var/lib/AdGuardHome/`) held port 53; the new DynamicUser-based unit couldn't read the old `nobody`-owned `/var/lib/private/AdGuardHome/data/leases.json`. Fix: killed stale process, wiped stale state dir, restarted → AGH active on :53, rewrites (nanulab.de/mail.dnanu.de → 10.0.0.2) intact, config regenerated from Nix (mutableSettings=false).
 - **Tailscale OAuth secret scrubbed** from sops + Memory.md (tailnet deleted). Commit `c6d96f7`.
 - Verified: profile page 200 w/ auth, AGH DNS serving, dig rewrites OK, `systemctl --failed` clean (except cloudflared placeholder).
+
+## 2026-08-06 — Homelab v2 access control (GLM 5.2 plan, DeepSeek-V4-Pro execution)
+- Human approved GLM 5.2 plan; **DeepSeek-V4-Pro executed** all phases A–D; deployed to gen 45.
+- **Phase A (re-addressing):** adguard.nix v2 DHCP static leases (10.0.0.8–20, `[user]-[device]` hostnames), guest range 10.0.0.50–250, persistent clients keyed by 9 users (dumitru=`user_admin`, rest=`user_regular`); iza/kerem/hannah placeholder MACs (TODO).
+- **Phase B (Authelia + profile.dnanu.de):** new `modules/services/authelia.nix` (instance `main`, TOTP 2FA, file auth from sops `authelia_users_yaml`); sops: `authelia_jwt`/`authelia_storage_key`/`authelia_users_yaml` added, `profile_basic_auth` removed; `ios-profile.nix` vhost renamed to profile.dnanu.de with auth_request; wireguard.nix per-user QR renderer (dropped shared /wg/ index); cloudflared ingress + CNAME for profile.dnanu.de.
+- **Phase C (nginx ACL):** `mkAdminVhost`/`mkUserVhost` helpers; adguard.nanulab.de rewritten as admin-VPN-only (`allow 10.0.1.8/9; deny all;`).
+- **Deploy fixes found by Flash:**
+  - `cloudflare-dns-sync` LoadCredential race → `after = sops-nix.service`.
+  - Authelia `validate-config` required a `notifier` → filesystem notifier added.
+  - Authelia user DB pointed at its default template → repointed to `config.sops.secrets.authelia_users_yaml.path`.
+  - profile vhost `if ($auth_user != $1)` runs before auth_request (rewrite vs access phase) → 403'd everything; replaced with serving `root /var/lib/mobileprofile/wg/$auth_user` + `error_page 401 = @authelia_login`.
+  - wireguard-profile-render left 25 stale pre-v2 flat files → renderer now purges `*.conf`/`*.png`/index.html at base.
+- **Verified:** 1FA validates dumitru against sops users.yaml (200 OK / wrong pw 401); session cookie issued (domain=dnanu.de, secure); unauth'd profile → 302 to Authelia login; adguard.nanulab.de from LAN → 403; per-user dirs adela/david/dumitru/hannah/iza/kerem/ramona/tiberiu/tibisor with correct peer counts; all v2 units active; `systemctl --failed` clean (except placeholder cloudflared tunnel).
+- **Remaining 1%-manual:** distribute Authelia passwords (Memory.md) + users self-enroll TOTP; fill iza/kerem/hannah MACs; set real cloudflared tunnel UUID; verify profile.dnanu.de via tunnel from cellular.
