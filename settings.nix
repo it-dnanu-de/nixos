@@ -42,7 +42,9 @@
   };
 
   # WireGuard remote-access VPN (OpenCode.md §3.3). Server 10.0.1.1/24, endpoint vpn.dnanu.de:51820.
-  # Peers mirror the AdGuard DHCP static-lease layout on a 10.0.1.XXX base.
+  # v2 (2026-08-06): two-tier — `admin = true` peers reach ALL *.nanulab.de incl. admin UIs;
+  # `admin = false` (user) peers reach user-facing services only. Enforcement = nginx source-IP
+  # allowlist by peer IP. Guests have NO WG peer. Peer name = [user]-[device]-vpn.
   # Public keys are not secret; private keys + PSKs live in sops (wireguard_peer_<name>_{private,psk}).
   network.wireguard = {
     port = 51820;
@@ -50,18 +52,21 @@
     address = "10.0.1.1";
     endpoint = "vpn.dnanu.de";
     peers = [
-      { name = "iPhone17Pro"; ip = "10.0.1.100"; publicKey = "hgUar95LcXopyebZfGRDbe0lZndqDfHDp/1CiSg1qlo="; } # admin (human)
-      { name = "arch";        ip = "10.0.1.101"; publicKey = "iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo="; } # admin (human)
-      { name = "iphonexs";    ip = "10.0.1.102"; publicKey = "IKGIZcEp5jXPPhjD1y0yhH8NctiJOlCC0WEto6hNC2U="; }
-      { name = "galaxys22u";  ip = "10.0.1.103"; publicKey = "021YHQrkW0jelFHbRaAYhMXr13XkC52MYFCTlMac3h8="; }
-      { name = "samsungtv";   ip = "10.0.1.104"; publicKey = "WppvW2HLCQEl+7Q5CmSSKk9XOzAgf3wImZvGTGTGF1o="; }
-      { name = "phillipsair"; ip = "10.0.1.105"; publicKey = "mLGb/B4MTy7lebFCtSsPLyZet2g/7RhVs2VGYw5lTFw="; }
-      { name = "david";       ip = "10.0.1.106"; publicKey = "N/+2L7/gr4cNXh5QWlHlU/HP3JELEPq3yRqJiHRdm2A="; }
-      { name = "ramona";      ip = "10.0.1.107"; publicKey = "4FNungU+bh000Xl1iK9M/IF6nyogsExGBxijnEQfIDc="; }
-      { name = "tibisor";     ip = "10.0.1.108"; publicKey = "ACCujN9Qv0tt9TGW70faDP9lnMck7EFHa5dk/T5UMDU="; }
-      { name = "xbox";        ip = "10.0.1.109"; publicKey = "vvL7s3DRtfeQPWFNG6rdh0g9+aCb2EuAePA9ytfo6iE="; }
-      { name = "guest-1";     ip = "10.0.1.200"; publicKey = "qjHwXOzRAFWFlMoYAtk8wuFVgGgc1X4NUt2zo/foJBk="; }
-      { name = "guest-2";     ip = "10.0.1.201"; publicKey = "Aia7/JBSA6UuKnKB+lqTSjo/lqetTlsMWL4BlFUOtgY="; }
+      # Admin (Dumitru) — reaches ALL *.nanulab.de incl. admin UIs
+      { name = "dumitru-phone-vpn"; ip = "10.0.1.8";  admin = true;  user = "dumitru"; publicKey = "hgUar95LcXopyebZfGRDbe0lZndqDfHDp/1CiSg1qlo="; }
+      { name = "dumitru-pc-vpn";    ip = "10.0.1.9";  admin = true;  user = "dumitru"; publicKey = "iMocXpOjXHN0dEyOZqoPU0WHk99DZlEGs7vJePwfHgo="; }
+      # User peers — user-facing services only
+      { name = "adela-phone-vpn";   ip = "10.0.1.10"; admin = false; user = "adela";   publicKey = "IKGIZcEp5jXPPhjD1y0yhH8NctiJOlCC0WEto6hNC2U="; }
+      { name = "adela-tv-vpn";      ip = "10.0.1.11"; admin = false; user = "adela";   publicKey = "WppvW2HLCQEl+7Q5CmSSKk9XOzAgf3wImZvGTGTGF1o="; }
+      { name = "adela-air-vpn";     ip = "10.0.1.12"; admin = false; user = "adela";   publicKey = "mLGb/B4MTy7lebFCtSsPLyZet2g/7RhVs2VGYw5lTFw="; }
+      { name = "tiberiu-phone-vpn"; ip = "10.0.1.13"; admin = false; user = "tiberiu"; publicKey = "021YHQrkW0jelFHbRaAYhMXr13XkC52MYFCTlMac3h8="; }
+      { name = "david-phone-vpn";   ip = "10.0.1.14"; admin = false; user = "david";   publicKey = "N/+2L7/gr4cNXh5QWlHlU/HP3JELEPq3yRqJiHRdm2A="; }
+      { name = "david-xbox-vpn";    ip = "10.0.1.15"; admin = false; user = "david";   publicKey = "vvL7s3DRtfeQPWFNG6rdh0g9+aCb2EuAePA9ytfo6iE="; }
+      { name = "ramona-phone-vpn";  ip = "10.0.1.16"; admin = false; user = "ramona";  publicKey = "4FNungU+bh000Xl1iK9M/IF6nyogsExGBxijnEQfIDc="; }
+      { name = "tibisor-phone-vpn"; ip = "10.0.1.17"; admin = false; user = "tibisor"; publicKey = "ACCujN9Qv0tt9TGW70faDP9lnMck7EFHa5dk/T5UMDU="; }
+      { name = "iza-phone-vpn";     ip = "10.0.1.18"; admin = false; user = "iza";     publicKey = "nBHQHSFHU/24IeKEJ0rFsV2xJTZCc4sRW/sI5/if+kc="; } # MAC TODO
+      { name = "kerem-phone-vpn";   ip = "10.0.1.19"; admin = false; user = "kerem";   publicKey = "zSoQM300aEExAnjUDwjHZi9r5tfrwsm4drEtrqVp90c="; } # MAC TODO
+      { name = "hannah-phone-vpn";  ip = "10.0.1.20"; admin = false; user = "hannah";  publicKey = "iRSXSbB/aiqXxRUyMLc2zfaJ+uARS9Jh5WOBwfQYkwU="; } # MAC TODO
     ];
   };
 
