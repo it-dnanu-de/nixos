@@ -15,6 +15,9 @@
     x509.useACMEHost = settings.domains.mail;
     dkim.enable = true;
     localDnsResolver = false;  # AdGuard Home already owns port 53
+    systemContact = "admin@${settings.domains.public}";  # required by tlsrpt (no SNM default)
+    tlsrpt.enable = true;        # RFC 8460: send TLS reports to domains publishing _smtp._tls
+    dmarcReporting.enable = true; # send daily DMARC aggregate reports (rspamd, timer included)
 
     accounts."hey@${settings.domains.public}" = {
       hashedPasswordFile = config.sops.secrets.mail_hey.path;
@@ -59,14 +62,60 @@
   services.postfix = {
     mapFiles."sasl_passwd" = config.sops.templates."postfix-sasl-passwd".path;
 
+    # Static TLS policy for the Resend relay — must precede the tlspol socketmap.
+    # Verified TLS with CA+hostname checking (upgrade from unverified encryption).
+    mapFiles."tls_policy" = pkgs.writeText "tls_policy" ''
+      [smtp.resend.com]:465 verify
+      smtp.resend.com verify
+    '';
+
     settings.main = {
       relayhost = [ "[smtp.resend.com]:465" ];
       smtp_sasl_auth_enable = "yes";
       smtp_sasl_password_maps = "hash:/etc/postfix/sasl_passwd";
       smtp_sasl_security_options = "noanonymous";
       smtp_tls_wrappermode = "yes";
-      smtp_tls_security_level = lib.mkForce "encrypt";
+      # REMOVED: smtp_tls_security_level = lib.mkForce "encrypt";
+      # tlspol + static tls_policy handle per-destination TLS now;
+      # global level falls back to SNM/tlspol's "dane" (rarely used, harmless).
+      smtp_tls_policy_maps = lib.mkBefore [ "hash:/var/lib/postfix/conf/tls_policy" ];
+
+      # RFC-conformance restrictions — every legit MTA passes these.
+      smtpd_helo_required = "yes";
+      smtpd_helo_restrictions = [
+        "permit_mynetworks"
+        "reject_non_fqdn_helo_hostname"
+        "reject_invalid_helo_hostname"
+      ];
+      smtpd_sender_restrictions = lib.mkAfter [
+        "reject_non_fqdn_sender"
+        "reject_unknown_sender_domain"
+      ];
+      smtpd_recipient_restrictions = lib.mkAfter [
+        "reject_non_fqdn_recipient"
+        "reject_unknown_recipient_domain"
+        "reject_unauth_pipelining"
+      ];
     };
+  };
+
+  # rspamd hardening (OpenCode.md §4.1, D2)
+  services.rspamd.locals = {
+    # Stock 4.0.1 defaults: reject=15/add_header=6/greylist=4.
+    # Tighten reject 15→12; greylisting (4) and header-tagging (6) unchanged.
+    "actions.conf".text = ''
+      reject = 12;
+      add_header = 6;
+      greylist = 4;
+    '';
+    # Spamhaus is unreachable via public resolvers (AGH→quad9 returns
+    # BLOCKED_OPENRESOLVER); disable that one list. Stock RBLs
+    # (mailspike, dnswl, sem, blocklist.de, virusfree, SURBL/URIBL/DBL) stay on.
+    "rbl.conf".text = ''
+      rbls {
+        spamhaus { enabled = false; }
+      }
+    '';
   };
 
   # ── Secrets wiring ────────────────────────────────────────
