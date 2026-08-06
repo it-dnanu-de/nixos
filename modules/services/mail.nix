@@ -118,6 +118,61 @@
     '';
   };
 
+  # Queue/service watchdog — alerts via Resend HTTPS API (independent of local
+  # postfix, so it works even when the queue is the problem). $0: free tier,
+  # existing sops key. Rate-limited: one alert per 6h.
+  systemd.services.mail-queue-watch = {
+    description = "Mail queue + service health watchdog";
+    serviceConfig = {
+      Type = "oneshot";
+      StateDirectory = "mail-alert";
+      LoadCredential = "resend_api_key:${config.sops.secrets.resend_api_key.path}";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+    };
+    path = with pkgs; [ curl jq gawk postfix ];
+    script = ''
+      set -uo pipefail
+      STATE="$STATE_DIRECTORY/last-sent"
+      now=$(date +%s)
+      last=$(cat "$STATE" 2>/dev/null || echo 0)
+      problems=""
+
+      for u in postfix dovecot2 rspamd; do
+        systemctl is-active --quiet "$u" || problems="$problems $u-down"
+      done
+
+      # queue size + oldest age via postqueue JSON
+      qjson=$(postqueue -j 2>/dev/null || true)
+      qcount=$(echo "$qjson" | jq -s 'length')
+      oldest=$(echo "$qjson" | jq -s 'map(.arrival_time // empty) | min // 0')
+      [ "$qcount" -gt 2 ] && problems="$problems queue-size=$qcount"
+      if [ "$oldest" != "0" ] && [ $((now - oldest)) -gt 1800 ]; then
+        problems="$problems queue-oldest=$(( (now - oldest) / 60 ))min"
+      fi
+
+      if [ -n "$problems" ] && [ $((now - last)) -gt 21600 ]; then
+        body="homelab mail watchdog:$problems"
+        if curl -sS --fail -X POST "https://api.resend.com/emails" \
+            -H "Authorization: Bearer $(cat "$CREDENTIALS_DIRECTORY/resend_api_key")" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -nc --arg b "$body" '{from:"alert@dnanu.de",to:["hey@dnanu.de"],subject:"[homelab] mail watchdog",text:$b}')" > /dev/null; then
+          echo "$now" > "$STATE"
+          echo "alert sent:$problems"
+        else
+          echo "alert FAILED:$problems"; exit 1
+        fi
+      else
+        echo "ok$problems"
+      fi
+    '';
+  };
+
+  systemd.timers.mail-queue-watch = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = { OnCalendar = "*:0/15"; Persistent = true; };
+  };
+
   # ── Secrets wiring ────────────────────────────────────────
   sops.secrets.mail_hey.restartUnits = [ "dovecot.service" ];
   sops.secrets.mail_admin.restartUnits = [ "dovecot.service" ];
