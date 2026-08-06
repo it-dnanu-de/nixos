@@ -48,13 +48,27 @@
       '';
     };
 
-    # Logout — clears the Authelia session cookie, then back to the login flow.
+    # Logout — clears the Authelia session cookie. Authelia's /api/logout expects
+    # {"targetURL": ...} in the POST body and returns only safeTargetURL (the frontend
+    # JS normally does the redirect). Our profile pages are static HTML (no JS), so
+    # nginx proxies the logout; when Authelia answers 200, error_page internally
+    # redirects to @logout_redirect which 302s the browser back to the site root
+    # (re-entering the Authelia login flow).
     locations."= /logout" = {
       extraConfig = ''
         proxy_pass http://127.0.0.1:9091/authelia/api/logout;
+        proxy_intercept_errors on;
+        error_page 200 = @logout_redirect;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Host $host;
+      '';
+    };
+    # After the logout proxy completes, redirect the browser to the site root
+    # (which triggers the Authelia login flow again).
+    locations."@logout_redirect" = {
+      extraConfig = ''
+        return 302 https://${settings.domains.public}/;
       '';
     };
 
