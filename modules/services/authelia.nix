@@ -1,7 +1,8 @@
 # Authelia — authentication and authorization server (OpenCode.md §10, plan §3).
 # Native module, nixos-26.05. Single instance "main" on tcp://127.0.0.1:9091/.
-# File-based user DB (users.yaml from sops). TOTP 2FA. Guards profile.dnanu.de
-# via nginx auth_request.
+# File-based user DB (users.yaml from sops). Guards profile.dnanu.de via nginx
+# auth_request. Human ruling 2026-08-06: password-only (one_factor), no 2FA —
+# users log in, get their WireGuard profile, done.
 { config, settings, ... }:
 {
   services.authelia.instances.main = {
@@ -12,7 +13,6 @@
     };
     settings = {
       theme = "dark";
-      default_2fa_method = "totp";
       server.address = "tcp://127.0.0.1:9091/authelia";
       log = {
         level = "info";
@@ -40,18 +40,18 @@
       storage.local.path = "/var/lib/authelia-main/db.sqlite3";
       access_control = {
         default_policy = "deny";
+        # One-factor (password only) — human ruling 2026-08-06: users log in,
+        # get their WireGuard profile, done. No TOTP, no email verification.
         rules = [
-          { domain = "profile.${settings.domains.public}"; policy = "two_factor"; }
+          { domain = "profile.${settings.domains.public}"; policy = "one_factor"; }
         ];
       };
       totp = {
         issuer = "nanulab";
       };
-      # No SMTP relay configured for Authelia (mail is a separate system).
-      # Filesystem notifier writes notification emails (TOTP enrollment links,
-      # password reset) to a local dir instead of sending them. Admin can read
-      # them if ever needed; users self-enroll TOTP interactively, so this is
-      # mostly a formality to satisfy Authelia's notifier requirement.
+      # Filesystem notifier (no SMTP) — required by Authelia config validation.
+      # Writes any notification emails to a local file. Mostly unused now that
+      # login is password-only (one_factor).
       notifier = {
         filesystem = {
           filename = "/var/lib/authelia-main/notifications.txt";
