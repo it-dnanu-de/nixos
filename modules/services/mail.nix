@@ -15,6 +15,10 @@
     x509.useACMEHost = settings.domains.mail;
     dkim.enable = true;
     localDnsResolver = false;  # AdGuard Home already owns port 53
+    # We declare our own firewall (base.nix extraCommands scopes mail/DNS/web
+    # ports to LAN/ULA/wg0 — audit Finding 1). SNM's openFirewall would add
+    # 465/587/993/143/4190 to the GLOBAL allowedTCPPorts, defeating the scoping.
+    openFirewall = false;
     systemContact = "admin@${settings.domains.public}";  # required by tlsrpt (no SNM default)
     tlsrpt.enable = true;        # RFC 8460: send TLS reports to domains publishing _smtp._tls
     dmarcReporting.enable = true; # send daily DMARC aggregate reports (rspamd, timer included)
