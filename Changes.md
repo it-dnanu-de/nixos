@@ -69,3 +69,10 @@ History in OpenCode.md §17 "Session Log".
   - wireguard-profile-render left 25 stale pre-v2 flat files → renderer now purges `*.conf`/`*.png`/index.html at base.
 - **Verified:** 1FA validates dumitru against sops users.yaml (200 OK / wrong pw 401); session cookie issued (domain=dnanu.de, secure); unauth'd profile → 302 to Authelia login; adguard.nanulab.de from LAN → 403; per-user dirs adela/david/dumitru/hannah/iza/kerem/ramona/tiberiu/tibisor with correct peer counts; all v2 units active; `systemctl --failed` clean (except placeholder cloudflared tunnel).
 - **Remaining 1%-manual:** distribute Authelia passwords (Memory.md) + users self-enroll TOTP; fill iza/kerem/hannah MACs; set real cloudflared tunnel UUID; verify profile.dnanu.de via tunnel from cellular.
+
+## 2026-08-06 — real cloudflared tunnel + profile.dnanu.de public
+- Human created tunnel in CF dashboard, provided the `cloudflared tunnel run --token`. Decoded token → TunnelID `62ab1635-c6ea-44bc-a702-1bff07f392f7` + credentials JSON → `cloudflared_tunnel_cred` in sops; `settings.nix` tunnelId updated (commit `7149da6`). Placeholder `00000000...` tunnel unit gone.
+- **Deploy fixes:** (1) cloudflared `noTLSVerify` on localhost origin — LE cert for `*.dnanu.de` has no IP SAN for `127.0.0.1`, cloudflared 502'd (commit `75a9bef`).
+- **Playwright:** MCP pointed at chrome (not installable on Arch) → switched to `--browser webkit --headless` (commit `5b125fd`). Needs opencode restart to take effect.
+- **Verified:** tunnel registered at fra07/fra18/muc01/muc03; `profile.dnanu.de` public → 302 to `/authelia/?rd=...`; Authelia login UI 200 via tunnel; `systemctl --failed` clean (no placeholder unit). `dnanu.de` 522 = placeholder 8080 vhost (blog lands Phase 5+).
+- **Remaining:** fill iza/kerem/hannah MACs; distribute Authelia passwords + TOTP; confirm profile.dnanu.de from cellular; dnanu.de/www/autoconfig hostname routes in tunnel (dashboard) if not auto.
