@@ -156,6 +156,12 @@ in
       BASE=/var/lib/mobileprofile/wg
       echo "wireguard-profile-render: starting (per-user)" >&2
 
+      # Clean up stale flat files from the pre-v2 renderer (old per-peer .conf/.png
+      # and the shared index.html). Only per-user dirs may exist now.
+      find "$BASE" -maxdepth 1 -type f -name '*.conf' -delete 2>/dev/null || true
+      find "$BASE" -maxdepth 1 -type f -name '*.png' -delete 2>/dev/null || true
+      rm -f "$BASE/index.html" 2>/dev/null || true
+
       # Derive server public key from the sops-decrypted private key
       SERVER_PRIV=/run/secrets/wireguard_server_private
       if [ ! -f "$SERVER_PRIV" ]; then
