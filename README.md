@@ -32,10 +32,10 @@ Launch opencode in this directory and type `/init`. It:
 Prereqs for a live session: `HOMELAB_SSH_PASSWORD` must be set in the shell **before** launching opencode. It's exported automatically in fish via `~/.config/fish/conf.d/homelab.fish` (and was in `~/.bashrc`), and the NixOS live ISO booted with sshd running.
 
 ## Status
-- **Phase:** v2 access control (re-addressing, Authelia, profile.dnanu.de, nginx ACL helpers) built, pending deploy.
-- **What works in repo:** Static IP `10.0.0.2/24` on enp10s0. AdGuard Home DNS + DHCP (v2 re-addressing: 9 named users at 10.0.0.8-20, guest range .50-.250, persistent clients keyed by user). Declarative WireGuard VPN (`vpn.dnanu.de:51820`, 13 peers with admin/user tiers). Per-user QR renderer (per-user index with tier notes → /var/lib/mobileprofile/wg/<user>/). ddclient Cloudflare dynamic DNS for `mail.dnanu.de` + `vpn.dnanu.de`. ACME DNS-01 wildcard certs for `*.nanulab.de` + `*.dnanu.de`. nginx loopback-only on 8080 (placeholder site). cloudflared tunnel for `dnanu.de`/`www`/`autoconfig`/`profile.dnanu.de`. Authelia (TOTP 2FA, file auth, 9 users) guarding profile.dnanu.de. nginx mkAdminVhost/mkUserVhost ACL helpers for future service vhosts. Full system closure builds with zero deprecation warnings.
-- **Deployed (10.0.0.2 gen 35):** WireGuard VPN swap (2026-08-06). AdGuard split-horizon DNS. `*.nanulab.de` public A records deleted. profile.nanulab.de/wg/ with shared basic auth (v2 not yet deployed).
-- **Next milestone:** Deploy v2 after human approves → then Build step 4 (Mail: SNM + Resend relay + sieve rules + DNS records).
+- **Phase:** v3 user-block addressing (users.nix single source, 10.0.10.0/24 WG, AGH leases.json fix, nginx ACL v3, authelia admin user) built, pending deploy.
+- **What works in repo:** Static IP `10.0.0.2/24` on enp10s0. AdGuard Home DNS + DHCP (v3: 10 users at 10.0.0.3-99, guest range .100-.250, static leases via leases.json, persistent clients from users.nix). Declarative WireGuard VPN (`vpn.dnanu.de:51820`, 13 peers at 10.0.10.0/24 with hostname-vpn naming, derived from users.nix). Per-user QR renderer (per-user dirs with tier notes → /var/lib/mobileprofile/wg/<user>/). ddclient Cloudflare DNS for `mail.dnanu.de` + `vpn.dnanu.de`. ACME DNS-01 wildcard certs for `*.nanulab.de` + `*.dnanu.de`. nginx loopback-only on 8080 (placeholder site). cloudflared tunnel for `dnanu.de`/`www`/`autoconfig`/`profile.dnanu.de`. Authelia (one_factor, file auth, 10 users) guarding profile.dnanu.de. nginx mkAdminVhost/mkUserVhost ACL helpers (admin/user allowlists from users.nix, guests denied). Full system closure builds with zero deprecation warnings.
+- **Deployed (10.0.0.2 gen 45):** Homelab v2 access control (Authelia, profile.dnanu.de, nginx ACL v2). AGH DNS active. WG at 10.0.1.x (old subnet).
+- **Next milestone:** Deploy v3 after human approves → then Build step 4 (Mail: SNM + Resend relay + sieve rules + DNS records).
 
 ## License
 See [LICENSE](LICENSE).
