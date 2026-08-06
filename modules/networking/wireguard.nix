@@ -118,7 +118,16 @@ PEERCONF
 ${"\${peer_html}"}
 </table>
 <p><em>Scan QR in the WireGuard app → tap "Allow" → enable On-Demand (Wi‑Fi + Cellular).</em></p>
-<form class="logout" method="post" action="/logout?rd=https://${settings.domains.public}/"><button type="submit">Log out</button></form>
+<form class="logout" method="post" action="/logout" onsubmit="return doLogout(event)"><button type="submit">Log out</button></form>
+<script>
+function doLogout(e) {
+  e.preventDefault();
+  fetch('/logout', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({targetURL: location.origin + '/'}), credentials: 'same-origin' })
+    .then(function(r){ location.href = location.origin + '/'; })
+    .catch(function(){ location.href = location.origin + '/'; });
+  return false;
+}
+</script>
 </body>
 </html>
 INDEX
