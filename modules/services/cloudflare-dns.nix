@@ -18,9 +18,12 @@ let
     Z_NANULAB=$(CURL "$API?name=${settings.domains.internal}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
 
     upsert() {
-      local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6
+      local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6 priority=${7:-}
       local response=$(CURL "$API/$zone/dns_records?type=$type&name=$name")
       local existing=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result | length')
+      # MX records require a `priority` field; build it into the body when given.
+      local prio_json=""
+      [ -n "$priority" ] && prio_json=",\"priority\":$priority"
       if [ "$existing" -gt 0 ]; then
         # Idempotent: skip when the first record already matches (content + proxied).
         local first_id=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result[0].id')
@@ -31,7 +34,7 @@ let
         else
           # PATCH first match (content + proxied only; proxied records use TTL auto).
           CURL -X PATCH "$API/$zone/dns_records/$first_id" \
-            -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied}" \
+            -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied$prio_json}" \
             > /dev/null
           echo "  updated: $type $name -> $content"
         fi
@@ -43,7 +46,7 @@ let
         fi
       else
         CURL -X POST "$API/$zone/dns_records" \
-          -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
+          -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl$prio_json}" \
           > /dev/null
         echo "  created: $type $name -> $content"
       fi
@@ -87,7 +90,7 @@ let
         "${settings.cloudflare.tunnelId}.cfargotunnel.com" true 1
     fi
 
-    upsert "$Z_DNANU" MX "${settings.domains.public}" "${settings.domains.mail}" false 120
+    upsert "$Z_DNANU" MX "${settings.domains.public}" "${settings.domains.mail}" false 120 10
     upsert "$Z_DNANU" TXT "${settings.domains.public}" "v=spf1 -all" false 120
     upsert "$Z_DNANU" TXT "_dmarc.${settings.domains.public}" \
       "v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:${settings.email.admin}" false 120
@@ -109,7 +112,7 @@ let
     deleteRecord "$Z_NANULAB" A "${settings.domains.internal}"
     deleteRecord "$Z_NANULAB" AAAA "*.${settings.domains.internal}"
     deleteRecord "$Z_NANULAB" AAAA "${settings.domains.internal}"
-    upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120
+    upsert "$Z_NANULAB" MX "${settings.domains.internal}" "${settings.domains.mail}" false 120 10
   '';
 in
 {
