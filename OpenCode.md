@@ -140,7 +140,7 @@ Speedport cannot disable it anyway).
   DHCPv6 → covered by v4 DNS (10.0.0.2 from Kea dhcp4).
 
 ### 3.6 Cloudflare Tunnel (blogs only)
-`services.cloudflared.tunnels."<id>"` with `credentialsFile` from sops; ingress: `dnanu.de`, `www.dnanu.de`, `autoconfig.dnanu.de` → `http://127.0.0.1:8080`; default `http_status:404`. Tunnel routes created once in CF dashboard (1% manual) or via API.
+`services.cloudflared.tunnels."<id>"` with `credentialsFile` from sops; ingress: `dnanu.de`, `www.dnanu.de`, `autoconfig.dnanu.de`, `mta-sts.dnanu.de` → `http://127.0.0.1:8080`, `profile.dnanu.de` → `https://127.0.0.1:443` (`originRequest.noTLSVerify=true`), default `http_status:404`. Tunnel is **config_src=local** (declarative — ingress lives in the NixOS-generated `cloudflared.yml`, never the dashboard). The account-scoped `cloudflare_account_token` (Account > Cloudflare Tunnel > Edit) in sops allows full tunnel management via API without the dashboard. **Lesson (2026-08-07):** touching a tunnel in the CF dashboard flips it to remote-managed (`config_src=cloudflare`) and cloudflared then ignores the local config file (all hostnames dead, 404). `config_src` is only settable at tunnel creation — recovery = recreate the tunnel via API with `config_src=local`, update `settings.nix` tunnelId + sops `cloudflared_tunnel_cred`, rebuild.
 
 ### 3.7 DNSSEC — ✅ LOCKED (Cloudflare-managed, zero NixOS config)
 - Enable DNSSEC on both Cloudflare zones (`dnanu.de`, `nanulab.de`). Algorithm: ECDSAP256SHA256 (CF-managed). Nameservers unchanged.
@@ -284,7 +284,7 @@ nixos-homelab/
 
 ## 7. Secrets Inventory (sops-nix)
 
-`cloudflare_api_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey`, `mail_admin`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `authelia_jwt`, `authelia_storage_key`, `authelia_users_yaml` (10 users: admin + 9 regular), `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<hostname>-vpn_private`, `wireguard_peer_<hostname>-vpn_psk` (97 peers × 2 = **194** WG keys; `[user]-vpn`/`[user]1-9-vpn` naming — §3.3).
+`cloudflare_api_token`, `cloudflare_account_token`, `cloudflared_tunnel_cred`, `resend_api_key`, `mail_hey`, `mail_admin`, `airvpn_wg_conf`, `b2_account_id`, `b2_account_key`, `restic_password`, `nextcloud_admin_pass`, `vaultwarden_admin_token`, `slskd_env` (`SLSKD_SLSK_USERNAME/PASSWORD`), `authelia_jwt`, `authelia_storage_key`, `authelia_users_yaml` (10 users: admin + 9 regular), `mobileca_key`, `mobileca_cert`, `wireguard_server_private`, `wireguard_peer_<hostname>-vpn_private`, `wireguard_peer_<hostname>-vpn_psk` (97 peers × 2 = **194** WG keys; `[user]-vpn`/`[user]1-9-vpn` naming — §3.3).
 
 ## 8. TLS
 

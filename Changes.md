@@ -1,5 +1,35 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-07 — Cloudflare tunnel restored to declarative (config_src=local)
+
+### Problem
+- The user added a "Published application" route in the Cloudflare dashboard for `profile.dnanu.de`.
+- Cloudflare flipped the tunnel `62ab1635` to **remote-managed** (`config_src=cloudflare`).
+- cloudflared then ignored the NixOS-declared `cloudflared.yml` and served only whatever the
+  edge pushed. After the user deleted all dashboard routes, the remote config became
+  `ingress: [http_status:404]` — all 5 public hostnames dead (404/502).
+- profile got 502 because the dashboard route for it was `https://localhost:443` **without**
+  `originRequest.noTLSVerify=true` (not expressible in the dashboard form) — cert is for
+  `*.nanulab.de`, not `localhost`.
+
+### Fix — recreate tunnel as local-config
+- `config_src` is only settable at tunnel **creation** (no PATCH path; verified against the
+  Cloudflare OpenAPI schema in `/tmp/opencode/cf_openapi.json`).
+- Created new tunnel `734c3fa5-7b72-4cfb-8003-f1cab01743ee` (name `homelab`) with
+  `config_src=local` + fresh 32-byte secret via account API. Zone-scoped token can't do it
+  (Not authorized) — needed the new account-scoped `cloudflare_account_token`.
+- `settings.nix`: tunnelId `62ab1635` → `734c3fa5`.
+- sops: `cloudflared_tunnel_cred` → new TunnelID + TunnelSecret (kept as JSON string — sops
+  `--set` first wrote it as a YAML map which cloudflared can't parse; re-set as string).
+- sops: added `cloudflare_account_token` (`cfut_QKa1...`); `sops.nix` registers it.
+- Deployed: server gen 71 → 72. Old tunnel deleted via API once new one verified healthy.
+- **Verified live:** dnanu.de 200, www 200, autoconfig 200, mta-sts 200, profile 302 (Authelia).
+  DNS CNAMEs all → `734c3fa5...cfargotunnel.com` (proxied). Local config now the source of truth.
+- Commit: `59de856` (before server pull+rebuild).
+
+---
+(previous session history preserved below)
+
 ## 2026-08-07 — Kimi K3 Mail Security Audit — fix implementation (nixos-builder)
 
 ### Batch 1: MUST-FIX — Finding 1: Firewall scope
