@@ -1,5 +1,64 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-07 — Cloud Services milestone (build step 5): Nextcloud + Collabora + Immich + Vaultwarden
+
+### nginx-helpers refactor
+- Created `modules/networking/nginx-helpers.nix` — extracts ACL derivation (`adminAllowlist`,
+  `userAllowlist`, `mkAdminVhost`, `mkUserVhost`) from `nginx.nix`. Service modules can now
+  import these helpers without re-deriving ACLs.
+- Refactored `nginx.nix` to import from helpers. Verified generated nginx.conf has identical
+  ACLs (admin allowlist: 10.0.0.1-9 + 10.0.10.3-9). Deployed on gen 73.
+
+### Nextcloud (Step 5a)
+- `modules/services/nextcloud.nix`: PostgreSQL (`pgsql`) + Redis auto-provisioned.
+  PHP-FPM RAM-tuned for 6GB Dell: `pm=ondemand`, `max_children=8`.
+  Extra apps: mail 5.10.10, calendar 6.5.2, contacts 8.7.5.
+  Merged nginx vhost at `cloud.nanulab.de` with user ACL.
+- Deployed on gen 74. Units: postgresql active, phpfpm-nextcloud active,
+  redis-nextcloud active, nextcloud-setup exited 0/SUCCESS.
+  `curl cloud.nanulab.de` → 302 to /login. RAM: 3.4Gi available.
+
+### Vaultwarden (Step 5b)
+- `modules/services/vaultwarden.nix`: SQLite backend, `SIGNUPS_ALLOWED=false`,
+  `ADMIN_TOKEN` via sops template env file (mode 0400, owner vaultwarden).
+  Nginx vhost at `vault.nanulab.de` with WebSocket endpoints + user ACL.
+- Deployed on gen 75. vaultwarden active, ADMIN_TOKEN loaded,
+  `curl vault.nanulab.de` → HTTP 200. RAM: 3.5Gi available.
+
+### Immich (Step 5c)
+- `modules/services/immich.nix`: mediaLocation=/fast/immich, ML disabled,
+  `client_max_body_size 500M` for uploads. PostgreSQL (pgvector+vchord) + Redis auto-provisioned.
+  Nginx vhost at `photos.nanulab.de` with user ACL.
+- First deploy: `/fast/immich` dir not auto-created (race with tmpfiles). Manually created
+  with `chown immich:immich`, restarted — active on 2nd start.
+- Deployed on gen 76. immich-server active, immich-machine-learning inactive (correct),
+  redis-immich active. `curl photos.nanulab.de` → HTTP 200. RAM: 1.8Gi available.
+- Also added "immich" to `services.postgresqlBackup.databases`.
+
+### Collabora Online (Step 5d)
+- `modules/services/collabora.nix`: port 9980, WOPI allowlist for `cloud.nanulab.de`.
+  Nginx vhost at `office.nanulab.de` with user ACL.
+- **CORRECTION**: The plan omitted `ssl.enable = false` + `ssl.termination = true`.
+  The module defaults to self-signed SSL certs for termination; we use plain HTTP behind
+  nginx. Added these settings in a follow-up commit.
+- Deployed on gen 77 → 78 (SSL fix). coolwsd active, coolwsd-systemplate-setup exited 0.
+  WOPI discovery endpoint works: `curl office.nanulab.de/hosting/discovery` → 39,938 bytes XML.
+  RAM: 2.4Gi available.
+
+### PostgreSQL backup
+- Added `services.postgresqlBackup` to `hosts/homelab/configuration.nix`:
+  location=/fast/backups/postgres, databases=["nextcloud" "immich"].
+
+### Final state (gen 78)
+- All 4 services active, zero failed units, 2.4Gi RAM available (out of 5.7Gi).
+- Human post-deploy (1% manual): log into Nextcloud as root, link Mail app to local IMAP,
+  connect Nextcloud Office to `https://office.nanulab.de`, visit Vaultwarden `/admin`,
+  create Immich admin account via web UI.
+
+\end{session}
+---
+(previous session history preserved below)
+
 ## 2026-08-07 — Cloudflare tunnel restored to declarative (config_src=local)
 
 ### Problem
