@@ -18,7 +18,9 @@ let
     Z_NANULAB=$(CURL "$API?name=${settings.domains.internal}" | ${pkgs.jq}/bin/jq -r '.result[0].id')
 
     upsert() {
-      local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6 priority=${7:-}
+      local zone=$1 type=$2 name=$3 content=$4 proxied=$5 ttl=$6
+      local priority=""
+      if [ $# -ge 7 ]; then priority="$7"; fi
       local response=$(CURL "$API/$zone/dns_records?type=$type&name=$name")
       local existing=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result | length')
       # MX records require a `priority` field; build it into the body when given.
