@@ -10,70 +10,12 @@
 # Catch-all vhost: default_server on 0.0.0.0:443 + :80 with wildcard cert,
 # returns 404. Fixes dead-name fall-through (e.g. profile.nanulab.de no longer
 # leaks the AdGuard dashboard).
+#
+# 2026-08-07: ACL derivation + mkVhost helpers extracted to nginx-helpers.nix
+# so service modules can reuse them without re-deriving.
 { pkgs, settings, lib, users, ... }:
 let
-  # Filter users by tier
-  adminUsers = lib.filterAttrs (n: u: u.tier == "admin") users.users;
-  regularUsers = lib.filterAttrs (n: u: u.tier == "user") users.users;
-
-  # Derive all admin DEVICE IPs (LAN + VPN) from users.nix — isPeer only
-  # (excludes admin0/1/2 infra/server slots)
-  adminPeerIps = lib.flatten (lib.mapAttrsToList (userName: userData:
-    lib.flatten (lib.imap0 (idx: dev:
-      let ips = users.userToIps userName (idx + 1);
-      in if users.isPeer dev then [ ips.lan ips.vpn ] else [ ]
-    ) userData.devices)
-  ) adminUsers);
-
-  # Derive all user DEVICE IPs (LAN + VPN) — isPeer only
-  userPeerIps = lib.flatten (lib.mapAttrsToList (userName: userData:
-    lib.flatten (lib.imap0 (idx: dev:
-      let ips = users.userToIps userName (idx + 1);
-      in if users.isPeer dev then [ ips.lan ips.vpn ] else [ ]
-    ) userData.devices)
-  ) regularUsers);
-
-  # Admin allowlist: admin device IPs + explicit router (10.0.0.1) + server (10.0.0.2).
-  # Server itself is local (127.0.0.1/nginx on the same host) but also has ACL entries.
-  # Result: LAN .1-.9 + VPN 10.0.10.3-9
-  adminAllowlist = ''
-    allow 10.0.0.1/32;      # router (no VPN, but accessible from admin LAN)
-    allow 10.0.0.2/32;      # homelab (server itself — localhost also works but belt-and-braces)
-    ${lib.concatStringsSep "\n    " (map (ip: "allow ${ip}/32;") adminPeerIps)}
-    deny all;
-  '';
-
-  # User allowlist: user device IPs + admin device IPs + router + server.
-  # Guests (10.0.0.100-200) are NOT in any allow list → denied by final `deny all;`.
-  # Result: LAN .1-.99 + VPN 10.0.10.3-99
-  userAllowlist = ''
-    allow 10.0.0.1/32;      # router
-    allow 10.0.0.2/32;      # homelab
-    ${lib.concatStringsSep "\n    " (map (ip: "allow ${ip}/32;") (userPeerIps ++ adminPeerIps))}
-    deny all;
-  '';
-
-  # mkAdminVhost: forceSSL + admin-IP-only allowlist + proxy to backend.
-  mkAdminVhost = fqdn: backend: {
-    forceSSL = true;
-    useACMEHost = settings.domains.internal;
-    locations."/" = {
-      proxyPass = backend;
-      proxyWebsockets = true;
-      extraConfig = adminAllowlist;
-    };
-  };
-
-  # mkUserVhost: forceSSL + user+admin IP allowlist + proxy to backend.
-  mkUserVhost = fqdn: backend: {
-    forceSSL = true;
-    useACMEHost = settings.domains.internal;
-    locations."/" = {
-      proxyPass = backend;
-      proxyWebsockets = true;
-      extraConfig = userAllowlist;
-    };
-  };
+  helpers = import ./nginx-helpers.nix { inherit lib settings users; };
 in
 {
   services.nginx = {
@@ -95,22 +37,14 @@ in
       root = pkgs.writeTextDir "index.html" "<h1>dnanu.de — place-holder (Hugo lands in build step 7)</h1>";
     };
 
-    # AdGuard UI — admin-VPN-only. LAN devices still use AdGuard as DNS on :53
-    # but cannot reach the admin web UI.
     virtualHosts."adguard.${settings.domains.internal}" =
-      mkAdminVhost "adguard.${settings.domains.internal}" "http://127.0.0.1:3000";
+      helpers.mkAdminVhost "adguard.${settings.domains.internal}" "http://127.0.0.1:3000";
 
-    # Catch-all — default_server on 0.0.0.0:443 + :80, wildcard cert, returns 404.
-    # Fixes the dead-name fall-through bug: unmatched *.nanulab.de hosts (e.g.
-    # profile.nanulab.de) used to fall through to the AdGuard dashboard on :443
-    # and redirect to adguard on :80. Now they get a valid-cert 404.
-    # The dnanu.de vhost has its own default on 127.0.0.1:8080 (different socket
-    # → no conflict). nginx -t runs at build time as a safety gate.
     virtualHosts."catchall" = {
       serverName = "_";
       default = true;
       addSSL = true;
-      useACMEHost = settings.domains.internal;   # *.nanulab.de wildcard cert
+      useACMEHost = settings.domains.internal;
       locations."/".return = "404";
     };
   };
