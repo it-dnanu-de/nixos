@@ -27,6 +27,7 @@
     ../../modules/services/authelia.nix
     ../../modules/services/nextcloud.nix
     ../../modules/services/vaultwarden.nix
+    ../../modules/services/immich.nix
     ../../modules/system/users.nix
   ];
 
@@ -50,6 +51,6 @@
   services.postgresqlBackup = {
     enable = true;
     location = "/fast/backups/postgres";
-    databases = [ "nextcloud" ];
+    databases = [ "nextcloud" "immich" ];
   };
 }
