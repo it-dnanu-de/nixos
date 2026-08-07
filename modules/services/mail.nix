@@ -144,7 +144,7 @@
       last=$(cat "$STATE" 2>/dev/null || echo 0)
       problems=""
 
-      for u in postfix dovecot2 rspamd; do
+      for u in postfix dovecot rspamd; do
         systemctl is-active --quiet "$u" || problems="$problems $u-down"
       done
 
