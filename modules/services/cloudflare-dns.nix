@@ -22,31 +22,44 @@ let
       local response=$(CURL "$API/$zone/dns_records?type=$type&name=$name")
       local existing=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result | length')
       if [ "$existing" -gt 0 ]; then
-        # PATCH first match in-place, DELETE any extras (multi-record clobber guard — Finding 2)
+        # Idempotent: skip when the first record already matches (content + proxied).
         local first_id=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result[0].id')
-        CURL -X PATCH "$API/$zone/dns_records/$first_id" \
-          -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
-          > /dev/null
+        local cur_content=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result[0].content // empty')
+        local cur_proxied=$(echo "$response" | ${pkgs.jq}/bin/jq -r '.result[0].proxied // false')
+        if [ "$cur_content" = "$content" ] && [ "$cur_proxied" = "$proxied" ]; then
+          echo "  up to date: $type $name -> $content"
+        else
+          # PATCH first match (content + proxied only; proxied records use TTL auto).
+          CURL -X PATCH "$API/$zone/dns_records/$first_id" \
+            -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied}" \
+            > /dev/null
+          echo "  updated: $type $name -> $content"
+        fi
         if [ "$existing" -gt 1 ]; then
-          echo "$response" | ${pkgs.jq}/bin/jq -r '.result[1:][].id' | while read -r id; do
-            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
+          echo "$response" | ${pkgs.jq}/bin/jq -r '.result[1:][].id // empty' | while read -r id; do
+            [ -n "$id" ] || continue
+            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null || true
           done
         fi
       else
         CURL -X POST "$API/$zone/dns_records" \
           -d "{\"type\":\"$type\",\"name\":\"$name\",\"content\":\"$content\",\"proxied\":$proxied,\"ttl\":$ttl}" \
           > /dev/null
+        echo "  created: $type $name -> $content"
       fi
     }
 
     # Remove a record if present (idempotent) — used for records that must NOT exist publicly.
+    # Tolerant: no-op (not an error) when no matching record exists.
     deleteRecord() {
       local zone=$1 type=$2 name=$3
       CURL "$API/$zone/dns_records?type=$type&name=$name" \
-        | ${pkgs.jq}/bin/jq -r '.result[].id' \
+        | ${pkgs.jq}/bin/jq -r '.result[].id // empty' \
         | while read -r id; do
-            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null
+            [ -n "$id" ] || continue
+            CURL -X DELETE "$API/$zone/dns_records/$id" > /dev/null || true
           done
+      true
     }
 
     PUBLIC_IP4=$(${pkgs.curl}/bin/curl -sS --fail --interface ${settings.network.interface} https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
