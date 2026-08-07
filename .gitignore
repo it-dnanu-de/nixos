@@ -1,6 +1,6 @@
 # AI memory & credentials — never commit
 Memory.md
-TODO.md
+# TODO/ is version-controlled (project tracker); only the old root TODO.md was private.
 
 # local environment / secrets
 .env
