@@ -28,6 +28,7 @@
     ../../modules/services/nextcloud.nix
     ../../modules/services/vaultwarden.nix
     ../../modules/services/immich.nix
+    ../../modules/services/collabora.nix
     ../../modules/system/users.nix
   ];
 
