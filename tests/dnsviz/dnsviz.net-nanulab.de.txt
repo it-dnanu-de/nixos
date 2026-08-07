@@ -1,0 +1,40 @@
+
+Notices
+DNSSEC Authentication Chain
+RRset statusRRset status
+Secure (4)
+
+    nanulab.de/CDNSKEY
+    nanulab.de/CDS
+    nanulab.de/NS
+    nanulab.de/SOA
+
+DNSKEY/DS/NSEC statusDNSKEY/DS/NSEC status
+Secure (9)
+
+    ./DNSKEY (alg 8, id 20326)
+    ./DNSKEY (alg 8, id 38696)
+    ./DNSKEY (alg 8, id 57780)
+    de/DNSKEY (alg 8, id 26755)
+    de/DNSKEY (alg 8, id 32911)
+    de/DS (alg 8, id 26755)
+    nanulab.de/DNSKEY (alg 13, id 2371)
+    nanulab.de/DNSKEY (alg 13, id 34505)
+    nanulab.de/DS (alg 13, id 2371)
+
+Delegation statusDelegation status
+Secure (2)
+
+    . to de
+    de to nanulab.de
+
+DNSKEY legend
+Full legend
+SEP bit set	SEP bit set
+Revoke bit set	Revoke bit set
+Trust anchor	Trust anchor
+See also
+DNSSEC Debugger by Verisign Labs.
+Download: png | svg
+Mouse over and click elements in the graph below to see more detail.
+

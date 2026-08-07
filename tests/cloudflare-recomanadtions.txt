@@ -1,3 +1,0 @@
-Your origin IP address is partially exposed
-
-A DNS-only record is revealing an IP address that is hidden by a proxied record. Proxy all records that share an IP to fully hide your server. 

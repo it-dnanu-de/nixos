@@ -1,0 +1,110 @@
+CONFIDENTIAL DELIVERY
+Star Star Star Star Star (5.0/5)
+
+Your e-mail provider protects your messages (sent/received) from eavesdroppers, using encryption. It applies the latest technologies available, assuring the identity of the parties with which interacts.
+
+PHISHING AND IDENTITY THEFT
+Star Star Star Star Empty star (4.0/5)
+
+Your e-mail provider prevents the reception of messages from not legitimate servers. It also takes measures to avoid unauthorized servers to send emails from accounts of your domain. With these actions it is drastically reducing the probability of receiving (or generating) impersonation and/or Phishing attacks.
+
+INTEGRITY OF MESSAGES
+Star Star Star Star Star (5.0/5)
+
+Your e-mail provider can identify messages that have been modified or intercepted during its delivery phase (from the sender MTA to the recipient MTA).
+
+
+
+Domain Name
+
+dnanu.de
+
+StartTLS
+100
+
+X509
+100
+
+SPF
+50
+
+DKIM
+100
+
+DMARC
+100
+
+DANE
+100
+
+DNSSEC
+100
+
+MTA-STS
+100
+
+Report Date
+07/08/2026
+
+SPF record
+v=spf1 -all
+
+DMARC record
+v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:admin@dnanu.de
+
+    MX Records (1)
+    Outbound Records (1)
+
+MX record
+
+91.50.54.159
+
+mail.dnanu.de
+
+StartTLS
+
+Using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits)
+
+x509 Certificate
+
+CA
+
+FQDN
+
+Date
+
+Revoked
+
+Banner
+220 b'mail.dnanu.de ESMTP NO UCE'
+
+ESMTP Features
+{'pipelining': '', 'size': '20971520', 'etrn': '', 'starttls': '', 'enhancedstatuscodes': '', '8bitmime': '', 'dsn': '', 'smtputf8': '', 'chunking': ''}
+
+DANE record
+3 1 1 1f2b9362a006b35b9d7e33decff1952d7cde43b72de0dceda9e94508ce42546e
+
+MTA-STS
+
+
+
+Hostname
+
+54.240.3.25
+
+a3-25.smtp-out.eu-west-1.amazonses.com
+
+Created on
+Fri, 07 Aug 2026 02:04:14 +0000
+
+StartTLS
+
+(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+
+SPF
+
+550, SPF fail - not authorized
+
+DKIM
+
+

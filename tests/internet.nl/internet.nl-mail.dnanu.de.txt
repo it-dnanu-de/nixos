@@ -1,0 +1,1034 @@
+
+Website test: mail.dnanu.de
+The domain mail.dnanu.de has a test score of 61%.
+
+61%
+
+    Failed : Not reachable via modern internet address, or improvement possible (IPv6)
+    Passed : Domain name signed (DNSSEC)
+    Error : Unreachable web server (HTTPS)
+    Recommendation : One or more recommended security options not set (Security options)
+    Passed : Authorised route announcement (RPKI)
+
+Explanation of test report
+Permalink test result (2026-08-06 23:47 UTC)
+Seconds until retest option: 85
+Failed : Modern address (IPv6)
+Too bad! Your website is not reachable for visitors using a modern internet address (IPv6), or improvement is possible. Therefore your website is not part of the modern Internet yet. You should ask your hosting provider to fully enable IPv6.
+
+Name servers of domain
+Passed: IPv6 addresses for name servers close
+Verdict:
+
+Two or more name servers of your domain have an IPv6 address.
+Technical details:
+Name server 	IPv6 address 	IPv4 address
+elijah.ns.cloudflare.com. 	2803:f800:50::6ca2:c3fd 	162.159.44.253
+... 	2a06:98c1:50::ac40:23fd 	172.64.35.253
+... 	2606:4700:58::a29f:2cfd 	108.162.195.253
+jewel.ns.cloudflare.com. 	2606:4700:50::a29f:26ab 	162.159.38.171
+... 	2803:f800:50::6ca2:c2ab 	108.162.194.171
+... 	2a06:98c1:50::ac40:22ab 	172.64.34.171
+Test explanation:
+
+We check if your domain name has at least two name servers with an IPv6 address.
+
+This is consistent with the "Technical requirements for the registration and use of .nl domain names" d.d. 1 January 2023 by SIDN (.nl TLD registry) that require each .nl domain to have at least two name servers.
+
+'IPv4-mapped IPv6 addresses' (RFC 4291, beginning with ::ffff:) will fail in this test, as they do not provide IPv6 connectivity.
+Passed: IPv6 reachability of name servers close
+Verdict:
+
+All name servers that have an IPv6 address are reachable over IPv6.
+Test explanation:
+We check if all name servers, that have an AAAA record with IPv6 address, are reachable over IPv6.
+Web server
+Passed: IPv6 addresses for web server close
+Verdict:
+
+At least one of your web servers has an IPv6 address.
+Technical details:
+Web server 	IPv6 address 	IPv4 address
+mail.dnanu.de 	2003:c8:c704:3584:982e:83b1:63af:7fa0 	91.50.54.159
+Test explanation:
+
+We check if there is at least one AAAA record with IPv6 address for your web server.
+
+'IPv4-mapped IPv6 addresses' (RFC 4291, beginning with ::ffff:) will fail in this subtest, as they do not provide IPv6 connectivity.
+Failed: IPv6 reachability of web server close
+Verdict:
+
+At least one of your web servers with an IPv6 address is not reachable over IPv6.
+Technical details:
+Web server 	Unreachable IPv6 address
+mail.dnanu.de 	2003:c8:c704:3584:982e:83b1:63af:7fa0
+Test explanation:
+We check if we can connect to your web server(s) over IPv6 on any available ports (80 and/or 443). We test all IPv6 addresses that we receive from your name servers. A partial score will be given if not all IPv6 addresses are reachable. If an IPv6 address is (syntactically) invalid, we consider it unreachable.
+Not testable: Same website on IPv6 and IPv4 close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Test explanation:
+
+We compare the available ports and offered headers and content of your web server via IPv6 with those via IPv4.
+
+We check if:
+
+    the same ports, i.e. HTTP (port 80) and/or HTTPS (port 443), are available via both IPv6 and IPv4;
+    the same HTTP headers are offered via both IPv6 and IPv4. This includes HTTP response codes, like successful responses (200 – 299) and redirection messages (300 – 399). In cases of a client error response (400 - 499) or a server error response (500 - 599) a warning without score impact is given, because such a HTTP response code may indicate a configuration issue;
+    the same HTML content is offered via both IPv6 and IPv4. We do this by comparing the content received after stripping any nonces. The content difference must not be higher than 10% to pass this subtest. This threshold ensures that small non-problematic differences (for example due to changing advertisements) do not immediately result in a failing result for this subtest. An observed difference may still be intended or due to measurement error. Therefore, in case of failure, this part of the subtest results only in a warning with no score impact.
+
+Additional notes:
+
+    In case there are multiple IPv6 and IPv4 addresses, we pick one IPv6 address and one IPv4 address to perform the subtest.
+    If only an IPv6 address and no IPv4 address (or vice versa) is available, the subtest is not applicable because no comparison can be made.
+    This subtest follows redirects and also checks all underlying URLs.
+
+Passed : Signed domain name (DNSSEC)
+Well done! Your domain is signed with a valid signature (DNSSEC). Therefore visitors with enabled domain signature validation, are protected against manipulated translation from your domain into rogue internet addresses.
+
+Passed: DNSSEC existence close
+Verdict:
+
+Your domain is DNSSEC signed.
+Technical details:
+Domain 	Registrar
+mail.dnanu.de 	None
+Test explanation:
+
+We check if your domain, more specifically its SOA record, is DNSSEC signed.
+
+If a domain redirects to another domain via CNAME, then we also check if the CNAME domain is signed (which is conformant with the DNSSEC standard). If the CNAME domain is not signed, the result of this subtest will be negative.
+
+Note: the validity of the signature is not part of this subtest, but part of the next subtest.
+Passed: DNSSEC validity close
+Verdict:
+
+Your domain is secure, because its DNSSEC signature is valid.
+Technical details:
+Domain 	Status
+mail.dnanu.de 	secure
+Test explanation:
+
+We check if your domain, more specifically its SOA record, is signed with a valid signature making it 'secure'.
+
+If a domain name redirects to another signed domain name via CNAME, then we also check if the signature of the CNAME domain name is valid (which is conformant with the DNSSEC standard). If the signature of the CNAME domain name is not valid, the result of this subtest will be negative.
+
+Note that we only test the name server that responds first. If name servers of a domain name have inconsistent configurations, this can lead to varying test results. In that case, for example, the result for this subtest may be 'secure' one time and 'bogus' the next.
+Error : Secure connection (HTTPS)
+Your web server was not reachable for us, making it impossible to (fully) test for HTTPS. This could be caused by network connectivity problems or by the web server not accepting connections.
+
+HTTP
+Error: HTTPS available close
+Verdict:
+
+Your web server is unreachable.
+Technical details:
+Web server IP address 	HTTPS existent
+91.50.54.159 	not reachable
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not reachable
+Test explanation:
+
+We check if your website is reachable over HTTPS.
+
+If so, we also check in the below subtests whether HTTPS is configured sufficiently secure in conformance with the 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL.
+
+HTTPS guarantees the confidentiality and integrity of the exchanged information. Because it is situation depended how (privacy) sensitive and valuable information is, a secure HTTPS configuration is important for every website. Even trivial, public information could be extremely sensitive and valuable for a user.
+
+Note that for performance reasons all tests in the category 'Secure connection (HTTPS)' only run for the first available IPv6 and IPv4 address.
+Not testable: HTTPS redirect close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	HTTPS redirect
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server automatically redirects visitors from HTTP to HTTPS on the same domain (through a 30x redirect status code like 301 and 302), or if it offers support for only HTTPS and not for HTTP.
+
+In case of redirecting, a domain should firstly upgrade itself by redirecting to its HTTPS version before it may redirect to another domain. This also ensures that the HSTS policy will be accepted by the web browser. Examples of correct redirect order:
+
+    http://example.org ⇒ https://example.org ⇒ https://www.example.org
+    http://www.example.org ⇒ https://www.example.org
+
+Note that this subtest only tests if the given domain correctly redirects from HTTP to HTTPS. An eventual further redirect to a different domain (including a subdomain of the tested domain) is not tested. You could start a separate test to test such a domain that is being redirected to.
+
+See 'ICT security guidelines for web applications' from NCSC-NL, guideline U/WA.05 (in Dutch).
+Not testable: HTTP compression close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	HTTP compression
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We test if your web server supports HTTP compression.
+
+HTTP compression makes the secure connection with your web server vulnerable for the BREACH attack. However HTTP compression is commonly used to make more efficient use of available bandwidth. Consider the trade-offs involved with HTTP compression. If you choose to use HTTP compression, verify if it is possible to mitigate related attacks at the application level. An example of such a measure is limiting the extent to which an attacker can influence the response of a server.
+
+This subtest checks if the web server on root directory level supports HTTP compression. However it does not check additional website sources like images and scripts.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.1.
+
+Requirement level: Optional
+Not testable: HSTS close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	HSTS policy
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports HSTS.
+
+Browsers remember HSTS per (sub) domain. Not adding a HSTS header to every (sub) domain (in a redirect chain) might leave users vulnerable to Machine-in-the-Middle (MitM) attacks. Therefore we check for HSTS on the first contact i.e. before any redirect.
+
+HSTS forces a web browser to connect directly via HTTPS when revisiting your website. This helps preventing MitM attacks. We consider a HSTS cache validity period of at least 1 year (max-age=31536000) to be sufficiently secure. A long period is beneficial because it also protects infrequent visitors. However if you want to stop supporting HTTPS (which is generally a poor idea), you will have to wait longer until the validity of the HSTS policy in all browsers that visited your website, has expired.
+
+The test does not check whether preload is used and whether the domain is included in the HSTS Preload List.
+
+Deployment recommendation
+
+HSTS requires your website to fully work over HTTPS. This also includes having a valid certificate from a publicly trusted certificate authority. So when your website does not properly support HTTPS, note that it will not be reachable by browsers that have contacted your website before. A HSTS policy change to revert effects will not have immediate effect for these browsers since they have cached your previous HSTS policy.
+
+Therefore we advise you to follow the implementation steps below:
+
+    Make sure that the website on your domain fully works over HTTPS now and in the future (e.g. by having a solid certificate rollover procedure);
+
+    Increase the HSTS cache validity period in stages. During each stage, carefully check for reachability issues and broken pages. Fix any issues that come up and then wait the full max-age of the stage before moving to the next stage.
+
+    Repeat step 1 and 2 for every single subdomain that you want to secure with HSTS. Only use includeSubDomains if you are fully sure that all the (nested) subdomains of your domain properly support HTTPS now and in the future.
+
+    Use preload only if you are very sure that you want your domain to be included in the HSTS Preload List. HSTS preloading is mostly interesting for highly sensitive websites. Administrators who want to enable HSTS preloading for a particular domain should do so with extreme caution. It can affect the reachability of the domain and of any subdomains, and is not easily reversed.
+
+See 'ICT security guidelines for web applications' from NCSC-NL, guideline U/WA.05 (in Dutch).
+TLS
+Not testable: TLS version close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	TLS version
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server only supports secure TLS versions (i.e. with a security level of 'Good' or 'Sufficient').
+
+A web server may support more than one TLS version.
+
+Please note that modern browsers no longer support TLS 1.0/1.1 and SSL. As a result, websites that do not support TLS 1.2 and/or 1.3 are unreachable for almost everyone.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.1.
+
+Security level of TLS versions
+
+    Good: TLS 1.3
+    Sufficient: TLS 1.2
+    Insufficient: TLS 1.0/1.1, SSL 1.0/2.0/3.0
+
+Not testable: Cipher suites close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Outdated cipher suite
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server only supports secure (i.e. security level 'Good' and/or 'Sufficient') cipher suites. A web server usually supports multiple cipher suites.
+
+A cipher suite consists of ciphers for four cryptographic functions: 1. key exchange, 2. authentication (i.e. certificate verification), 3. bulk encryption, and 4. hashing.
+
+Since TLS 1.3, the term 'cipher suite' only comprises ciphers used for bulk encryption and hashing. When using TLS 1.3 the ciphers for key exchange and certificate verification are negotiable and not part of the naming of the cipher suite.
+
+Both Internet.nl and NCSC-NL use the IANA naming convention for cipher suites. Another common notation is the OpenSSL naming convention. Since TLS 1.3 OpenSSL follows the IANA naming convention. A translation between both can be found in the OpenSSL documentation.
+
+Note that ciphers using PSK or SRP for key exchange (which are not sufficiently secure) are not detected in this test due to a limitation related to our testing method.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.2 to 3.3.5 and appendix B.
+
+Security level of cipher suites
+
+Below you find cipher suites with status 'Good', 'Sufficient' and 'Phase out', based on appendix B of NCSC-NL's guidelines.
+
+Good [TLS 1.3]:
+
+    TLS_AES_256_GCM_SHA384
+    TLS_CHACHA20_POLY1305_SHA256
+
+Sufficient [TLS 1.3]:
+
+    TLS_AES_128_CCM_SHA256
+    TLS_AES_128_GCM_SHA256
+
+Sufficient [TLS 1.2]:
+
+    TLS_ECDHE_ECDSA_WITH_AES_128_CCM
+    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+    TLS_ECDHE_ECDSA_WITH_AES_256_CCM
+    TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+    TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+    TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+    TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+
+Phase out [TLS 1.2]:
+
+    TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+    TLS_DHE_RSA_WITH_AES_128_CCM
+    TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+    TLS_DHE_RSA_WITH_AES_256_CCM
+    TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+    TLS_DHE_RSA_WITH_ARIA_128_CBC_SHA256
+    TLS_DHE_RSA_WITH_ARIA_128_GCM_SHA256
+    TLS_DHE_RSA_WITH_ARIA_256_CBC_SHA384
+    TLS_DHE_RSA_WITH_ARIA_256_GCM_SHA384
+    TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256
+    TLS_DHE_RSA_WITH_CAMELLIA_128_GCM_SHA256
+    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256
+    TLS_DHE_RSA_WITH_CAMELLIA_256_GCM_SHA384
+    TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+    TLS_ECDHE_ECDSA_WITH_ARIA_128_CBC_SHA256
+    TLS_ECDHE_ECDSA_WITH_ARIA_128_GCM_SHA256
+    TLS_ECDHE_ECDSA_WITH_ARIA_256_CBC_SHA384
+    TLS_ECDHE_ECDSA_WITH_ARIA_256_GCM_SHA384
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_128_CBC_SHA256
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_128_GCM_SHA256
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_256_CBC_SHA384
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_256_GCM_SHA384
+    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+    TLS_ECDHE_RSA_WITH_ARIA_128_CBC_SHA256
+    TLS_ECDHE_RSA_WITH_ARIA_128_GCM_SHA256
+    TLS_ECDHE_RSA_WITH_ARIA_256_CBC_SHA384
+    TLS_ECDHE_RSA_WITH_ARIA_256_GCM_SHA384
+    TLS_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256
+    TLS_ECDHE_RSA_WITH_CAMELLIA_128_GCM_SHA256
+    TLS_ECDHE_RSA_WITH_CAMELLIA_256_CBC_SHA384
+    TLS_ECDHE_RSA_WITH_CAMELLIA_256_GCM_SHA384
+
+Not testable: Cipher suite order close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP 	Cipher suite preferred by server
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server offers cipher suites in descending order of their security level, without accepting any other preference of the web browser.
+
+This means the web server should enforce its own cipher suites preference while negotiating with a web browser. Furthermore, cipher suites should be offered by the web server, with 'Good' and 'Sufficient' being preferred over 'Phase out' cipher suites.
+
+When your web server supports 'Good' and 'Sufficient' cipher suites only, this subtest is not applicable as the ordering has no significant security advantage.
+
+In case of a deviating order, the table above with technical details shows the 'Phase Out' cipher suite chosen by the server, with in the last column showing over which 'Good' or 'Sufficient' cipher suite the server chose it. Only the first found ordering issue is shown.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 2 and 3.
+Not testable: Parameters for key exchange close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Outdated parameter
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if the public parameters used in Diffie-Hellman key exchange by your web server are secure.
+
+ECDHE: The security of key exchange with Elliptic Curve Diffie-Hellman Ephemeral (ECDHE) depends on the elliptic curve used. We test what elliptic curve is used.
+
+DHE: The security of key exchange with Diffie-Hellman Ephemeral (DHE) depends on the finite field group used. We test if one of the standardised finite field groups that are specified in RFC 7919 is used. Self-generated groups have security level 'Insufficient'. The larger key sizes required for the use of DHE come with a performance penalty. Carefully evaluate and use ECDHE instead of DHE if you can.
+
+Alternatives for ECDHE and DHE
+
+    Quantum-safe cryptographic algorithms X25519MLKEM768, SecP256r1MLKEM768 and SecP384r1MLKEM1024 have security level 'Good'. These are hybrid algorithms that use a combination of ECDHE and ML-KEM. Particularly, X25519MLKEM768 is increasingly supported by TLS software libraries and is utilised by most web browsers. The parameters are inherently part of these algorithms. There is thus no need to make any additional choices.
+    RSA and non-ephemeral Diffie-Hellman (ECDH and DH) should not be used for key exchange as their security level is 'Insufficient'. They do not offer forward secrecy. Note that RSA is still considered as 'Sufficient' for authentication (i.e. certificate verification).
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.3
+
+Security level of elliptic curves for ECDHE
+
+    Sufficient:
+        secp521r1 (rarely used)
+        secp384r1
+        secp256r1
+        x448
+        x25519
+        brainpoolP512r1 (rarely used)
+        brainpoolP384r1 (idem)
+        brainpoolP256r1 (idem)
+
+    Phase out:
+        secp224r1
+
+    Insufficient:
+        Other curves
+
+Security level of finite field groups for DHE
+
+    Phase out:
+        ffdhe8192 (rarely used because of performance loss)
+        ffdhe6144 (idem)
+        ffdhe4096 (RFC 7919)
+        sha256 checksum: 64852d6890ff9e62eecd1ee89c72af9af244dfef5b853bcedea3dfd7aade22b3
+        ffdhe3072 (RFC 7919)
+        sha256 checksum: c410cc9c4fd85d2c109f7ebe5930ca5304a52927c0ebcb1a11c5cf6b2386bbab
+
+    Insufficient:
+        ffdhe2048
+        Other groups (i.e. not-standardised, self-generated)
+
+Note that the above names are based on the IANA naming conventions. Sometimes alternative names are used to refer to the same curves, like prime256v1 (ANSI) and NIST P-256 for secp256r1.
+Not testable: Hash function for key exchange close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Outdated hash function
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports secure hash functions to create the digital signature during key exchange.
+
+The web server uses a digital signature during the key exchange to prove ownership of the secret key corresponding to the certificate. The web server creates this digital signature by signing the output of a hash function.
+
+Note that this subtest is only relevant for TLS 1.2. The supported hash functions can be configured via a separate TLS setting (e.g. SignatureAlgorithms in OpenSSL) and are not part of the cipher suite configuration.
+
+For more details on the status of SHA-1 and MD5, see RFC 9155. We do not test for MD5 because it is only supported by very outdated software.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.5.
+
+Security level of hash functions for key exchange
+
+    Good: SHA-256, SHA-384, SHA-512
+    Phase out: SHA-224 (rarely used)
+    Insufficient: SHA-1, MD5
+
+Not testable: TLS compression close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	TLS compression
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports TLS compression.
+
+The use of compression can give an attacker information about the secret parts of encrypted communication. An attacker that can determine or control parts of the data sent can reconstruct the original data by performing a large number of requests. TLS compression is used so rarely that disabling it is generally not a problem.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.1.
+
+Security level of TLS compression
+
+    Good: N/A (TLS 1.3)
+    Good: No TLS compression (TLS 1.2)
+    Insufficient: TLS compression (TLS 1.2)
+
+Not testable: Secure renegotiation close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Secure renegotiation
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports secure renegotiation.
+
+Older versions of TLS (prior to TLS 1.3) allow forcing a new handshake. This so-called renegotiation was insecure in its original design. The standard was repaired and a safer renegotiation mechanism was added. The old version is since called insecure renegotiation and should be disabled.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.2.
+
+Security level of insecure renegotiation
+
+    Good: N/A (TLS 1.3)
+    Good: No insecure renegotiation (TLS 1.2)
+    Insufficient: Insecure renegotiation (TLS 1.2)
+
+Not testable: Client-initiated renegotiation close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Client-initiated renegotiation
+91.50.54.159 	['detail tech data not-tested']
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	['detail tech data not-tested']
+Test explanation:
+
+We check whether a client (usually a web browser) can initiate a renegotiation with your web server and, if so, whether the number of allowed renegotiations is sufficiently limited.
+
+Allowing clients to initiate renegotiation is generally not necessary. Client-initiated renegotiation opens a web server to DoS attacks inside a TLS connection. Therefore it is important either not to allow renegotiations or to strictly limit their number. We consider more than 10 allowed renegotiations as insufficient.
+
+An attacker can perform similar DoS attacks without client-initiated renegotiation by opening many parallel TLS connections. However, these are easier to detect and defend against using standard mitigations.
+
+Note that client-initiated renegotiation could impact availability, but not confidentiality.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.2.
+
+Requirement level: Recommended
+
+Security level of client-initiated renegotiation
+
+    Good: N/A (TLS 1.3)
+    Good: No renegotiation (TLS 1.2)
+    Sufficient: Limited renegotiation (TLS 1.2)
+    Phase out: Unlimited renegotiation (TLS 1.2)
+
+Not testable: 0-RTT close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	0-RTT
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports Zero Round Trip Time Resumption (0-RTT).
+
+0-RTT is an option in TLS 1.3 that transports application data during the first handshake message. 0-RTT does not provide protection against replay attacks at the TLS layer and therefore should be disabled. Although the risk can be mitigated by not allowing 0-RTT for non-idempotent requests, such a configuration is often not trivial, reliant on application logic and thus error prone.
+
+If your web server does not support TLS 1.3, the test is not applicable. For web servers that support TLS 1.3, the index / page of the website is fetched using TLS 1.3 and the amount of early data support indicated by the server is checked. When more than zero, a second connection is made re-using the TLS session details of the first connection but sending the HTTP request before the TLS handshake (i.e. no round trips (0-RTT) needed before application data to the server). If the TLS handshake is completed and the web server responds with any non-HTTP 425 Too Early response, then the web server is considered to support 0-RTT.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.4.
+
+Security level of 0-RTT
+
+    Good: No 0-RTT (TLS 1.3)
+    Good: N/A (TLS 1.2)
+    Insufficient: Using 0-RTT (TLS 1.3)
+
+Not testable: OCSP stapling close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	OCSP stapling
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports the TLS Certificate Status extension (also known as OCSP stapling), in case the certificate on your webserver has a pointer to an OCSP server.
+
+Note that we do not use the OCSP data to evaluate the validity of the certificate. Furthermore, note that OCSP has been deprecated by several certificate authorities. In case your website certificate does not have a pointer to an OCSP server, this subtest will pass.
+
+The web browser can verify the validity of the certificate presented by the web server by contacting the certificate authority using the OCSP protocol. OCSP provides a certificate authority with information on browsers communicating to the web server. This may be a privacy risk. A web server can also provide OCSP data to a web browser directly through OCSP stapling. This solves this privacy risk, does not require connectivity between web browser and certificate authority, and is faster.
+
+When connecting to your web server we use the TLS Certificate Status extension to request OCSP data be included in the server response. If your web server includes OCSP data in the response we then verify that the OCSP data is valid i.e. correctly signed by a known certificate authority.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.5.
+
+Requirement level: Optional
+
+Security level of OCSP stapling
+
+    Good: Certificate without OCSP pointer
+    Good: Certificate with OCSP pointer, stapling enabled, and valid OCSP data
+    Insufficient: Certificate with OCSP pointer, stapling enabled, but no valid OCSP data
+    Informational: Certificate with OCSP pointer, but no stapling enabled
+
+Not testable: Extended Master Secret (EMS) close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	EMS
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server supports Extended Master Secret.
+
+Extended Master Secret (EMS), that is specified in RFC 7627, is an extension for TLS 1.2 that prevents Triple Handshakes machine-in-the-middle attacks.
+
+Increasingly, TLS libraries are enforcing EMS by default, also because security regulations such as FIPS require it. If your server does not support EMS, clients that enforce EMS will be unable to establish a TLS 1.2 connection with your server.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 4.1.
+Certificate
+Not testable: Trust chain of certificate close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Untrusted certificate chain
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if we are able to build a valid chain of trust for your website certificate.
+
+For a valid chain of trust, your certificate must be signed by a publicly trusted certificate authority, and your web server must present all necessary intermediate certificates. The certificates must not have expired.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 4.4.
+Not testable: Public key of certificate close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Outdated signature parameter
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if the public key of your certificate and every intermediate certificate is based on a secure signing algorithm with secure parameters.
+
+The verification of certificates makes use of digital signatures. The public key of a certificate can be used to verify that a signature was created using the corresponding private key.
+
+Signing algorithm: The signing algorithm is determined when generating the certificate. A certificate can only contain one signing algorithm. It is possible to configure multiple certificates on a server to support more than one algorithm. Only the signing algorithms ECDSA, RSA and EdDSA are considered sufficiently secure. EdDSA is actually rarely, if ever, used. All mentioned algorithms are vulnerable to the quantum threat. They offer sufficient protection for now. Quantum-safe alternatives are not yet part of the TLS standards.
+
+Parameters: The security of ECDSA and EdDSA digital signatures depends on the chosen curve. The security of RSA is tied to the key length of the public key.
+
+For details on the relevant certificate field name see paragraph "4.1.2.7. Subject Public Key Info" of RFC 5280.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.2
+
+Security level of elliptic curves for ECDSA
+
+    Sufficient:
+        secp521r1 (rarely used)
+        secp384r1
+        secp256r1
+        x448
+        x25519
+        brainpoolP512r1 (rarely used)
+        brainpoolP384r1 (idem)
+        brainpoolP256r1 (idem)
+
+    Phase out:
+        secp224r1
+
+    Insufficient:
+        Other curves
+
+Security level of length of RSA keys
+
+    Sufficient: At least 3072 bit
+    Phase out: 2048 – 3071 bit
+    Insufficient: Less than 2048 bit
+
+Security level of Edwards curves for EdDSA (rarely used)
+
+    Sufficient:
+        Ed448
+        Ed25519
+
+    Insufficient:
+        Other curves
+
+Note that the above names are based on the IANA naming conventions. Sometimes alternative names are used to refer to the same curves, like prime256v1 (ANSI) and NIST P-256 for secp256r1.
+Not testable: Signature on certificate close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Outdated hash function
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your website certificate is signed (by a certificate authority) with a secure signing algorithm, while making use of a secure hash function.
+
+For details on the relevant certificate field name see paragraph "4.1.1.2. signatureAlgorithm" of RFC 5280.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.5.
+
+Security level of signing algorithms
+
+    Sufficient: ECDSA, RSA, EdDSA
+    Insufficient: DSS, EXPORT-*, PSK, Anon, NULL, KRB5
+
+Security level of hash functions
+
+    Good: SHA-256, SHA-384, SHA-512
+    Phase out: SHA-224
+    Insufficient: SHA-1, MD5
+
+Not testable: Domain name on certificate close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Unmatched domains on certificate
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if the domain name of your website matches the domain name on the certificate.
+
+It could be useful to include more than one domain (e.g. the domain with and without www) as Subject Alternative Name on the certificate.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 4.4.
+Not testable: CAA for domain close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Findings
+not tested
+Test explanation:
+
+We check if the name servers of your website domain contain one or more CAA records, that are syntactically valid and sufficiently protective.
+
+Certification Authority Authorisation (CAA) allows you as a domain name holder to specify one or more certificate authorities authorised to issue certificates for your domain name. A certificate authority must not issue a certificate unless the CA determines that the certificate request is consistent with the applicable CAA records.
+
+Note that CAA records are located during validation by walking up the DNS hierarchy until one or more records are found. For example, if no CAA records are found on sub.example.org, example.org will be queried. The domain were the applicable CAA records are found is shown in the table with technical details below.
+
+The verdict is good if one or more CAA records were found that all have correct syntax, and at least one of these CAA records has the issue tag with a valid value. Otherwise, the test will result in a fail. It is not checked whether the certificate authority of the current certificate matches one or more of the issue and issuewild values, i.e., whether the current certificate could be reissued at this time.
+
+If your are using the Automatic Certificate Management Environment (ACME) standard and your certificate authority supports it, we recommend you to use the parameters validationmethods and accounturi to further restrict isssuance by the authorised certificate authority. Furthermore, it is recommended to add issuewild, issuemail and issuevmc with an empty ; if you do not use wildcard, S/MIME and/or BIMI certificates respectively. This is especially important for issuemail and issuevmc, because in their absence there is no fallback to issue and thus any certificate authority can still issue S/MIME and/or BIMI certificates for your domain.
+
+We expect URLs in iodef to be secure (i.e. use HTTPS scheme). Furthermore, to prevent suppression or spoofing of CAA records we strongly recommend you to use DNSSEC, although this CAA test does not specifically test for DNSSEC.
+
+Requirement level: Recommended
+DANE
+Not testable: DANE existence close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	DANE TLSA record existent
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if the name servers of your website domain contain a correctly signed TLSA record for DANE.
+
+As DNSSEC is preconditional for DANE, this test will fail in case DNSSEC is missing on the website domain, or if there are DANE related DNSSEC issues (e.g. no proof of 'Denial of Existence').
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, chapter "2 Step-by-step plan: How do I arrive at an appropriate TLS configuration?".
+
+Requirement level: Optional
+Not testable: DANE validity close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	DANE TLSA record valid
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if the DANE fingerprint presented by your domain is valid for your web certificate.
+
+DANE allows you to publish information about your website certificate in a special DNS record, called TLSA record. Clients, like web browsers, can check the authenticity of your certificate not only through the certificate authority but also through the TLSA record. A client can also use the TLSA record as a signal to only use HTTPS (and not HTTP). DNSSEC is preconditional for DANE. Unfortunately not much web browsers are supporting DANE validation yet.
+
+Requirement level: Recommended (only if subtest for 'DANE existence' is passed)
+Recommendation : Security options
+Warning: Not all recommended security options, , i.e. security headers and security.txt, are set for your website (Security options). With security headers you can activate browser mechanisms to protect visitors against attacks involving, for example, cross-site scripting (XSS) or framing. Security headers are also relevant for domains with HTTP response codes such as '301 Redirect' and '404 Not Found', because they create their own browsing context (MIME type 'text/html') that may be vulnerable to certain attacks. Through a security.txt file you can provide researchers who have found a vulnerability on your systems, with your contact information and your Coordinated Vulnerability Disclosure policy. Note that HTTPS is a prerequisite for all tested security options.
+
+HTTP security headers
+Not testable: X-Frame-Options close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	X-Frame-Options value
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server provides an HTTP header for X-Frame-Options that has a sufficiently secure policy. With this HTTP header you let web browsers know whether you want to allow your website to be framed or not. Prevention of framing defends visitors against attacks like clickjacking. We consider the following values to be sufficiently secure:
+
+    DENY (framing not allowed); or
+    SAMEORIGIN (only framing by your own website allowed).
+
+Although the value ALLOW-FROM (only allow specific websites to frame your website) is part of the X-Frame-Options specification (RFC 7034), it is not supported by most modern web browsers. Therefore we do not consider this value as sufficiently secure.
+
+Note that Content-Security-Policy (CSP) offers similar protection through frame-ancestors and besides much more for visitors with modern web browsers. However X-Frame-Options could still protect visitors of older web browsers that do not support CSP. Furthermore X-Frame-Options could offer valuable protection for all visitors when CSP is not (properly) configured for the website concerned.
+
+Also see 'Web application guidelines from NCSC-NL', guideline U/PW.03 (in Dutch).
+
+Note on IPv6/IPv4: for performance reasons all tests in the category 'Security options' only run for the first available IPv6 and IPv4 address.
+
+Requirement level: Optional
+Not testable: X-Content-Type-Options close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	X-Content-Type-Options value
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server provides an HTTP header for X-Content-Type-Options. With this HTTP header you let web browsers know that they must not do 'MIME type sniffing' and always follow the Content-Type as declared by your web server. The only valid value for this HTTP header is nosniff. When enabled, a browser will block requests for style and script when they do not have a corresponding Content-Type (i.e. text/css or a 'JavaScript MIME type' like application/javascript).
+
+'MIME type sniffing' is a technique where the browser scans the content of a file to detect the format of a file regardless of the declared Content-Type by the web server. This technique is vulnerable to the so-called 'MIME confusion attack' in which the attacker manipulates the content of a file in a way that it is treated by the browser as a different Content-Type, like an executable.
+
+Note on IPv6/IPv4: for performance reasons all tests in the category 'Security options' only run for the first available IPv6 and IPv4 address.
+
+Requirement level: Recommended
+Not testable: Content-Security-Policy close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Findings
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server provides an HTTP header for Content-Security-Policy (CSP). Furthermore we check for several secure CSP settings, although we do not exhaustively test the effectiveness of your CSP configuration.
+
+CSP guards a website against content injection attacks including cross-site scripting (XSS). By using CSP to configure an 'allowlist' with sources of approved content, you prevent browsers from loading malicious content of attackers.
+
+We test for the rules below that are based on good practices for a secure CSP configuration.
+
+    The default-src directive should be defined and its value should be be either 'none', or 'self' and/or one or more URLs of the domain itself (including its subdomain or superdomain). This is to have a restrictive default fallback policy for source types that are used in your website for which no specific policy is defined. Next to the mentioned values 'report-sample' could be there in case you want code samples to be sent together with the 'violation reports'.
+    The base-uri directive should be defined and its value should be either 'none', or 'self' and/or one or more URLs of the domain itself (including its subdomain or superdomain). This restricts the baseURI in order to block the injection of a manipulated <base> element. This limits the ability of attackers to manipulate the locations of sources (e.g. scripts) that are loaded from relative URLs.
+    The frame-src directive should be used (either by definition or by relying on the fallback to sequentially child-src and default-src) and its value should be either 'none', or 'self'and/or one or more specific URLs. This prevents content from unauthorized locations to be framed or embedded in your website (with HTML elements such as <frame> and <iframe>).
+    The frame-ancestors directive should be defined and its value should be either 'none', or 'self' and/or one or more specific URLs. This prevents unauthorized websites from framing or embedding your website (with HTML elements <frame>, <iframe>, <object>, <embed>, or <applet>).
+    The form-action directive should be defined and its value should be either 'none', or 'self' and/or one or more specific URLs. This restricts the URLs which can be used as the target of form submissions.
+    The source values unsafe-eval, unsafe-inline and unsafe-hashes should not be used, because these enable XSS attacks.
+    The data: scheme should not be used in the default-src, script-src and object-src directives, because this enables XSS attacks.
+    A domain with the http:// scheme or a domain without a scheme should not be used, because this enables sources to be downloaded over an insecure connection. Use the https:// scheme instead.
+    A wildcard (i.e. *) for the full host part of a URL should not be used in any directive, because this allows for any external source. Furthermore do not use just https: as this is equivalent to https://*. Always specify the main domain as well (e.g. https://scripts.example.org or https://*.example.org).
+    127.0.0.1 should not be used in any directive, because it enables content injection attacks in a compromised system.
+
+Additional recommendations:
+
+    Only use domains in CSP directives as specific as possible, which is tested automatically to some extent in this subtest for CSP.
+        Do not allow all domains under a TLD (*.org) or SLD (*.example.org), although we currently do not test for this.
+        Do not allow a different main domain under a SLD in default-src (for example example2.example.org for example1.example.org.), although we currently do not test for this either.
+
+    Ideally do not use inline scripts or styles. For cases where you cannot avoid using inline scripts or styles, do not use unsafe-inline (as mentioned above) but preferably use CSP hashes or otherwise CSP nonces.
+    Use the HTTP header as a mechanism for serving your CSP policy. Do not use the HTML <meta> element to serve your CSP policy. The latter is less secure and does not support all CSP directives (e.g. the required frame-ancestors). Therefore we do not check for CSP that is offered via the HTML <meta> element.
+    Use the HTTP header for Content-Security-Policy-Report-Only to experiment with your CSP configuration by monitoring its effect without enforcing it.
+    Note that an empty source list (i.e. a CSP directive without a value) is equivalent to a source list containing none. Besides, note that if other sources are listed in a source list next to none, then the attribute none is ignored.
+
+Note on IPv6/IPv4: for performance reasons all tests in the category 'Security options' only run for the first available IPv6 and IPv4 address.
+
+Also see 'Web application guidelines from NCSC-NL', guideline U/PW.03 (in Dutch).
+
+Requirement level: Recommended
+Not testable: Referrer-Policy close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Findings
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server provides an HTTP header for Referrer-Policy with a sufficiently secure and privacy-protecting policy value. With this policy your web server instructs browsers if, what and when referrer data should be sent to the website the user is navigating to from your website. This referrer data is sent in the Referer header by the browser to the website the user is navigating to. This navigation does not necessarily have to be cross-domain.
+
+The data in the Referer header is usually used for analytics and logging. However there can be privacy and security risks. The data could be used e.g. for user tracking and the data could leak to third parties who eavesdrop the connection. The HTTP header for Referrer-Policy allows you to mitigate these risks by controlling and even minimizing the sending of referrer data.
+
+We suggest to make an informed decision, with privacy and security risks in mind, on using one of the policy values from the first two categories below.
+
+1. Good
+
+    no-referrer
+    same-origin
+
+With these policy values no sensitive referrer data is sent to third parties.
+
+2. Warning
+
+    strict-origin
+    strict-origin-when-cross-origin (browser's default value; see also under additional note 2)
+
+With these policy values basic referrer data, which may be sensitive, is sent to third parties only via secure connections (HTTPS). Therefore these values should only to be used where necessary and permitted by law.
+
+3. Bad
+
+    no-referrer-when-downgrade
+    origin-when-cross-origin
+    origin
+    unsafe-url
+
+With these policy values any or basic referrer data, which may be sensitive, is sent to third parties possibly via insecure connections (HTTP). Therefore these values must not be used.
+
+Additional notes:
+
+    To prevent leaking of sensitive data through URLs, please make sure URLs of your website do not contain personal or otherwise sensitive data (like personal names or passwords).
+    strict-origin-when-cross-origin is the default policy value when no Referrer-Policy is published as prescribed in the current "Editor's Draft" of the Referrer-Policy standard and this default is used by all latest major browsers. Note that some users may still have a different default value configured in their browser.
+    Use the HTTP Referrer-Policy header as a mechanism for serving your referrer policy. We do not recommend to use the HTML <meta> element or the HTML referrerpolicy content attribute to publish your referrer policy, especially because the sections that describe these methods in the standard are marked as "not normative". Therefore we do not check for a referrer policy that is offered via the latter two methods.
+    Note that a web server may send multiple Referrer-Policy headers, and a Referrer-Policy header may contain multiple values. Unknown values will be ignored by the browser and only the last known value will be used. This makes it possible to use future standardised policy values that are not supported by all browsers yet. However, currently all latest major browsers support the above mentioned policy values under "Good" and "Warning".
+
+Note on IPv6/IPv4: for performance reasons all tests in the category 'Security options' only run for the first available IPv6 and IPv4 address.
+
+Requirement level: Recommended
+Other security options
+Not testable: security.txt close
+Verdict:
+
+This subtest did not run, because either a parent test that this subtest depends on gave a negative result, or not enough information was available to run this subtest.
+Technical details:
+Web server IP address 	Findings
+91.50.54.159 	not tested
+2003:c8:c704:3584:982e:83b1:63af:7fa0 	not tested
+Test explanation:
+
+We check if your web server provides a security.txt file in the right location, whether it could be retrieved, and whether its content is syntactically valid.
+
+security.txt is a text file with contact information that you place on your web server. Security researchers can use this information to directly contact the right department or person within your organization about vulnerabilities that they found in your website or IT systems. This can speed up the fixing of found vulnerabilities, reducing the opportunity for malicious parties to exploit.
+
+The syntax of the file is intended to be machine- and human-readable. The contact information can be an email address, a phone number, and/or a web page (e.g. a web form). Note that published contact information is public and can also be abused, for example, to send spam to a published e-mail address.
+
+Besides contact information, the security.txt file must also contain an expiry date. To avoid staleness it is recommended that the date be less than a year into the future. It is optional to also include other relevant information for security researchers, like a link to your policy on dealing with security vulnerabilities reports (usually called a Coordinated Vulnerability Disclosure policy).
+
+It is recommended to PGP sign the security.txt file while including the web URI on which the file is located in a Canonical field. We check if the security.txt file is signed. However, we do not validate the signature because, unfortunately, there is no standardised place to retrieve a public PGP key (which is required for signature validation).
+
+If one or more Canonical fields are present, the web URI of the security.txt file must be listed in a Canonical field. When redirecting to a security.txt file at least the last URI of the redirect chain must be listed.
+
+The file must be published under the /.well-known/ path. Note that placing it under the top-level path has been deprecated. Every web (sub) domain should have its own security.txt file. An example file can be found on https://securitytxt.org/.well-known/security.txt.
+
+Redirecting to a security.txt on another domain name is allowed. Especially in the case of a large domain name portfolio, it is advisable from a maintenance perspective to redirect the domain names to a central security.txt.
+
+Note that security.txt files are normally just a few kilobytes in size. We therefore read and evaluate at maximum the first 100 kB of a found security.txt file.
+
+Note on IPv6/IPv4: for performance reasons all tests in the category 'Security options' only run for the first available IPv6 and IPv4 address.
+
+Requirement level: Recommended
+Passed : Route authorisation (RPKI)
+Well done! All IP addresses of your web server and associated name servers have a route announcement that is matched by the published route authorisation (RPKI). As a result, visitors with enabled route validation are better protected against various unintentional or malicious route configuration errors, that can lead to the unreachability of your servers or the interception of Internet traffic to your servers.
+
+Name servers of domain
+Passed: Route Origin Authorisation existence close
+Verdict:
+
+For all IP addresses of your name servers an RPKI Route Origin Authorisation (ROA) is published.
+Technical details:
+Name server 	IP address 	RPKI Route Origin Authorization
+elijah.ns.cloudflare.com. 	108.162.195.253 	yes
+... 	162.159.44.253 	yes
+... 	172.64.35.253 	yes
+... 	2a06:98c1:50::ac40:23fd 	yes
+... 	2606:4700:58::a29f:2cfd 	yes
+... 	2803:f800:50::6ca2:c3fd 	yes
+jewel.ns.cloudflare.com. 	172.64.34.171 	yes
+... 	162.159.38.171 	yes
+... 	108.162.194.171 	yes
+... 	2803:f800:50::6ca2:c2ab 	yes
+... 	2a06:98c1:50::ac40:22ab 	yes
+... 	2606:4700:50::a29f:26ab 	yes
+Test explanation:
+
+We check if an RPKI Route Origin Authorization (ROA) has been published for all IP addresses of the name servers of your domain.
+
+Your hoster (or its network provider) announces through the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. Other network providers use these route announcements to determine via which route to send traffic for your server's IP addresses.
+
+However, a route announcement can be faked. In fact, another network provider may be able to connect the IP address block of your IP address to its network and thus potentially receive Internet traffic that is actually intended for your network provider. The cause may be accidental or malicious. In either case, this can result in your server becoming unreachable or in Internet traffic to your server being intercepted.
+
+Resource Public Key Infrastructure (RPKI) significantly improves protection against this. With RPKI, the rightful holder of a block of IP addresses can publish a digitally signed statement with route authorization (Route Origin Authorisation; ROA for short). Another network provider that wants to send Internet traffic to a particular IP address, can use the corresponding statement to filter out Invalid routes. In this way, the network provider prevents Internet traffic from its network from being sent to unauthorized provider networks.
+Passed: Route announcement validity close
+Verdict:
+
+All IP addresses of your name servers have a Valid validation state. The route announcement of these IP addresses is matched by the published RPKI Route Origin Authorisation (ROA).
+Technical details:
+Name server 	BGP Route Prefix 	BGP Route Origin ASN 	RPKI Origin Validation state
+elijah.ns.cloudflare.com. 	108.162.192.0/20 	AS13335 	valid
+... 	108.162.195.0/24 	AS13335 	valid
+... 	162.159.32.0/20 	AS13335 	valid
+... 	172.64.32.0/20 	AS13335 	valid
+... 	172.64.35.0/24 	AS13335 	valid
+... 	2a06:98c1:50::/45 	AS13335 	valid
+... 	2606:4700:50::/44 	AS13335 	valid
+... 	2803:f800:50::/45 	AS13335 	valid
+jewel.ns.cloudflare.com. 	172.64.32.0/20 	AS13335 	valid
+... 	172.64.34.0/24 	AS13335 	valid
+... 	162.159.32.0/20 	AS13335 	valid
+... 	108.162.192.0/20 	AS13335 	valid
+... 	108.162.194.0/24 	AS13335 	valid
+... 	2803:f800:50::/45 	AS13335 	valid
+... 	2a06:98c1:50::/45 	AS13335 	valid
+... 	2606:4700:50::/44 	AS13335 	valid
+Test explanation:
+
+We check if the validation status for all IP addresses of the name servers of your domain is Valid. If there are multiple overlapping route announcements for the IP address, we test that they are all Valid.
+
+Your hoster (or its network provider) announces via the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. It does this by associating (parts of) its IP address blocks (Route Prefix) with the unique number of its provider network (Route Origin ASN), and then distributing this routing information. Other network providers use these route announcements to determine via which route to send traffic for the IP addresses.
+
+Additionally, for each route announcement, your hoster (or its network provider) should publish a digitally signed statement with route authorisation (Route Origin Authorisation; abbreviated: ROA) statement using Resource Public Key Infrastructure (RPKI).
+
+Another network provider that is asked to send Internet traffic to your server's IP address can cryptographically verify the associated statement. The verified content (Validated ROA Payload; abbreviated: VRP) includes which provider networks (VRP ASN) are authorised to receive Internet traffic for each recorded IP address block (VRP Prefix).
+
+The network provider can then use this content to filter BGP routes. For example, he can reject any Invalid routes, to prevent Internet traffic from its network is sent to unauthorised provider networks.
+
+Checking route announcements against route authorisations (RPKI Origin Validation; abbreviated: ROV) has the following three possible outcomes.
+
+1․ Valid: The route announcement of the considered IP address is matched by at least one published route authorisation. A route authorisation is also matched for more specific route announcements (i.e., for a part of the IP address block contained in the route authorisation), unless they are more specific than the limit specified in the route authorisation (via the maxLength attribute).
+
+2․ Invalid: The route announcement of the considered IP address is covered by a route authorisation, but it does not match. There are two possible causes:
+
+    the IP address block (Route Prefix) is announced from a provider network (Route Origin ASN) that is not authorised in the route authorisation (result in the table below: "invalid (as)");
+    the IP address block (Route Prefix) that is announced is smaller than is allowed in the route authorisation, i.e. exceeding maxLength value (result in table below: "invalid (length)").
+
+3․ NotFound: No statement with route-authorisation has been found that covers the route announcement of the considered IP address. This makes the routing of Internet traffic to your server less secure. Please contact your hoster about this. He can ask his network provider that owns your server's IP addresses to publish route authorisations.
+
+What to do if the test result shows the status Invalid?
+
+The status Invalid indicates an unintentional or malicious route configuration error, that can be caused by your hoster or its network provider (internal error) or by a third party (external error). In either case, it increases the risk for unreachability of your server or for interception of Internet traffic to your server. Contact your hoster as soon as possible. In the case of an internal error, your hoster should ask its network provider that owns your server's IP addresses to fix the route configuration error.
+Web server
+Passed: Route Origin Authorisation existence close
+Verdict:
+
+For all IP addresses of your web server an RPKI Route Origin Authorisation (ROA) is published.
+Technical details:
+Web server 	IP address 	RPKI Route Origin Authorization
+mail.dnanu.de 	91.50.54.159 	yes
+... 	2003:c8:c704:3584:982e:83b1:63af:7fa0 	yes
+Test explanation:
+
+We check if an RPKI Route Origin Authorisation (ROA) has been published for all IP addresses of your web server.
+
+Your hoster (or its network provider) announces through the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. Other network providers use these route announcements to determine via which route to send traffic for your server's IP addresses.
+
+However, a route announcement can be faked. In fact, another network provider may be able to connect the IP address block of your IP address to its network and thus potentially receive Internet traffic that is actually intended for your network provider. The cause may be accidental or malicious. In either case, this can result in your server becoming unreachable or in Internet traffic to your server being intercepted.
+
+Resource Public Key Infrastructure (RPKI) significantly improves protection against this. With RPKI, the rightful holder of a block of IP addresses can publish a digitally signed statement with route authorisation (Route Origin Authorisation; ROA for short). Another network provider that wants to send Internet traffic to a particular IP address, can use the corresponding statement to filter out Invalid routes. In this way, the network provider prevents Internet traffic from its network from being sent to unauthorized provider networks.
+Passed: Route announcement validity close
+Verdict:
+
+All IP addresses of your web server have a Valid validation state. The route announcement of these IP addresses is matched by the published RPKI Route Origin Authorisation (ROA).
+Technical details:
+Web server 	BGP Route Prefix 	BGP Route Origin ASN 	RPKI Origin Validation state
+mail.dnanu.de 	91.0.0.0/10 	AS3320 	valid
+... 	2003::/19 	AS3320 	valid
+Test explanation:
+
+We check if the validation status for all IP addresses of your web server is Valid. If there are multiple overlapping route announcements for the IP address, we test that they are all Valid.
+
+Your hoster (or its network provider) announces via the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. It does this by associating (parts of) its IP address blocks (Route Prefix) with the unique number of its provider network (Route Origin ASN), and then distributing this routing information. Other network providers use these route announcements to determine via which route to send traffic for the IP addresses.
+
+Additionally, for each route announcement, your hoster (or its network provider) should publish a digitally signed statement with route authorisation (Route Origin Authorisation; abbreviated: ROA) statement using Resource Public Key Infrastructure (RPKI).
+
+Another network provider that is asked to send Internet traffic to your server's IP address can cryptographically verify the associated statement. The verified content (Validated ROA Payload; abbreviated: VRP) includes which provider networks (VRP ASN) are authorised to receive Internet traffic for each recorded IP address block (VRP Prefix).
+
+The network provider can then use this content to filter BGP routes. For example, he can reject any Invalid routes, to prevent Internet traffic from its network is sent to unauthorised provider networks.
+
+Checking route announcements against route authorisations (RPKI Origin Validation; abbreviated: ROV) has the following three possible outcomes.
+
+1․ Valid: The route announcement of the considered IP address is matched by at least one published route authorisation. A route authorisation is also matched for more specific route announcements (i.e., for a part of the IP address block contained in the route authorisation), unless they are more specific than the limit specified in the route authorisation (via the maxLength attribute).
+
+2․ Invalid: The route announcement of the considered IP address is covered by a route authorisation, but it does not match. There are two possible causes:
+
+    the IP address block (Route Prefix) is announced from a provider network (Route Origin ASN) that is not authorised in the route authorisation (result in the table below: "invalid (as)");
+    the IP address block (Route Prefix) that is announced is smaller than is allowed in the route authorisation, i.e. exceeding maxLength value (result in table below: "invalid (length)").
+
+3․ NotFound: No statement with route-authorisation has been found that covers the route announcement of the considered IP address. This makes the routing of Internet traffic to your server less secure. Please contact your hoster about this. He can ask his network provider that owns your server's IP addresses to publish route authorisations.
+
+What to do if the test result shows the status Invalid?
+
+The status Invalid indicates an unintentional or malicious route configuration error, that can be caused by your hoster or its network provider (internal error) or by a third party (external error). In either case, it increases the risk for unreachability of your server or for interception of Internet traffic to your server. Contact your hoster as soon as possible. In the case of an internal error, your hoster should ask its network provider that owns your server's IP addresses to fix the route configuration error.
+

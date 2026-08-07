@@ -1,0 +1,41 @@
+DMARC Results
+
+--- Connection parameters ---
+Source IP address: 54.240.3.25
+Hostname: a3-25.smtp-out.eu-west-1.amazonses.com
+Sender: 0102019fd98b7b53-b0bd3f15-992c-437c-b044-e29cab9cb556-000000@send.dnanu.de
+
+--- SPF ---
+Domain: send.dnanu.de
+Identity: RFC5321.MailFrom
+Auth Result: PASS
+DMARC Alignment: PASS
+
+--- DKIM ---
+Domain: dnanu.de
+Selector: resend
+Algorithm:  (1024-bit)
+Auth Result: PASS
+DMARC Alignment: PASS
+
+-- DKIM ---
+Domain: amazonses.com
+Selector: shh3fegwg5fppqsuzphvschd53n6ihuv
+Algorithm:  (1024-bit)
+Auth Result: PASS
+DMARC Alignment: amazonses.com != dnanu.de
+
+--- DMARC ---
+RFC5322.From domain: dnanu.de
+Policy (p=): quarantine
+SPF: PASS
+DKIM: PASS
+DMARC Result: PASS
+
+--- Final verdict ---
+DMARC does not take any specific action regarding message delivery. Generally, this means that the message will be successfully delivered. However, it's important to note that other factors like spam filters can still reject or quarantine a message.
+
+---------------------
+Thanks for using learndmarc.com
+This free service is brought to you by URIports.com - DMARC Monitoring Reinvented.
+

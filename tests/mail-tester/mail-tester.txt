@@ -1,0 +1,151 @@
+Click here to view your message
+From : Dumitru Nanu <hey@dnanu.de>
+Bounce address : 0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de
+Text version
+Source
+SpamAssassin likes you
+The famous spam filter SpamAssassin. Score: 0.1.
+A score below -5 is considered spam.
+-0.1 	DKIM_SIGNED 	Message has a DKIM or DK signature, not necessarily valid
+This rule is automatically applied if your email contains a DKIM signature but other positive rules will also be added if your DKIM signature is valid. See immediately below.
+0.1 	DKIM_VALID 	Message has at least one valid DKIM or DK signature
+Great! Your signature is valid
+0.1 	DKIM_VALID_AU 	Message has a valid DKIM or DK signature from author's domain
+Great! Your signature is valid and it's coming from your domain name
+-0.001 	RCVD_IN_MSPIKE_H2 	Average reputation (+2)
+54.240.3.16 listed in wl.mailspike.net
+-0.001 	SPF_HELO_NONE 	SPF: HELO does not publish an SPF Record
+0.001 	SPF_PASS 	SPF: sender matches SPF record
+Great! Your SPF is valid
+You're properly authenticated
+Check DMARC policy state ›
+We check if the server you are sending from is authenticated
+[SPF] Your server 54.240.3.16 is authorized to use 0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de
+Sender Policy Framework (SPF) is an email validation system designed to prevent email spam by detecting email spoofing, a common vulnerability, by verifying sender IP addresses.
+
+What we retained as your current SPF record is:
+
+v=spf1 include:amazonses.com ~all
+
+
+
+Verification details:
+
+dig +short TXT send.dnanu.de :
+
+    "v=spf1 include:amazonses.com ~all"
+
+dig +short +time=3 +tries=1 TXT @8.8.8.8 send.dnanu.de :
+
+    "v=spf1 include:amazonses.com ~all"
+
+spfquery --scope mfrom --id 0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de --ip 54.240.3.16 --helo-id a3-16.smtp-out.eu-west-1.amazonses.com :
+
+    pass
+    send.dnanu.de: Sender is authorized to use '0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de' in 'mfrom' identity (mechanism 'include:amazonses.com' matched)
+    send.dnanu.de: Sender is authorized to use '0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de' in 'mfrom' identity (mechanism 'include:amazonses.com' matched)
+    Received-SPF: pass (send.dnanu.de: Sender is authorized to use '0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de' in 'mfrom' identity (mechanism 'include:amazonses.com' matched)) receiver=mail-tester.com; identity=mailfrom; envelope-from="0102019fd96de35e-0251b726-a9f9-41b9-9bfe-4842088ee6b3-000000@send.dnanu.de"; helo=a3-16.smtp-out.eu-west-1.amazonses.com; client-ip=54.240.3.16
+
+Your DKIM signature is valid
+DomainKeys Identified Mail (DKIM) is a method for associating a domain name to an email message, thereby allowing a person, role, or organization to claim some responsibility for the message.
+
+The DKIM signature of your message is:
+
+	v=1;
+	a=rsa-sha256;
+	q=dns/txt;
+	c=relaxed/simple;
+	s=resend;
+	d=dnanu.de;
+	t=1786059285;
+	h=From:To:Subject:Message-ID:Content-Transfer-Encoding:Date:MIME-Version:Content-Type;
+	bh=n/+eBGr9kHaMY3sJa254eoYz+bIJXWznHvAe//zL14g=;
+	b=uhSFaL1uyyssq5ZewM0mO9gH+hXTSk8Qf53mRd8WbGr4f6IjM2/Jzuuov7NfijpHwQAHapAcl3RLKN9rGibR51JrmgEssAoWdh+0r2R+xAhL/adDEDMOxGFQWu1bcsTmYUaj8pbpjEr6RBItG43IdpfRyKB+8wUtKznpCVDisqc=
+
+Your public key is:
+
+"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDctD5wJ4JrOPbaafJHF0qv1EVX3NArTHrn0uO4Cutqs89Kgf+l9qDjV/n3LhosulXxj3XHEKoKZTcxEir//6P29zRep0NuNAPTnyF5l6bLCYpWDmzHe47WwJTN1EkGbv1Dx91q5dMpZQdwxFy/L8BsKYeFwR2v7Wsrh253sudxCQIDAQAB"
+
+Key length: 1024bits
+Your message passed the DMARC test
+A DMARC policy allows a sender to indicate that their emails are protected by SPF and/or DKIM, and give instruction if neither of those authentication methods passes. Please be sure you have a DKIM and SPF set before using DMARC.
+Your DMARC record is set correctly and your message passed the DMARC test
+
+DMARC DNS entry found for the domain _dmarc.dnanu.de:
+
+"v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:admin@dnanu.de"
+
+Verification details:
+
+    mail-tester.com; dmarc=pass (p=quarantine dis=none) header.from=dnanu.de
+    dkim.mail-tester.com; dkim=pass (1024-bit key; unprotected) header.d=dnanu.de header.i=@dnanu.de header.a=rsa-sha256 header.s=resend header.b=uhSFaL1u; dkim=pass (1024-bit key; unprotected) header.d=amazonses.com header.i=@amazonses.com header.a=rsa-sha256 header.s=shh3fegwg5fppqsuzphvschd53n6ihuv header.b=RsKQKlfO; dkim-atps=neutral
+    From Domain: dnanu.de
+    DKIM Domain: dnanu.de
+
+Your server 54.240.3.16 is successfully associated with a3-16.smtp-out.eu-west-1.amazonses.com
+Reverse DNS lookup or reverse DNS resolution (rDNS) is the determination of a domain name that is associated with a given IP address.
+Some companies such as AOL will reject any message sent from a server without rDNS, so you must ensure that you have one.
+You cannot associate more than one domain name with a single IP address.
+
+Here are the tested values for this check:
+
+    IP: 54.240.3.16
+    HELO: a3-16.smtp-out.eu-west-1.amazonses.com
+    rDNS: a3-16.smtp-out.eu-west-1.amazonses.com
+
+Your domain name send.dnanu.de is assigned to a mail server.
+We check if there is a mail server (MX Record) behind your domain name send.dnanu.de.
+
+MX records (send.dnanu.de) : 
+
+    10 feedback-smtp.eu-west-1.amazonses.com.
+
+Your hostname a3-16.smtp-out.eu-west-1.amazonses.com is assigned to a server.
+We check if there is a server (A Record) behind your hostname a3-16.smtp-out.eu-west-1.amazonses.com.
+
+A records (a3-16.smtp-out.eu-west-1.amazonses.com) : 
+
+    54.240.3.16
+
+Your message could be improved
+Checks whether your message is well formatted or not.
+
+There is no html version of your message.
+You have no images in your message
+ALT attributes provide a textual alternative to your images.
+It is a useful fallback for people who are blind or visually impaired and for cases where your images cannot be displayed.
+Your content is safe
+Checks whether your message contains dangerous html elements such as javascript, iframes, embed content or applet.
+We checked if you used an URL shortener system.
+Checks whether your message uses URL shortener systems.
+
+Your message does not contain a List-Unsubscribe header
+The List-Unsubscribe header is required if you send mass emails, it enables the user to easily unsubscribe from your mailing list.
+Your message does not contain a List-Unsubscribe header
+
+You're not blocklisted
+Matches your server IP address (54.240.3.16) against 23 of the most common IPv4 blocklists.
+Not listed in Spamhaus SBL Advisory
+Not listed in Spamhaus CSS Advisory
+Not listed in Spamhaus XBL Advisory
+Not listed in Spamhaus PBL Advisory
+Not listed in Barracuda
+Yellow listed in Hostkarma
+Not listed in IMP-SPAM
+Not listed in BACKSCATTERER
+Not listed in China Anti-Spam Alliance
+Not listed in LashBack
+Not listed in mailspike
+Not listed in REDHAWK
+Not listed in SORBS (Relay)
+Not listed in SORBS (last 48 hours)
+Not listed in SORBS (last 28 days)
+Not listed in SPAMCOP
+Not listed in SEM-BACKSCATTER
+Not listed in SEM-BLACK
+Not listed in RATS-ALL
+Not listed in PSBL
+Not listed in SWINOG
+Not listed in GBUdb Truncate
+Not listed in Weighted Private Block List
+

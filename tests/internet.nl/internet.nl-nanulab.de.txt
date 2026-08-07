@@ -1,0 +1,2 @@
+The given domain is invalid!
+Explanation: An A and/or AAAA record is necessary for the website test, and a SOA record for the email test. 

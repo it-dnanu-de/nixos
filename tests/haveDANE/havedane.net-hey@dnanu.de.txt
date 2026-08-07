@@ -1,0 +1,4 @@
+Results
+Email to non-DANE domain delivered.
+Email to DANE domain delivered.
+Email to domain with invalid DANE delivered.

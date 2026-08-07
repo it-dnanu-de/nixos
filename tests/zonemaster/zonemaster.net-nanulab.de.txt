@@ -1,0 +1,557 @@
+ Zone
+4
+5
+SOA 'retry' at least 1 hour
+Zone04
+
+    Notice
+
+    SOA 'retry' value (2400) is less than the recommended one (3600). 
+
+SOA 'expire' minimum value
+Zone05
+
+    Info
+
+    SOA 'expire' value (604800) is higher than the minimum recommended value (604800) and not lower than the 'refresh' value (10000). 
+
+SPF policy validation
+Zone11
+
+    Notice
+
+    No SPF policy was found for nanulab.de. 
+
+SOA 'minimum' maximum value
+Zone06
+
+    Info
+
+    SOA 'minimum' value (1800) is between the recommended ones (300/86400). 
+
+SOA master is not an alias
+Zone07
+
+    Info
+
+    SOA 'mname' value (elijah.ns.cloudflare.com) refers to a NS which is not an alias (CNAME).
+    Info
+
+    SOA 'mname' value (elijah.ns.cloudflare.com) refers to a NS which is not an alias (CNAME). 
+
+MX record present
+Zone09
+
+    Notice
+
+    The child zone has no mail target (no MX). 
+
+SOA 'refresh' minimum value
+Zone02
+
+    Notice
+
+    SOA 'refresh' value (10000) is less than the recommended one (14400). 
+
+SOA 'retry' lower than 'refresh'
+Zone03
+
+    Info
+
+    SOA 'refresh' value (10000) is higher than the SOA 'retry' value (2400). 
+
+No multiple SOA records
+Zone10
+
+    Info
+
+    A unique SOA record is returned by all nameservers of the zone. 
+
+System
+1
+
+    Info
+
+    Using version v9.0.0 of the Zonemaster engine. 
+
+Basic
+3
+The domain must have a parent domain
+Basic01
+
+    Info
+
+    The parent zone is "de" as returned from name servers "a.nic.de/194.0.0.53; a.nic.de/2001:678:2::53; f.nic.de/2a02:568:0:2::53; f.nic.de/81.91.164.5; l.de.net/2001:668:1f:11::105; l.de.net/77.67.63.105; n.de.net/194.146.107.6; n.de.net/2001:67c:1011:1::53; s.de.net/195.243.137.26; s.de.net/2003:8:14::53; z.nic.de/194.246.96.1; z.nic.de/2a02:568:fe02::de".
+    Info
+
+    The zone "nanulab.de" is found. 
+
+The domain must have at least one working name server
+Basic02
+
+    Info
+
+    Authoritative answer on SOA query for "nanulab.de" is returned by name servers "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab". 
+
+    Info
+
+    Functional nameserver found. "A" query for www.nanulab.de test skipped. 
+
+Address
+3
+Name server address must be globally reachable
+Address01
+
+    Info
+
+    Globally reachable IP address(es): "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab". 
+
+Reverse DNS entry exists for name server IP address
+Address02
+
+    Info
+
+    Reverse DNS entry exists for each Nameserver IP address. 
+
+Reverse DNS entry matches name server name
+Address03
+
+    Info
+
+    Every reverse DNS entry matches name server name. 
+
+Connectivity
+1
+1
+AS Diversity
+Connectivity03
+
+    Warning
+
+    All authoritative nameservers have their IPv4 addresses in the same AS (13335).
+    Warning
+
+    All authoritative nameservers have their IPv6 addresses in the same AS (13335). 
+
+IP Prefix Diversity
+Connectivity04
+
+    Notice
+
+    The following name server(s) are announced in the same IPv4 prefix (162.159.32.0/20): "elijah.ns.cloudflare.com/162.159.44.253; jewel.ns.cloudflare.com/162.159.38.171"
+    Notice
+
+    The following name server(s) are announced in the same IPv6 prefix (2606:4700:50::/44): "elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab"
+    Notice
+
+    The following name server(s) are announced in the same IPv6 prefix (2a06:98c1:50::/45): "elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab"
+    Notice
+
+    The following name server(s) are announced in the same IPv6 prefix (2803:f800:50::/45): "elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab"
+    Info
+
+    The following name server(s) are announced in unique IPv4 prefix(es): "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/172.64.35.253; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/172.64.34.171" 
+
+Consistency
+6
+SOA serial number consistency
+Consistency01
+
+    Info
+
+    Saw SOA serial number 2411544261 on following nameserver set : elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab.
+    Info
+
+    A single SOA serial number was found (2411544261). 
+
+SOA RNAME consistency
+Consistency02
+
+    Info
+
+    A single SOA rname value was found (dns.cloudflare.com.). 
+
+SOA timers consistency
+Consistency03
+
+    Info
+
+    A single SOA time parameter set was seen (REFRESH=10000, RETRY=2400, EXPIRE=604800, MINIMUM=1800). 
+
+Name server NS consistency
+Consistency04
+
+    Info
+
+    A single NS set was found (elijah.ns.cloudflare.com.; jewel.ns.cloudflare.com.). 
+
+Consistency between glue and authoritative data
+Consistency05
+
+    Info
+
+    Glue records are consistent between glue and authoritative data. 
+
+SOA MNAME consistency
+Consistency06
+
+    Info
+
+    A single SOA mname value was seen (elijah.ns.cloudflare.com.). 
+
+Dnssec
+7
+DNSSEC signed zone and DS in parent for signed zone
+Dnssec07
+
+    Info
+
+    The following name servers respond with DNSKEY (signed child zone). Name servers: "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab".
+    Info
+
+    The zone is signed.
+    Info
+
+    The following parent name servers respond with DS record or records for the child zone. Name servers: "a.nic.de/194.0.0.53; a.nic.de/2001:678:2::53; f.nic.de/2a02:568:0:2::53; f.nic.de/81.91.164.5; l.de.net/2001:668:1f:11::105; l.de.net/77.67.63.105; n.de.net/194.146.107.6; n.de.net/2001:67c:1011:1::53; s.de.net/195.243.137.26; s.de.net/2003:8:14::53; z.nic.de/194.246.96.1; z.nic.de/2a02:568:fe02::de".
+    Info
+
+    The parent zone has DS record or records for the signed child zone. 
+
+Legal values for the DS hash digest algorithm
+Dnssec01
+
+    Info
+
+    DNSSEC:DNSSEC01:DS01_DS_ALGO_OK ds_algo_descr=SHA-256; ds_algo_num=2; keytag=2371; ns_list=a.nic.de/194.0.0.53; a.nic.de/2001:678:2::53; f.nic.de/2a02:568:0:2::53; f.nic.de/81.91.164.5; l.de.net/2001:668:1f:11::105; l.de.net/77.67.63.105; n.de.net/194.146.107.6; n.de.net/2001:67c:1011:1::53; s.de.net/195.243.137.26; s.de.net/2003:8:14::53; z.nic.de/194.246.96.1; z.nic.de/2a02:568:fe02::de 
+
+Verify NSEC3 parameters
+Dnssec03
+
+    Info
+
+    The zone does not use NSEC3. Testing for NSEC3 has been skipped. Fetched from name servers "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab". 
+
+Check for too short or too long RRSIG lifetimes
+Dnssec04
+
+    Info
+
+    RRSIG with keytag 2371 and covering type(s) DNSKEY expires at : Mon Oct 5 23:22:24 2026.
+    Info
+
+    RRSIG with keytag 34505 and covering type(s) SOA expires at : Sat Aug 8 01:00:16 2026. 
+
+Check for invalid DNSKEY algorithms
+Dnssec05
+
+    Info
+
+    The DNSKEY with tag 2371 uses algorithm number 13 ("ECDSA Curve P-256 with SHA-256", ECDSAP256SHA256). Fetched from name servers "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab".
+    Info
+
+    The DNSKEY with tag 34505 uses algorithm number 13 ("ECDSA Curve P-256 with SHA-256", ECDSAP256SHA256). Fetched from name servers "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab". 
+
+Zone contains NSEC or NSEC3 records
+Dnssec10
+
+    Info
+
+    The zone has NSEC records. Fetched from name servers "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab". 
+
+Existence of CDS and CDNSKEY
+Dnssec15
+
+    Info
+
+    CDNSKEY and CDS RRsets are found on nameservers that resolve to IP addresses (108.162.194.171; 108.162.195.253; 162.159.38.171; 162.159.44.253; 172.64.34.171; 172.64.35.253; 2606:4700:50::a29f:26ab; 2606:4700:58::a29f:2cfd; 2803:f800:50::6ca2:c2ab; 2803:f800:50::6ca2:c3fd; 2a06:98c1:50::ac40:22ab; 2a06:98c1:50::ac40:23fd). 
+
+Delegation
+7
+Minimum number of name servers
+Delegation01
+
+    Info
+
+    Delegation lists enough (2) nameservers. Lower limit set to 2. Name servers: elijah.ns.cloudflare.com; jewel.ns.cloudflare.com
+    Info
+
+    Child lists enough (2) nameservers. Lower limit set to 2. Name servers: elijah.ns.cloudflare.com; jewel.ns.cloudflare.com
+    Info
+
+    Child lists enough (2) nameservers that resolve to IPv4 addresses. Lower limit set to 2. Name servers: elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171
+    Info
+
+    Child lists enough (2) nameservers that resolve to IPv6 addresses. Lower limit set to 2. Name servers: elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab
+    Info
+
+    Delegation lists enough (2) nameservers that resolve to IPv4 addresses. Lower limit set to 2. Name servers: elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171
+    Info
+
+    Delegation lists enough (2) nameservers that resolve to IPv6 addresses. Lower limit set to 2. Name servers: elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab 
+
+Name servers must have distinct IP addresses
+Delegation02
+
+    Info
+
+    All the IP addresses used by the nameservers in parent are unique.
+    Info
+
+    All the IP addresses used by the nameservers in child are unique.
+    Info
+
+    All the IP addresses used by the nameservers are unique. 
+
+No truncation of referrals
+Delegation03
+
+    Info
+
+    The smallest possible legal referral packet is smaller than 513 octets (it is 329). 
+
+Name server is authoritative
+Delegation04
+
+    Info
+
+    All these nameservers are confirmed to be authoritative : elijah.ns.cloudflare.com; jewel.ns.cloudflare.com. 
+
+Name server must not point at CNAME alias
+Delegation05
+
+    Info
+
+    No nameserver points to CNAME alias. 
+
+Existence of SOA
+Delegation06
+
+    Info
+
+    All the nameservers have SOA record. 
+
+Parent glue name records present in child
+Delegation07
+
+    Info
+
+    All of the nameserver names are listed both at parent and child. 
+
+Nameserver
+1
+8
+A name server should not be a recursor
+Nameserver01
+
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/108.162.195.253 is not a recursor.
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/162.159.44.253 is not a recursor.
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/172.64.35.253 is not a recursor.
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd is not a recursor.
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd is not a recursor.
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd is not a recursor.
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/108.162.194.171 is not a recursor.
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/162.159.38.171 is not a recursor.
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/172.64.34.171 is not a recursor.
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab is not a recursor.
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab is not a recursor.
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab is not a recursor. 
+
+Test of EDNS0 support
+Nameserver02
+
+    Info
+
+    The following nameservers support EDNS0 : elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/108.162.195.253; jewel.ns.cloudflare.com/108.162.194.171; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; elijah.ns.cloudflare.com/162.159.44.253. 
+
+Test availability of zone transfer (AXFR)
+Nameserver03
+
+    Info
+
+    AXFR not available on nameserver elijah.ns.cloudflare.com/108.162.195.253.
+    Info
+
+    AXFR not available on nameserver elijah.ns.cloudflare.com/162.159.44.253.
+    Info
+
+    AXFR not available on nameserver elijah.ns.cloudflare.com/172.64.35.253.
+    Info
+
+    AXFR not available on nameserver elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd.
+    Info
+
+    AXFR not available on nameserver elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd.
+    Info
+
+    AXFR not available on nameserver elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd.
+    Info
+
+    AXFR not available on nameserver jewel.ns.cloudflare.com/108.162.194.171.
+    Info
+
+    AXFR not available on nameserver jewel.ns.cloudflare.com/162.159.38.171.
+    Info
+
+    AXFR not available on nameserver jewel.ns.cloudflare.com/172.64.34.171.
+    Info
+
+    AXFR not available on nameserver jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab.
+    Info
+
+    AXFR not available on nameserver jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab.
+    Info
+
+    AXFR not available on nameserver jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab. 
+
+Same source address
+Nameserver04
+
+    Info
+
+    All nameservers reply with same IP used to query them. 
+
+NS can be resolved
+Nameserver06
+
+    Info
+
+    All nameservers succeeded to resolve to an IP address. 
+
+To check whether authoritative name servers return an upward referral
+Nameserver07
+
+    Info
+
+    None of the following nameservers returns an upward referral : elijah.ns.cloudflare.com; jewel.ns.cloudflare.com. 
+
+Testing QNAME case insensitivity
+Nameserver08
+
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/108.162.195.253 preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/162.159.44.253 preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/172.64.35.253 preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/108.162.194.171 preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/162.159.38.171 preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/172.64.34.171 preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab preserves original case of queried names (WWw.nAnulAB.dE).
+    Info
+
+    Nameserver jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab preserves original case of queried names (WWw.nAnulAB.dE). 
+
+Testing QNAME case sensitivity
+Nameserver09
+
+    Info
+
+    When asked for SOA records on "www.nanulab.de" with different cases, all servers reply consistently. 
+
+Checking for revealed software version
+Nameserver15
+
+    Notice
+
+    The following name server(s) respond to software version query "version.bind" with string "2026.7.2". Returned from name servers: "elijah.ns.cloudflare.com/108.162.195.253; elijah.ns.cloudflare.com/162.159.44.253; elijah.ns.cloudflare.com/172.64.35.253; elijah.ns.cloudflare.com/2606:4700:58::a29f:2cfd; elijah.ns.cloudflare.com/2803:f800:50::6ca2:c3fd; elijah.ns.cloudflare.com/2a06:98c1:50::ac40:23fd; jewel.ns.cloudflare.com/108.162.194.171; jewel.ns.cloudflare.com/162.159.38.171; jewel.ns.cloudflare.com/172.64.34.171; jewel.ns.cloudflare.com/2606:4700:50::a29f:26ab; jewel.ns.cloudflare.com/2803:f800:50::6ca2:c2ab; jewel.ns.cloudflare.com/2a06:98c1:50::ac40:22ab" 
+
+Syntax
+7
+No illegal characters in the domain name
+Syntax01
+
+    Info
+
+    No illegal characters in the domain name (nanulab.de). 
+
+No hyphen ('-') at the start or end of the domain name
+Syntax02
+
+    Info
+
+    Neither end of any label in the domain name (nanulab.de) has a hyphen. 
+
+There must be no double hyphen ('--') in position 3 and 4 of the domain name
+Syntax03
+
+    Info
+
+    Domain name (nanulab.de) has no label with a double hyphen ('--') in position 3 and 4 (with a prefix which is not 'xn--'). 
+
+The NS name must have a valid domain/hostname
+Syntax04
+
+    Info
+
+    Nameserver (elijah.ns.cloudflare.com) syntax is valid.
+    Info
+
+    Nameserver (jewel.ns.cloudflare.com) syntax is valid. 
+
+Misuse of '@' character in the SOA RNAME field
+Syntax05
+
+    Info
+
+    There is no misused '@' character in the SOA RNAME field (dns.cloudflare.com.). 
+
+No illegal characters in the SOA RNAME field
+Syntax06
+
+    Info
+
+    The SOA RNAME field (dns@cloudflare.com) is compliant with RFC2822. 
+
+No illegal characters in the SOA MNAME field
+Syntax07
+
+    Info
+
+    SOA MNAME (elijah.ns.cloudflare.com) syntax is valid. 

@@ -1,0 +1,974 @@
+
+Email test: dnanu.de
+The domain dnanu.de has a test score of 90%.
+
+90%
+
+    Failed : Not reachable via modern internet address, or improvement possible (IPv6)
+    Passed : All domain names signed (DNSSEC)
+    Passed : Authenticity marks against email phishing (DMARC, DKIM and SPF)
+    Passed : Mail server connection sufficiently secured (STARTTLS and DANE)
+    Passed : Authorised route announcement (RPKI)
+
+Explanation of test report
+Permalink test result (2026-08-06 23:47 UTC)
+Seconds until retest option: 17
+Failed : Modern address (IPv6)
+Too bad! Your mail server can not be reached by senders using modern addresses (IPv6), or improvement is possible. Therefore your mail server is not part of the modern Internet yet. You should ask your email provider to fully enable IPv6.
+
+Name servers of domain
+Passed: IPv6 addresses for name servers close
+Verdict:
+
+Two or more name servers of your domain have an IPv6 address.
+Technical details:
+Name server 	IPv6 address 	IPv4 address
+elijah.ns.cloudflare.com. 	2803:f800:50::6ca2:c3fd 	172.64.35.253
+... 	2a06:98c1:50::ac40:23fd 	162.159.44.253
+... 	2606:4700:58::a29f:2cfd 	108.162.195.253
+jewel.ns.cloudflare.com. 	2606:4700:50::a29f:26ab 	108.162.194.171
+... 	2a06:98c1:50::ac40:22ab 	172.64.34.171
+... 	2803:f800:50::6ca2:c2ab 	162.159.38.171
+Test explanation:
+
+We check if your domain name has at least two name servers with an IPv6 address.
+
+This is consistent with the "Technical requirements for the registration and use of .nl domain names" d.d. 1 January 2023 by SIDN (.nl TLD registry) that require each .nl domain to have at least two name servers.
+
+'IPv4-mapped IPv6 addresses' (RFC 4291, beginning with ::ffff:) will fail in this test, as they do not provide IPv6 connectivity.
+Passed: IPv6 reachability of name servers close
+Verdict:
+
+All name servers that have an IPv6 address are reachable over IPv6.
+Test explanation:
+We check if all name servers, that have an AAAA record with IPv6 address, are reachable over IPv6.
+Mail server(s)
+Passed: IPv6 addresses for mail server(s) close
+Verdict:
+
+All receiving mail servers on your domain have an IPv6 address.
+Technical details:
+Mail server (MX) 	IPv6 address 	IPv4 address
+mail.dnanu.de. 	2003:c8:c704:3584:982e:83b1:63af:7fa0 	91.50.54.159
+Test explanation:
+
+We check if there is at least one AAAA record with IPv6 address for every receiving mail server (MX). In case no mail server is defined, we give a notification and we execute other subtests of the mail test that are still relevant.
+
+'IPv4-mapped IPv6 addresses' (RFC 4291, beginning with ::ffff:) will fail in this subtest, as they do not provide IPv6 connectivity.
+
+Note that the email test does not fall back to A/AAAA records for mail servers in case of absence of an MX record.
+Failed: IPv6 reachability of mail server(s) close
+Verdict:
+
+At least one of your receiving mail servers with an IPv6 address is not reachable over IPv6.
+Technical details:
+Mail server (MX) 	Unreachable IPv6 address
+mail.dnanu.de. 	2003:c8:c704:3584:982e:83b1:63af:7fa0
+Test explanation:
+We check if we can connect to your mail servers (MX) over IPv6 on port 25. We test all IPv6 addresses that we receive from the name servers of your mail server domain(s). A partial score will be given if not all IPv6 addresses are reachable. If an IPv6 address is (syntactically) invalid, we consider it unreachable.
+Passed : Signed domain names (DNSSEC)
+Well done! Your email address domain and your mail server domain(s) are signed with a valid signature (DNSSEC). Therefore senders with enabled domain signature validation, are able to reliably query the IP address of your receiving mail server(s).
+
+Email address domain
+Passed: DNSSEC existence close
+Verdict:
+
+Your email address domain is DNSSEC signed.
+Technical details:
+Email address domain 	Registrar
+dnanu.de 	None
+Test explanation:
+
+We check if your domain, more specifically its SOA record, is DNSSEC signed. With a DNSSEC signature senders who validate domain signatures can verify the authenticity of the DNS reply that contains your mail server domains (MX). This prevents an attacker from manipulating the DNS answer in order to redirect mails sent to you to the attacker's mail server domain.
+
+If a domain redirects to another domain via CNAME, then we also check if the CNAME domain is signed (which is conformant with the DNSSEC standard). If the CNAME domain is not signed, the result of this subtest will be negative.
+
+Note: the validity of the signature is not part of this subtest, but part of the next subtest.
+Passed: DNSSEC validity close
+Verdict:
+
+Your email address domain is secure, because its DNSSEC signature is valid.
+Technical details:
+Email address domain 	Status
+dnanu.de 	secure
+Test explanation:
+
+We check if your domain, more specifically its SOA record, is signed with a valid signature making it 'secure'.
+
+If a domain name redirects to another signed domain name via CNAME, then we also check if the signature of the CNAME domain name is valid (which is conformant with the DNSSEC standard). If the signature of the CNAME domain name is not valid, the result of this subtest will be negative.
+
+Note that we only test the name server that responds first. If name servers of a domain name have inconsistent configurations, this can lead to varying test results. In that case, for example, the result for this subtest may be 'secure' one time and 'bogus' the next.
+Mail server domain(s)
+Passed: DNSSEC existence close
+Verdict:
+
+All your mail server domains are DNSSEC signed.
+Technical details:
+Domain of mail server (MX) 	DNSSEC existent
+mail.dnanu.de. 	yes
+Test explanation:
+
+We check if the domains of your mail servers (MX), more specifically their SOA records, are DNSSEC signed. With a DNSSEC signature senders who validate domain signatures can verify the authenticity of the DNS reply containing the IP addresses and DANE records of your mail server(s). This prevents an attacker from manipulating the DNS answer in order to redirect mails sent to you to an IP address controlled by the attacker or to eavesdrop on the secured mail server connection.
+
+If a domain redirects to another domain via CNAME, then we also check if the CNAME domain is signed (which is conformant with the DNSSEC standard). If the CNAME domain is not signed, the result of this subtest will be negative.
+
+Note that the email test does not fall back to A/AAAA records for mail servers in case of absence of an MX record.
+
+The validity of the signature is not part of this subtest, but part of the next subtest.
+Passed: DNSSEC validity close
+Verdict:
+
+All your signed mail server domains are secure, because their DNSSEC signatures are valid.
+Technical details:
+Domain of mail server (MX) 	Status
+mail.dnanu.de. 	secure
+Test explanation:
+
+We check if the domains of your receiving mail servers (MX), more specifically their SOA records, are signed with a valid signature making them 'secure'.
+
+If a domain name redirects to another signed domain name via CNAME, then we also check if the signature of the CNAME domain name is valid (which is conformant with the DNSSEC standard). If the signature of the CNAME domain name is not valid, the result of this subtest will be negative.
+
+Note that we only test the name server that responds first. If name servers of a domain name have inconsistent configurations, this can lead to varying test results. In that case, for example, the result for this subtest may be 'secure' one time and 'bogus' the next.
+Passed : Authenticity marks against phishing (DMARC, DKIM and SPF)
+Well done! Your domain contains all authenticity marks against email forgery (DMARC, DKIM and SPF). Therefore receivers are able to reliably separate phishing and spam emails abusing your domain in their sender address, from your authentic emails.
+
+DMARC
+Passed: DMARC existence close
+Verdict:
+
+Your domain has a DMARC record.
+Technical details:
+DMARC record 	Found on
+v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:admin@dnanu.de 	dnanu.de
+Test explanation:
+We check if DMARC is available for your domain. A receiving mail server may use your DMARC policy to evaluate how to handle a mail with your domain as sender that could not be authenticated with both DKIM and SPF, and it may use your mail address from the DMARC record to provide feedback reports on the authentication to you. Having more than one DMARC record in the same domain is not valid and will lead to a test failure. Note: DMARC requires the SPF domain (envelope sender, i.e. return-path that shows up in MAIL FROM) and the DKIM domain (d=) to align with the mail body domain (From:).
+Passed: DMARC policy close
+Verdict:
+
+Your DMARC policy is sufficiently strict.
+Test explanation:
+
+We check if the syntax of your DMARC record is correct and if it contains a sufficiently strict policy (p=quarantine or p=reject) in order to prevent abuse of your domain by phishers and spammers. Even without a strict policy, DMARC can be useful to get more insight in legitimate and illegitimate outbound mail flows through DMARC reports. However to be effective against abuse of your domain, a liberal policy (p=none) is insufficient. If "DMARC policy test mode" is enabled (t=y), the effective policy is one level less strict, and evaluated as such.
+
+We also check whether the mail addresses under rua= and ruf= are valid. In case they contain an external mail address we check whether the external domain is authorised to receive DMARC reports. Make sure that the DMARC authorisation record on the external domain contains at least "v=DMARC1;".
+
+The test permits the use of the experimental np tag (RFC 9091).
+
+Good practice for domains without mail:
+
+    Non-sending: Use the most strict DMARC policy (p=reject) and SPF policy (-all) for your domain that you do not use for sending mail in order to prevent abuse ('spoofing'). Note that DKIM is not necessary in this case.
+    Non-receiving: For more information on "Null MX" and "No MX" see the explanation of the "STARTTLS available" subtest.
+
+Below you will find two basic example DNS configurations for domain names that are not used to send and receive mail.
+
+A. Single domain without A or AAAA record
+
+example.org. TXT "v=spf1 -all"
+*.example.org. TXT "v=spf1 -all"
+_dmarc.example.org. TXT "v=DMARC1; p=reject"
+
+ 
+
+B. Single no-mail domain with A or AAAA record
+
+example.org. AAAA 2a00:d78:0:712:94:198:159:35
+example.org. A 94.198.159.35
+example.org. MX 0 .
+example.org. TXT "v=spf1 -all"
+*.example.org. TXT "v=spf1 -all"
+www.example.org. CNAME example.nl
+_dmarc.example.org. TXT "v=DMARC1; p=reject"
+
+DKIM
+Passed: DKIM existence close
+Verdict:
+
+Your domain supports DKIM records.
+Test explanation:
+
+We check if your domain supports DKIM records. A receiving mail server can use the public key in your DKIM record to validate the signature in an email with a user from your domain as sender and determine its authenticity.
+
+    Currently we are not able to query and evaluate the public key in your DKIM record, because we would need the DKIM selector (that should be in the mails you send) to do so.
+    To pass this test we expect your name server to answer NOERROR to our query for _domainkey.example.org. When _domainkey.example.org is an 'empty non- terminal' some name servers that are not conformant with the standard RFC 2308 incorrectly answer NXDOMAIN instead of NOERROR. This makes it impossible for us to detect support for DKIM records.
+    For this test we assume 'strict alignment' which is conformant with DMARC. The given domain is considered to be the sender domain in the mail body domain (From:) and this must be identical to the DKIM domain (d=) and the SPF domain (envelope sender, i.e. return-path that shows up in MAIL FROM).
+
+Additional notes:
+
+    Some mail systems modify email in transit, potentially invalidating a DKIM signature. In many cases these modifications are harmless. Examples are whitespace replacement and header field line rewrapping. If you are a DKIM signing sender then you can choose whether or not to tolerate these types of changes, both for the header and the body of emails. The simple setting tolerates almost no modifications, and relaxed tolerates common modifications. If no setting is specified it defaults to simple for both header and body. In particular, header modifications are a common cause of a DKIM signature unintentionally becoming invalid, thus hindering deliverability. Using relaxed for the header while keeping simple for the body (c=relaxed/simple), can mitigate these kind of issues.
+    For a "good practice on domains without mail" see the explanation of the "DMARC policy" subtest.
+
+SPF
+Passed: SPF existence close
+Verdict:
+
+Your domain has an SPF record.
+Technical details:
+SPF record
+v=spf1 -all
+Test explanation:
+
+We check if your domain has an SPF record. A receiving mail server can use the IP addresses in your SPF record to authenticate the sending mail server of a received email with your domain as sender. The accompanying policy can be used to take appropriate action if authentication fails. Having more than one SPF record in the same domain is not valid and will lead to a test failure.
+
+For a "good practice on domains without mail" see the explanation of the "DMARC policy" subtest.
+Passed: SPF policy close
+Verdict:
+
+Your SPF policy is sufficiently strict.
+Test explanation:
+
+We check if the syntax of your SPF record is correct and if it contains a sufficiently strict policy i.e. ~all (softfail) or -all (fail) in order to prevent abuse by phishers and spammers. To be effective against abuse of your domain, a liberal policy i.e. +all (pass) or ?all (neutral) is insufficient. If all is missing and a redirect modifier is not present in your SPF record, the default is ?all.
+
+We also follow include and redirect for valid SPF records. In addition, we check that your SPF record does not exceed the allowed number of 10 DNS lookups making it ineffective. Each of the following SPF terms counts as a DNS lookup: redirect, include, a, mx, ptr and exist. While the SPF terms all, ip4, ip6 and exp do not count as DNS lookups.
+
+Note that if the include or redirect domain consists of macros, we will not follow them as we do not have the necessary information from an actual mail or mail server connection to expand those macros. This means that we do not evaluate the outcome of macros. Moreover, we do not count DNS lookups caused by macros to determine whether the allowed number of DNS lookups has been exceeded.
+
+For sending domains, using ~all (softfail) instead of -all (fail) is usually preferred. This is because when SPF authentication fails with an SPF fail, a receiving mail server may already block the connection without evaluating the DKIM signature and DMARC policy. This can lead to falsely blocked mails (e.g. when mails are automatically forwarded by the receiving mail server to another receiving mail server). Note that a triggered SPF softfail still ensures that a strict DMARC policy protects your domain if DKIM authentication also fails.
+
+For no-mail domains see the good practice on explanation of the "DMARC policy" subtest.
+Passed : Secure mail server connection (STARTTLS and DANE)
+Well done! Sending mail servers supporting secure email transport (STARTTLS and DANE) can establish a secure connection with your receiving mail server(s). STARTTLS prevents passive attackers from reading emails in transit to you. DANE protects against active attackers stripping STARTTLS encryption by manipulating the mail traffic.
+
+TLS
+Passed: STARTTLS available close
+Verdict:
+
+All your mail servers offer STARTTLS.
+Technical details:
+Mail server (MX) 	STARTTLS
+mail.dnanu.de. 	yes
+Test explanation:
+
+We check if your receiving mail servers (MX) support STARTTLS. If so, we also check in the subtests of this test category whether STARTTLS is configured sufficiently secure.
+
+Because of performance reasons at most ten mail servers over either IPv6 or IPv4 are tested for STARTTLS and DANE.
+
+Note that the email test does not fall back to A/AAAA records for mail servers in case of absence of an MX record.
+
+Non-receiving domain:
+
+    Null MX: In case you do not want to receive mail on your domain that has A/AAAA records, we advise you to use "Null MX" (RFC 7505). Note that a "Null MX record" should not be combined with a normal MX record that is pointing to a mail host.
+
+    No MX: In case your domain does not have A/AAAA records and you do not want to receive mail on it, we advise you to configure no MX record at all (i.e. even not an "Null MX" record).
+
+    If we detect any of the above two cases, the subtests in the STARTTLS and DANE category are not applicable. This also goes for the mail server specific subtests in the categories for IPv6 and DNSSEC. Other subtests of the email test (e.g. for DMARC) are still applicable.
+    Note that having a "Null MX" record or no MX record could also impact sending mail, because receiving servers may reject email that has an invalid return address.
+
+For a "good practice on domains without mail" see the explanation of the "DMARC policy" subtest.
+Passed: TLS version close
+Verdict:
+
+All your mail servers support secure TLS versions only.
+Technical details:
+Mail server (MX) 	TLS version 	Security level
+mail.dnanu.de. 	TLS 1.3 	good
+... 	TLS 1.2 	sufficient
+Test explanation:
+
+We check if your receiving mail servers (MX) only supports secure TLS versions (i.e. with a security level of 'Good' or 'Sufficient').
+
+A web server may support more than one TLS version.
+
+Please note that modern browsers no longer support TLS 1.0/1.1 and SSL. As a result, websites that do not support TLS 1.2 and/or 1.3 are unreachable for almost everyone.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.1.
+
+Security level of TLS versions
+
+    Good: TLS 1.3
+    Sufficient: TLS 1.2
+    Insufficient: TLS 1.0/1.1, SSL 1.0/2.0/3.0
+
+Passed: Cipher suites close
+Verdict:
+
+All your mail servers support secure cipher suites only.
+Technical details:
+Mail server (MX) 	Outdated cipher suite
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if your receiving mail servers (MX) only support secure (i.e. security level 'Good' and/or 'Sufficient') cipher suites. A mail server usually supports multiple cipher suites.
+
+A cipher suite consists of ciphers for four cryptographic functions: 1. key exchange, 2. authentication (i.e. certificate verification), 3. bulk encryption, and 4. hashing.
+
+Since TLS 1.3, the term 'cipher suite' only comprises ciphers used for bulk encryption and hashing. When using TLS 1.3 the ciphers for key exchange and certificate verification are negotiable and not part of the naming of the cipher suite.
+
+Both Internet.nl and NCSC-NL use the IANA naming convention for cipher suites. Another common notation is the OpenSSL naming convention. Since TLS 1.3 OpenSSL follows the IANA naming convention. A translation between both can be found in the OpenSSL documentation.
+
+Note that ciphers using PSK or SRP for key exchange (which are not sufficiently secure) are not detected in this test due to a limitation related to our testing method.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.2 to 3.3.5 and appendix B.
+
+Security level of cipher suites
+
+Below you find cipher suites with status 'Good', 'Sufficient' and 'Phase out', based on appendix B of NCSC-NL's guidelines.
+
+Good [TLS 1.3]:
+
+    TLS_AES_256_GCM_SHA384
+    TLS_CHACHA20_POLY1305_SHA256
+
+Sufficient [TLS 1.3]:
+
+    TLS_AES_128_CCM_SHA256
+    TLS_AES_128_GCM_SHA256
+
+Sufficient [TLS 1.2]:
+
+    TLS_ECDHE_ECDSA_WITH_AES_128_CCM
+    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+    TLS_ECDHE_ECDSA_WITH_AES_256_CCM
+    TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+    TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+    TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+    TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+
+Phase out [TLS 1.2]:
+
+    TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+    TLS_DHE_RSA_WITH_AES_128_CCM
+    TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+    TLS_DHE_RSA_WITH_AES_256_CCM
+    TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+    TLS_DHE_RSA_WITH_ARIA_128_CBC_SHA256
+    TLS_DHE_RSA_WITH_ARIA_128_GCM_SHA256
+    TLS_DHE_RSA_WITH_ARIA_256_CBC_SHA384
+    TLS_DHE_RSA_WITH_ARIA_256_GCM_SHA384
+    TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256
+    TLS_DHE_RSA_WITH_CAMELLIA_128_GCM_SHA256
+    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256
+    TLS_DHE_RSA_WITH_CAMELLIA_256_GCM_SHA384
+    TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+    TLS_ECDHE_ECDSA_WITH_ARIA_128_CBC_SHA256
+    TLS_ECDHE_ECDSA_WITH_ARIA_128_GCM_SHA256
+    TLS_ECDHE_ECDSA_WITH_ARIA_256_CBC_SHA384
+    TLS_ECDHE_ECDSA_WITH_ARIA_256_GCM_SHA384
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_128_CBC_SHA256
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_128_GCM_SHA256
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_256_CBC_SHA384
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_256_GCM_SHA384
+    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+    TLS_ECDHE_RSA_WITH_ARIA_128_CBC_SHA256
+    TLS_ECDHE_RSA_WITH_ARIA_128_GCM_SHA256
+    TLS_ECDHE_RSA_WITH_ARIA_256_CBC_SHA384
+    TLS_ECDHE_RSA_WITH_ARIA_256_GCM_SHA384
+    TLS_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256
+    TLS_ECDHE_RSA_WITH_CAMELLIA_128_GCM_SHA256
+    TLS_ECDHE_RSA_WITH_CAMELLIA_256_CBC_SHA384
+    TLS_ECDHE_RSA_WITH_CAMELLIA_256_GCM_SHA384
+
+Passed: Cipher suite order close
+Verdict:
+
+All your mail servers enforce their own preference for cipher suites in descending order of their security level.
+Technical details:
+Mail server (MX) 	Cipher suite preferred by server
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if your receiving mail servers offer cipher suites in descending order of their security level, without accepting any other preference of a sending mail server.
+
+This means your mail servers should enforce their own cipher suites preference while negotiating with a sending mail server. Furthermore, cipher suites should be offered by your mail server, with 'Good' and 'Sufficient' being preferred over 'Phase out' cipher suites.
+
+When your mail servers support 'Good' and 'Sufficient' cipher suites only, this subtest is not applicable as the ordering has no significant security advantage.
+
+In case of a deviating order, the table above with technical details shows the 'Phase Out' cipher suite chosen by your mail servers, with in the last column showing over which 'Good' or 'Sufficient' cipher suite the server chose it. Only the first found ordering issue is shown.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 2 and 3.
+Passed: Parameters for key exchange close
+Verdict:
+
+All your mail servers support secure parameters for Diffie-Hellman key exchange.
+Technical details:
+Mail server (MX) 	Affected parameters
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if the public parameters used in Diffie-Hellman key exchange by your receiving mail servers (MX) are secure.
+
+ECDHE: The security of key exchange with Elliptic Curve Diffie-Hellman Ephemeral (ECDHE) depends on the elliptic curve used. We test what elliptic curve is used.
+
+DHE: The security of key exchange with Diffie-Hellman Ephemeral (DHE) depends on the finite field group used. We test if one of the standardised finite field groups that are specified in RFC 7919 is used. Self-generated groups have security level 'Insufficient'. The larger key sizes required for the use of DHE come with a performance penalty. Carefully evaluate and use ECDHE instead of DHE if you can.
+
+Alternatives for ECDHE and DHE
+
+    Quantum-safe cryptographic algorithms X25519MLKEM768, SecP256r1MLKEM768 and SecP384r1MLKEM1024 have security level 'Good'. These are hybrid algorithms that use a combination of ECDHE and ML-KEM. Particularly, X25519MLKEM768 is increasingly supported by TLS software libraries and is utilised by most web browsers. The parameters are inherently part of these algorithms. There is thus no need to make any additional choices.
+    RSA and non-ephemeral Diffie-Hellman (ECDH and DH) should not be used for key exchange as their security level is 'Insufficient'. They do not offer forward secrecy. Note that RSA is still considered as 'Sufficient' for authentication (i.e. certificate verification).
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.3
+
+Security level of elliptic curves for ECDHE
+
+    Sufficient:
+        secp521r1 (rarely used)
+        secp384r1
+        secp256r1
+        x448
+        x25519
+        brainpoolP512r1 (rarely used)
+        brainpoolP384r1 (idem)
+        brainpoolP256r1 (idem)
+
+    Phase out:
+        secp224r1
+
+    Insufficient:
+        Other curves
+
+Security level of finite field groups for DHE
+
+    Phase out:
+        ffdhe8192 (rarely used because of performance loss)
+        ffdhe6144 (idem)
+        ffdhe4096 (RFC 7919)
+        sha256 checksum: 64852d6890ff9e62eecd1ee89c72af9af244dfef5b853bcedea3dfd7aade22b3
+        ffdhe3072 (RFC 7919)
+        sha256 checksum: c410cc9c4fd85d2c109f7ebe5930ca5304a52927c0ebcb1a11c5cf6b2386bbab
+
+    Insufficient:
+        ffdhe2048
+        Other groups (i.e. not-standardised, self-generated)
+
+Note that the above names are based on the IANA naming conventions. Sometimes alternative names are used to refer to the same curves, like prime256v1 (ANSI) and NIST P-256 for secp256r1.
+Passed: Hash function for key exchange close
+Verdict:
+
+All your mail servers support secure hash functions for key exchange.
+Technical details:
+Mail server (MX) 	Outdated hash function
+mail.dnanu.de. 	good
+Test explanation:
+
+We check if your receiving mail servers (MX) support secure hash functions to create the digital signature during key exchange.
+
+The receiving mail server uses a digital signature during the key exchange to prove ownership of the secret key corresponding to the certificate. The mail server creates this digital signature by signing the output of a hash function.
+
+Note that this subtest is only relevant for TLS 1.2. The supported hash functions can be configured via a separate TLS setting (e.g. SignatureAlgorithms in OpenSSL) and are not part of the cipher suite configuration.
+
+For more details on the status of SHA-1 and MD5, see RFC 9155. We do not test for MD5 because it is only supported by very outdated software.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.5.
+
+Security level of hash functions for key exchange
+
+    Good: SHA-256, SHA-384, SHA-512
+    Phase out: SHA-224 (rarely used)
+    Insufficient: SHA-1, MD5
+
+Passed: TLS compression close
+Verdict:
+
+All your mail servers do not support TLS compression.
+Technical details:
+Mail server (MX) 	TLS compression
+mail.dnanu.de. 	no
+Test explanation:
+
+We check if your receiving mail servers (MX) support TLS compression.
+
+The use of compression can give an attacker information about the secret parts of encrypted communication. An attacker that can determine or control parts of the data sent can reconstruct the original data by performing a large number of requests. TLS compression is used so rarely that disabling it is generally not a problem.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.1.
+
+Security level of TLS compression
+
+    Good: N/A (TLS 1.3)
+    Good: No TLS compression (TLS 1.2)
+    Insufficient: TLS compression (TLS 1.2)
+
+Passed: Secure renegotiation close
+Verdict:
+
+All your mail servers support secure renegotiation.
+Technical details:
+Mail server (MX) 	Secure renegotiation
+mail.dnanu.de. 	yes
+Test explanation:
+
+We check if your mail servers (MX) support secure renegotiation.
+
+Older versions of TLS (prior to TLS 1.3) allow forcing a new handshake. This so-called renegotiation was insecure in its original design. The standard was repaired and a safer renegotiation mechanism was added. The old version is since called insecure renegotiation and should be disabled.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.2.
+
+Security level of insecure renegotiation
+
+    Good: N/A (TLS 1.3)
+    Good: No insecure renegotiation (TLS 1.2)
+    Insufficient: Insecure renegotiation (TLS 1.2)
+
+Passed: Client-initiated renegotiation close
+Verdict:
+
+Your mail servers do not allow client-initiated renegotiation.
+Technical details:
+Mail server (MX) 	Client-initiated renegotiation
+mail.dnanu.de. 	no
+Test explanation:
+
+We check whether a sending mail server can initiate a renegotiation with your receiving mail server (MX) and, if so, whether the number of allowed renegotiations is sufficiently limited.
+
+Allowing clients to initiate renegotiation is generally not necessary. Client-initiated renegotiation opens a web server to DoS attacks inside a TLS connection. Therefore it is important either not to allow renegotiations or to strictly limit their number. We consider more than 10 allowed renegotiations as insufficient.
+
+An attacker can perform similar DoS attacks without client-initiated renegotiation by opening many parallel TLS connections. However, these are easier to detect and defend against using standard mitigations.
+
+Note that client-initiated renegotiation could impact availability, but not confidentiality.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.2.
+
+Requirement level: Recommended
+
+Security level of client-initiated renegotiation
+
+    Good: N/A (TLS 1.3)
+    Good: No renegotiation (TLS 1.2)
+    Sufficient: Limited renegotiation (TLS 1.2)
+    Phase out: Unlimited renegotiation (TLS 1.2)
+
+Passed: 0-RTT close
+Verdict:
+
+This subtest is not applicable as 0-RTT is only available in TLS 1.3, which is not enabled on your mail servers.
+Technical details:
+Mail server (MX) 	0-RTT
+mail.dnanu.de. 	no
+Test explanation:
+
+We check if your mail servers (MX) support Zero Round Trip Time Resumption (0-RTT).
+
+0-RTT is an option in TLS 1.3 that transports application data during the first handshake message. 0-RTT does not provide protection against replay attacks at the TLS layer and therefore should be disabled. Although the risk can be mitigated by not allowing 0-RTT for non-idempotent requests, such a configuration is often not trivial, reliant on application logic and thus error prone.
+
+If your mail servers do not support TLS 1.3, the test is not applicable. For mail servers that support TLS 1.3, the STARTTLS command is issued and a TLS session is initiated. The amount of early data support indicated by the mail server is checked. When more than zero, a second connection is made re-using the TLS session details of the first connection but sending the EHLO command before the TLS handshake but after the STARTTLS command (i.e. no round trips (0-RTT) needed before application data to the server). If the TLS handshake is completed and the mail server responds, then the mail server is considered to support 0-RTT.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.4.4.
+
+Security level of 0-RTT
+
+    Good: No 0-RTT (TLS 1.3)
+    Good: N/A (TLS 1.2)
+    Insufficient: Using 0-RTT (TLS 1.3)
+
+Passed: Extended Master Secret (EMS) close
+Verdict:
+
+All your mail servers support EMS.
+Technical details:
+Mail server (MX) 	EMS
+mail.dnanu.de. 	yes
+Test explanation:
+
+We check if your receiving mail servers (MX) support Extended Master Secret.
+
+Extended Master Secret (EMS), that is specified in RFC 7627, is an extension for TLS 1.2 that prevents Triple Handshakes machine-in-the-middle attacks.
+
+Increasingly, TLS libraries are enforcing EMS by default, also because security regulations such as FIPS require it. If your mail server does not support EMS, sending mail servers that enforce EMS will be unable to establish a TLS 1.2 connection with your mail server.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 4.1.
+Certificate
+Passed: Trust chain of certificate close
+Verdict:
+
+The trust chain of all your mail server certificates is complete and signed by a trusted root certificate authority.
+Technical details:
+Mail server (MX) 	Untrusted certificate chain
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if we are able to build a valid chain of trust for your mail server certificates.
+
+For a valid chain of trust, your certificate must be published by a publicly trusted certificate authority, and your receiving mail server must present all necessary intermediate certificates.
+
+Sending mail servers usually ignore whether a mail server certificate is issued by a publicly trusted certificate authority. Without DNSSEC the lookup of the mail server domain is vulnerable to manipulation. Thus a certificate issued by a publicly trusted certificate authority cannot add any authenticity value. Quite a few receiving mail servers are therefore using self-signed certificates, often issued by an internal (private) certificate authority. For authenticity a mail server should use DNSSEC and DANE.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 4.4.
+
+Requirement level: Optional
+Passed: Public key of certificate close
+Verdict:
+
+The public keys of all your mail server certificates are based on a secure signing algorithm with secure parameters.
+Technical details:
+Mail server (MX) 	Outdated signature parameter
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if the public key of your mail server certificate and every intermediate certificate is based on a secure signing algorithm with secure parameters.
+
+The verification of certificates makes use of digital signatures. The public key of a certificate can be used to verify that a signature was created using the corresponding private key.
+
+Signing algorithm: The signing algorithm is determined when generating the certificate. A certificate can only contain one signing algorithm. It is possible to configure multiple certificates on a server to support more than one algorithm. Only the signing algorithms ECDSA, RSA and EdDSA are considered sufficiently secure. EdDSA is actually rarely, if ever, used. All mentioned algorithms are vulnerable to the quantum threat. They offer sufficient protection for now. Quantum-safe alternatives are not yet part of the TLS standards.
+
+Parameters: The security of ECDSA and EdDSA digital signatures depends on the chosen curve. The security of RSA is tied to the key length of the public key.
+
+For details on the relevant certificate field name see paragraph "4.1.2.7. Subject Public Key Info" of RFC 5280.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.2
+
+Security level of elliptic curves for ECDSA
+
+    Sufficient:
+        secp521r1 (rarely used)
+        secp384r1
+        secp256r1
+        x448
+        x25519
+        brainpoolP512r1 (rarely used)
+        brainpoolP384r1 (idem)
+        brainpoolP256r1 (idem)
+
+    Phase out:
+        secp224r1
+
+    Insufficient:
+        Other curves
+
+Security level of length of RSA keys
+
+    Sufficient: At least 3072 bit
+    Phase out: 2048 – 3071 bit
+    Insufficient: Less than 2048 bit
+
+Security level of Edwards curves for EdDSA (rarely used)
+
+    Sufficient:
+        Ed448
+        Ed25519
+
+    Insufficient:
+        Other curves
+
+Note that the above names are based on the IANA naming conventions. Sometimes alternative names are used to refer to the same curves, like prime256v1 (ANSI) and NIST P-256 for secp256r1.
+Passed: Signature on certificate close
+Verdict:
+
+All your mail server certificates are signed using a secure signing algorithm and hash function.
+Technical details:
+Mail server (MX) 	Outdated hash function
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if each of your mail server certificates is signed (by a certificate authority) with a secure signing algorithm, while making use of a secure hash function.
+
+For details on the relevant certificate field name see paragraph "4.1.1.2. signatureAlgorithm" of RFC 5280.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 3.3.5.
+
+Security level of signing algorithms
+
+    Sufficient: ECDSA, RSA, EdDSA
+    Insufficient: DSS, EXPORT-*, PSK, Anon, NULL, KRB5
+
+Security level of hash functions
+
+    Good: SHA-256, SHA-384, SHA-512
+    Phase out: SHA-224
+    Insufficient: SHA-1, MD5
+
+Passed: Domain name on certificate close
+Verdict:
+
+The domain names of all your mail servers match the domain names on your mail server certificates.
+Technical details:
+Mail server (MX) 	Unmatched domains on certificate
+mail.dnanu.de. 	None
+Test explanation:
+
+We check if the domain name of each of your receiving mail servers (MX) matches the domain name on the presented certificates.
+
+Sending mail servers usually ignore the domain in the certificate. Without DNSSEC the lookup of the mail server domain is vulnerable to manipulation. Thus matching the domain on the certificate against the mail server domain does not add any authenticity value. Quite a few receiving mail servers are therefore using self-signed certificates, often issued by an internal (private) certificate authority.
+
+For authenticity a mail server should use DNSSEC and DANE. A certificate with a domain that matches the domain of the mail server is only required when DANE 'trust anchor assertion' (DANE-TA, 2) is used.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, paragraph 4.4.
+
+Requirement level: Optional / Required (only when DANE-TA is used)
+Recommendation: CAA for mail server close
+Verdict:
+
+Your mail server does not have CAA.
+Technical details:
+Mail server 	Findings
+mail.dnanu.de. 	Error: CAA not found
+... 	Error: Required 'issue' property missing
+Test explanation:
+
+We check if the name servers of each of your receiving mail servers (MX) contain one or more CAA records, that are syntactically valid and sufficiently protective.
+
+Certification Authority Authorisation (CAA) allows you as a domain name holder to specify one or more certificate authority authorised to issue certificates for your mail server domain names. A certificate authority must not issue a certificate unless the certificate authority determines that the certificate request is consistent with the applicable CAA records.
+
+Note that CAA records are located during validation by walking up the DNS hierarchy until one or more records are found. For example, if no CAA records are found on sub.example.org, example.org will be queried. The domain were the applicable CAA records are found is shown in the table with technical details below.
+
+The verdict is good if one or more CAA records were found that all have correct syntax, and at least one of these CAA records has the issue tag. Otherwise, the test will result in a fail. It is not checked whether the certificate authority of the current TLS certificate matches one or more of the issue and issuewild values, i.e., whether the current certificate could be reissued at this time.
+
+If your are using the Automatic Certificate Management Environment (ACME) standard and your certificate authority supports it, we recommend you to use the parameters validationmethods and accounturi to further restrict isssuance by the authorised certificate authority. Furthermore, it is recommended to add issuewild, issuemail and issuevmc with an empty ; if you do not use wildcard, S/MIME and/or BIMI certificates respectively. This is especially important for issuemail and issuevmc, because in their absence there is no fallback to issue and thus any certificate authority can still issue S/MIME and/or BIMI certificates for your domain.
+
+We expect URLs in iodef to be secure (i.e. use HTTPS scheme). Furthermore, to prevent suppression or spoofing of CAA records we strongly recommend you to use DNSSEC, although this CAA test does not specifically test for DNSSEC.
+
+Requirement level: Recommended
+DANE
+Passed: DANE existence close
+Verdict:
+
+All your mail server domains provide a TLSA record for DANE.
+Technical details:
+Mail server (MX) 	DANE TLSA record existent
+mail.dnanu.de. 	3 1 1 1f2b9362a006b35b9d7e33decff1952d7cde43b72de0dceda9e94508ce42546e
+Test explanation:
+
+We check if the name servers of each of your receiving mail servers (MX) provide a TLSA record for DANE.
+
+As DNSSEC is preconditional for DANE, this test will fail in case DNSSEC is missing on the mail server domain(s).
+
+Note that the test ignores TLSA records of the types PKIX-TA(0) or PKIX-EE(1) as these should not be used for receiving mail servers.
+
+Furthermore the test will lead to a fail if there is no DNSSEC proof of 'Denial of Existence' for TLSA records. If a signed TLSA record exists but at the same time there is an insecure NXDOMAIN for the same domain (due to faulty signer software), the test will also show a fail. The latter two failure scenario's could lead to non-delivery of emails addressed to you by DANE validating mail senders.
+
+See 'Transport Layer Security (TLS), Security guidelines version 2025-05' from NCSC-NL, chapter "2 Step-by-step plan: How do I arrive at an appropriate TLS configuration?".
+Passed: DANE validity close
+Verdict:
+
+Each of your mail servers has at least one valid DANE fingerprint. This allows sending mail servers that support DANE verification to set up an authenticated encrypted transport connection with your receiving mail servers.
+Technical details:
+Mail server (MX) 	DANE TLSA record valid
+mail.dnanu.de. 	yes
+Test explanation:
+
+We check if the DANE fingerprints presented by your mail server domains are valid for your mail server certificates.
+
+DANE allows you to publish information about your mail server certificates in a special DNS record, called TLSA record. Sending mail servers can check the authenticity of your certificates not only through the certificate authority but also through the TLSA records. A sending mail server can also use the TLSA record as a signal to only connect via STARTTLS (and not unencrypted). When the DANE fingerprint of a receiving mail server is checked by the sending mail server, an active attacker who is able to manipulate the mail traffic cannot strip STARTTLS encryption.
+Information: DANE rollover scheme close
+Verdict:
+
+At least one of your mail server domains does not have an active DANE scheme for a reliable rollover of certificate keys.
+Technical details:
+Mail server (MX) 	DANE rollover scheme
+mail.dnanu.de. 	no
+Test explanation:
+
+We check if there is an active scheme with at least two DANE TLSA records to reliably handle certificate rollovers on your receiving mail servers (MX).
+
+Such a scheme will be proven useful when there is a need to update your mail server certificate(s). It can prevent that DANE becomes invalid during the transition period which could endanger mail deliverability at your domain. A rollover scheme could but does not need to be 'active' all the time.
+
+We recommend you to apply one of the following two schemes with double DANE TLSA records:
+
+    Current + Next ("3 1 1" + "3 1 1"): Publish two "DANE-EE(3) SPKI(1) SHA2-256(1)" records, one for the current and one for the next TLS certificate of your mail server.
+    Current + Issuer CA ("3 1 1" + "2 1 1"): Publish a "DANE-EE(3) SPKI(1) SHA2-256(1)" record for the current TLS certificate of your mail server, and also a "DANE-TA(2) SPKI(1) SHA2-256(1)" record for the current root or intermediate certificate of the (not necessarily public) certificate authority.
+
+The test also accepts other combinations of DANE TLSA records i.e. "3 x x" + "3 x x" or "3 x x" + "2 x x". However other types than the above will generally be more error prone and less interoperable.
+
+Note that if a mail server simultaneously offers two certificates (one based on RSA and one based on ECDSA), a separate DANE TLSA rollover scheme is recommended for each certificate. The subtest does not check for this scenario. If only one DANE TLSA record is configured for each certificate, this subtest gives a false-positive result.
+
+Requirement level: Optional
+Passed : Route authorisation (RPKI)
+Well done! All IP addresses of your receiving mail server(s) and associated name servers have a route announcement that is matched by the published route authorisation (RPKI). As a result, email transport between sending mail servers with enabled route validation and your receiving mail server(s) is better protected against various unintentional or malicious route configuration errors, that can lead to the unreachability of your servers or the interception of Internet traffic to your servers.
+
+Name servers of domain
+Passed: Route Origin Authorisation existence close
+Verdict:
+
+For all IP addresses of your name servers an RPKI Route Origin Authorisation (ROA) is published.
+Technical details:
+Name server 	IP address 	RPKI Route Origin Authorization
+elijah.ns.cloudflare.com. 	162.159.44.253 	yes
+... 	172.64.35.253 	yes
+... 	108.162.195.253 	yes
+... 	2803:f800:50::6ca2:c3fd 	yes
+... 	2606:4700:58::a29f:2cfd 	yes
+... 	2a06:98c1:50::ac40:23fd 	yes
+jewel.ns.cloudflare.com. 	108.162.194.171 	yes
+... 	162.159.38.171 	yes
+... 	172.64.34.171 	yes
+... 	2a06:98c1:50::ac40:22ab 	yes
+... 	2606:4700:50::a29f:26ab 	yes
+... 	2803:f800:50::6ca2:c2ab 	yes
+Test explanation:
+
+We check if an RPKI Route Origin Authorization (ROA) has been published for all IP addresses of the name servers of your domain.
+
+Your hoster (or its network provider) announces through the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. Other network providers use these route announcements to determine via which route to send traffic for your server's IP addresses.
+
+However, a route announcement can be faked. In fact, another network provider may be able to connect the IP address block of your IP address to its network and thus potentially receive Internet traffic that is actually intended for your network provider. The cause may be accidental or malicious. In either case, this can result in your server becoming unreachable or in Internet traffic to your server being intercepted.
+
+Resource Public Key Infrastructure (RPKI) significantly improves protection against this. With RPKI, the rightful holder of a block of IP addresses can publish a digitally signed statement with route authorization (Route Origin Authorisation; ROA for short). Another network provider that wants to send Internet traffic to a particular IP address, can use the corresponding statement to filter out Invalid routes. In this way, the network provider prevents Internet traffic from its network from being sent to unauthorized provider networks.
+Passed: Route announcement validity close
+Verdict:
+
+All IP addresses of your name servers have a Valid validation state. The route announcement of these IP addresses is matched by the published RPKI Route Origin Authorisation (ROA).
+Technical details:
+Name server 	BGP Route Prefix 	BGP Route Origin ASN 	RPKI Origin Validation state
+elijah.ns.cloudflare.com. 	162.159.32.0/20 	AS13335 	valid
+... 	172.64.32.0/20 	AS13335 	valid
+... 	172.64.35.0/24 	AS13335 	valid
+... 	108.162.195.0/24 	AS13335 	valid
+... 	108.162.192.0/20 	AS13335 	valid
+... 	2803:f800:50::/45 	AS13335 	valid
+... 	2606:4700:50::/44 	AS13335 	valid
+... 	2a06:98c1:50::/45 	AS13335 	valid
+jewel.ns.cloudflare.com. 	108.162.192.0/20 	AS13335 	valid
+... 	108.162.194.0/24 	AS13335 	valid
+... 	162.159.32.0/20 	AS13335 	valid
+... 	172.64.34.0/24 	AS13335 	valid
+... 	172.64.32.0/20 	AS13335 	valid
+... 	2a06:98c1:50::/45 	AS13335 	valid
+... 	2606:4700:50::/44 	AS13335 	valid
+... 	2803:f800:50::/45 	AS13335 	valid
+Test explanation:
+
+We check if the validation status for all IP addresses of the name servers of your domain is Valid. If there are multiple overlapping route announcements for the IP address, we test that they are all Valid.
+
+Your hoster (or its network provider) announces via the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. It does this by associating (parts of) its IP address blocks (Route Prefix) with the unique number of its provider network (Route Origin ASN), and then distributing this routing information. Other network providers use these route announcements to determine via which route to send traffic for the IP addresses.
+
+Additionally, for each route announcement, your hoster (or its network provider) should publish a digitally signed statement with route authorisation (Route Origin Authorisation; abbreviated: ROA) statement using Resource Public Key Infrastructure (RPKI).
+
+Another network provider that is asked to send Internet traffic to your server's IP address can cryptographically verify the associated statement. The verified content (Validated ROA Payload; abbreviated: VRP) includes which provider networks (VRP ASN) are authorised to receive Internet traffic for each recorded IP address block (VRP Prefix).
+
+The network provider can then use this content to filter BGP routes. For example, he can reject any Invalid routes, to prevent Internet traffic from its network is sent to unauthorised provider networks.
+
+Checking route announcements against route authorisations (RPKI Origin Validation; abbreviated: ROV) has the following three possible outcomes.
+
+1․ Valid: The route announcement of the considered IP address is matched by at least one published route authorisation. A route authorisation is also matched for more specific route announcements (i.e., for a part of the IP address block contained in the route authorisation), unless they are more specific than the limit specified in the route authorisation (via the maxLength attribute).
+
+2․ Invalid: The route announcement of the considered IP address is covered by a route authorisation, but it does not match. There are two possible causes:
+
+    the IP address block (Route Prefix) is announced from a provider network (Route Origin ASN) that is not authorised in the route authorisation (result in the table below: "invalid (as)");
+    the IP address block (Route Prefix) that is announced is smaller than is allowed in the route authorisation, i.e. exceeding maxLength value (result in table below: "invalid (length)").
+
+3․ NotFound: No statement with route-authorisation has been found that covers the route announcement of the considered IP address. This makes the routing of Internet traffic to your server less secure. Please contact your hoster about this. He can ask his network provider that owns your server's IP addresses to publish route authorisations.
+
+What to do if the test result shows the status Invalid?
+
+The status Invalid indicates an unintentional or malicious route configuration error, that can be caused by your hoster or its network provider (internal error) or by a third party (external error). In either case, it increases the risk for unreachability of your server or for interception of Internet traffic to your server. Contact your hoster as soon as possible. In the case of an internal error, your hoster should ask its network provider that owns your server's IP addresses to fix the route configuration error.
+Name servers of mail server(s)
+Passed: Route Origin Authorisation existence close
+Verdict:
+
+For all IP addresses of the name servers of your mail server(s) an RPKI Route Origin Authorisation (ROA) is published.
+Technical details:
+Name server of MX 	IP address 	RPKI Route Origin Authorization
+elijah.ns.cloudflare.com. 	162.159.44.253 	yes
+... 	172.64.35.253 	yes
+... 	108.162.195.253 	yes
+... 	2803:f800:50::6ca2:c3fd 	yes
+... 	2606:4700:58::a29f:2cfd 	yes
+... 	2a06:98c1:50::ac40:23fd 	yes
+jewel.ns.cloudflare.com. 	172.64.34.171 	yes
+... 	108.162.194.171 	yes
+... 	162.159.38.171 	yes
+... 	2803:f800:50::6ca2:c2ab 	yes
+... 	2a06:98c1:50::ac40:22ab 	yes
+... 	2606:4700:50::a29f:26ab 	yes
+Test explanation:
+
+We check if an RPKI Route Origin Authorisation (ROA) has been published for all IP addresses of the name servers of your mail server(s) (MX).
+
+Your hoster (or its network provider) announces through the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. Other network providers use these route announcements to determine via which route to send traffic for your server's IP addresses.
+
+However, a route announcement can be faked. In fact, another network provider may be able to connect the IP address block of your IP address to its network and thus potentially receive Internet traffic that is actually intended for your network provider. The cause may be accidental or malicious. In either case, this can result in your server becoming unreachable or in Internet traffic to your server being intercepted.
+
+Resource Public Key Infrastructure (RPKI) significantly improves protection against this. With RPKI, the rightful holder of a block of IP addresses can publish a digitally signed statement with route authorisation (Route Origin Authorisation; ROA for short). Another network provider that wants to send Internet traffic to a particular IP address, can use the corresponding statement to filter out Invalid routes. In this way, the network provider prevents Internet traffic from its network from being sent to unauthorized provider networks.
+Passed: Route announcement validity close
+Verdict:
+
+All IP addresses of the name servers of your receiving mail servers have a Valid validation state. The route announcement of these IP addresses is matched by the published RPKI Route Origin Authorisation (ROA).
+Technical details:
+Name server of MX 	BGP Route Prefix 	BGP Route Origin ASN 	RPKI Origin Validation state
+elijah.ns.cloudflare.com. 	162.159.32.0/20 	AS13335 	valid
+... 	172.64.32.0/20 	AS13335 	valid
+... 	172.64.35.0/24 	AS13335 	valid
+... 	108.162.195.0/24 	AS13335 	valid
+... 	108.162.192.0/20 	AS13335 	valid
+... 	2803:f800:50::/45 	AS13335 	valid
+... 	2606:4700:50::/44 	AS13335 	valid
+... 	2a06:98c1:50::/45 	AS13335 	valid
+jewel.ns.cloudflare.com. 	172.64.32.0/20 	AS13335 	valid
+... 	172.64.34.0/24 	AS13335 	valid
+... 	108.162.194.0/24 	AS13335 	valid
+... 	108.162.192.0/20 	AS13335 	valid
+... 	162.159.32.0/20 	AS13335 	valid
+... 	2803:f800:50::/45 	AS13335 	valid
+... 	2a06:98c1:50::/45 	AS13335 	valid
+... 	2606:4700:50::/44 	AS13335 	valid
+Test explanation:
+
+We check if the validation status for all IP addresses of the name servers of your mail servers (MX) is Valid. If there are multiple overlapping route announcements for the IP address, we test that they are all Valid.
+
+Your hoster (or its network provider) announces via the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. It does this by associating (parts of) its IP address blocks (Route Prefix) with the unique number of its provider network (Route Origin ASN), and then distributing this routing information. Other network providers use these route announcements to determine via which route to send traffic for the IP addresses.
+
+Additionally, for each route announcement, your hoster (or its network provider) should publish a digitally signed statement with route authorisation (Route Origin Authorisation; abbreviated: ROA) statement using Resource Public Key Infrastructure (RPKI).
+
+Another network provider that is asked to send Internet traffic to your server's IP address can cryptographically verify the associated statement. The verified content (Validated ROA Payload; abbreviated: VRP) includes which provider networks (VRP ASN) are authorised to receive Internet traffic for each recorded IP address block (VRP Prefix).
+
+The network provider can then use this content to filter BGP routes. For example, he can reject any Invalid routes, to prevent Internet traffic from its network is sent to unauthorised provider networks.
+
+Checking route announcements against route authorisations (RPKI Origin Validation; abbreviated: ROV) has the following three possible outcomes.
+
+1․ Valid: The route announcement of the considered IP address is matched by at least one published route authorisation. A route authorisation is also matched for more specific route announcements (i.e., for a part of the IP address block contained in the route authorisation), unless they are more specific than the limit specified in the route authorisation (via the maxLength attribute).
+
+2․ Invalid: The route announcement of the considered IP address is covered by a route authorisation, but it does not match. There are two possible causes:
+
+    the IP address block (Route Prefix) is announced from a provider network (Route Origin ASN) that is not authorised in the route authorisation (result in the table below: "invalid (as)");
+    the IP address block (Route Prefix) that is announced is smaller than is allowed in the route authorisation, i.e. exceeding maxLength value (result in table below: "invalid (length)").
+
+3․ NotFound: No statement with route-authorisation has been found that covers the route announcement of the considered IP address. This makes the routing of Internet traffic to your server less secure. Please contact your hoster about this. He can ask his network provider that owns your server's IP addresses to publish route authorisations.
+
+What to do if the test result shows the status Invalid?
+
+The status Invalid indicates an unintentional or malicious route configuration error, that can be caused by your hoster or its network provider (internal error) or by a third party (external error). In either case, it increases the risk for unreachability of your server or for interception of Internet traffic to your server. Contact your hoster as soon as possible. In the case of an internal error, your hoster should ask its network provider that owns your server's IP addresses to fix the route configuration error.
+Mail server(s)
+Passed: Route Origin Authorisation existence close
+Verdict:
+
+For all IP addresses of your receiving mail server(s) an RPKI Route Origin Authorisation (ROA) is published.
+Technical details:
+Mail server 	IP address 	RPKI Route Origin Authorization
+mail.dnanu.de. 	91.50.54.159 	yes
+... 	2003:c8:c704:3584:982e:83b1:63af:7fa0 	yes
+Test explanation:
+
+We check if an RPKI Route Origin Authorisation (ROA) has been published for all IP addresses of your mail server(s) (MX).
+
+Your hoster (or its network provider) announces through the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. Other network providers use these route announcements to determine via which route to send traffic for your server's IP addresses.
+
+However, a route announcement can be faked. In fact, another network provider may be able to connect the IP address block of your IP address to its network and thus potentially receive Internet traffic that is actually intended for your network provider. The cause may be accidental or malicious. In either case, this can result in your server becoming unreachable or in Internet traffic to your server being intercepted.
+
+Resource Public Key Infrastructure (RPKI) significantly improves protection against this. With RPKI, the rightful holder of a block of IP addresses can publish a digitally signed statement with route authorisation (Route Origin Authorisation; ROA for short). Another network provider that wants to send Internet traffic to a particular IP address, can use the corresponding statement to filter out Invalid routes. In this way, the network provider prevents Internet traffic from its network from being sent to unauthorized provider networks.
+Passed: Route announcement validity close
+Verdict:
+
+All IP addresses of your receiving mail servers have a Valid validation state. The route announcement of these IP addresses is matched by the published RPKI Route Origin Authorisation (ROA).
+Technical details:
+Mail server 	BGP Route Prefix 	BGP Route Origin ASN 	RPKI Origin Validation state
+mail.dnanu.de. 	91.0.0.0/10 	AS3320 	valid
+... 	2003::/19 	AS3320 	valid
+Test explanation:
+
+We check if the validation status for all IP addresses of your mail servers (MX) is Valid. If there are multiple overlapping route announcements for the IP address, we test that they are all Valid.
+
+Your hoster (or its network provider) announces via the Border Gateway Protocol (BGP) for which of its IP address blocks it accepts incoming Internet traffic. It does this by associating (parts of) its IP address blocks (Route Prefix) with the unique number of its provider network (Route Origin ASN), and then distributing this routing information. Other network providers use these route announcements to determine via which route to send traffic for the IP addresses.
+
+Additionally, for each route announcement, your hoster (or its network provider) should publish a digitally signed statement with route authorisation (Route Origin Authorisation; abbreviated: ROA) statement using Resource Public Key Infrastructure (RPKI).
+
+Another network provider that is asked to send Internet traffic to your server's IP address can cryptographically verify the associated statement. The verified content (Validated ROA Payload; abbreviated: VRP) includes which provider networks (VRP ASN) are authorised to receive Internet traffic for each recorded IP address block (VRP Prefix).
+
+The network provider can then use this content to filter BGP routes. For example, he can reject any Invalid routes, to prevent Internet traffic from its network is sent to unauthorised provider networks.
+
+Checking route announcements against route authorisations (RPKI Origin Validation; abbreviated: ROV) has the following three possible outcomes.
+
+1․ Valid: The route announcement of the considered IP address is matched by at least one published route authorisation. A route authorisation is also matched for more specific route announcements (i.e., for a part of the IP address block contained in the route authorisation), unless they are more specific than the limit specified in the route authorisation (via the maxLength attribute).
+
+2․ Invalid: The route announcement of the considered IP address is covered by a route authorisation, but it does not match. There are two possible causes:
+
+    the IP address block (Route Prefix) is announced from a provider network (Route Origin ASN) that is not authorised in the route authorisation (result in the table below: "invalid (as)");
+    the IP address block (Route Prefix) that is announced is smaller than is allowed in the route authorisation, i.e. exceeding maxLength value (result in table below: "invalid (length)").
+
+3․ NotFound: No statement with route-authorisation has been found that covers the route announcement of the considered IP address. This makes the routing of Internet traffic to your server less secure. Please contact your hoster about this. He can ask his network provider that owns your server's IP addresses to publish route authorisations.
+
+What to do if the test result shows the status Invalid?
+
+The status Invalid indicates an unintentional or malicious route configuration error, that can be caused by your hoster or its network provider (internal error) or by a third party (external error). In either case, it increases the risk for unreachability of your server or for interception of Internet traffic to your server. Contact your hoster as soon as possible. In the case of an internal error, your hoster should ask its network provider that owns your server's IP addresses to fix the route configuration error.
+

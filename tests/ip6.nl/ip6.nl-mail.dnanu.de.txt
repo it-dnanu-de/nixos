@@ -1,0 +1,15 @@
+Results for mail.dnanu.de
+	IPv4	IPv6
+DNS servers		
+No AAAA records for any NS
+IPv6-only DNS		
+Works
+(Why?)
+Mail exchangers		
+No AAAA records for any MX
+mail.dnanu.de	91.50.54.159	
+2003:c8:c704:3584:982e:83b1:63af:7fa0
+www.mail.dnanu.de		
+No AAAA records for www.mail.dnanu.de
+mail.dnanu.de is not a domain name (no NS record)
+Link to these results:
