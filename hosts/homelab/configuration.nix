@@ -25,6 +25,7 @@
     ../../modules/services/cloudflare-dns.nix
     ../../modules/services/ios-profile.nix
     ../../modules/services/authelia.nix
+    ../../modules/services/nextcloud.nix
     ../../modules/system/users.nix
   ];
 
@@ -44,4 +45,10 @@
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = true;
   services.openssh.settings.KbdInteractiveAuthentication = true;
+
+  services.postgresqlBackup = {
+    enable = true;
+    location = "/fast/backups/postgres";
+    databases = [ "nextcloud" ];
+  };
 }
