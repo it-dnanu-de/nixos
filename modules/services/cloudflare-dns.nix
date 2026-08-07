@@ -51,8 +51,22 @@ let
 
     PUBLIC_IP4=$(${pkgs.curl}/bin/curl -sS --fail --interface ${settings.network.interface} https://api.ipify.org 2>/dev/null || echo "0.0.0.0")
     if [ "$PUBLIC_IP4" != "0.0.0.0" ]; then
-      upsert "$Z_DNANU" A "${settings.domains.public}" "$PUBLIC_IP4" true 1
-      upsert "$Z_DNANU" A "www.${settings.domains.public}" "$PUBLIC_IP4" true 1
+      # dnanu.de / www / autoconfig / profile / mta-sts are served via the
+      # cloudflared tunnel → they MUST be CNAMEs to the tunnel (proxied), NOT
+      # A records. An A record on a tunnel-hosted name makes Cloudflare's edge
+      # try to reach your origin IP directly and return 522.
+      # (mail/vpn are grey-cloud A/AAAA records — handled below.)
+      deleteRecord "$Z_DNANU" A "${settings.domains.public}"
+      deleteRecord "$Z_DNANU" A "www.${settings.domains.public}"
+      deleteRecord "$Z_DNANU" A "autoconfig.${settings.domains.public}"
+      deleteRecord "$Z_DNANU" AAAA "${settings.domains.public}"
+      deleteRecord "$Z_DNANU" AAAA "www.${settings.domains.public}"
+      upsert "$Z_DNANU" CNAME "${settings.domains.public}" \
+        "${settings.cloudflare.tunnelId}.cfargotunnel.com" true 1
+      upsert "$Z_DNANU" CNAME "www.${settings.domains.public}" \
+        "${settings.cloudflare.tunnelId}.cfargotunnel.com" true 1
+      upsert "$Z_DNANU" CNAME "autoconfig.${settings.domains.public}" \
+        "${settings.cloudflare.tunnelId}.cfargotunnel.com" true 1
       upsert "$Z_DNANU" A "${settings.domains.vpn}" "$PUBLIC_IP4" false 120
       # profile.dnanu.de — CNAME to tunnel, proxied (cloudflared ingress §3.6)
       deleteRecord "$Z_DNANU" A "profile.${settings.domains.public}"
