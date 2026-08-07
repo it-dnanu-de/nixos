@@ -1,5 +1,42 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-08 — Declarative storage layout + Nextcloud defaults (human-approved §5 tree)
+
+### File structure (§5) — human approved the printed tree
+- `modules/system/storage-layout.nix` (NEW): systemd.tmpfiles creates the full
+  `/fast/user/hey/{work/{audio,video,images,literature,documents}/{apple,windows,linux},
+  academic,downloads}` + `/slow/shared-media/{video/{shows,movies},audio/{music,
+  audiobooks,podcasts},literature/{books}}` + `/slow/downloads/{qbittorrent,sabnzbd,slskd}`
+  layout. Dirs `root:media 2775` (setgid). Defines `users.groups.media`.
+- immich: `immich-server` gets `SupplementaryGroups=media`.
+- nextcloud: `phpfpm-nextcloud` gets `SupplementaryGroups=media`.
+- `configuration.nix`: imports storage-layout.
+- Deployed gen 82; verified all 27 dirs + group + supplementary groups.
+- Commit: `64b327e`
+
+### Nextcloud defaults (declarative)
+- Added `default_language="en"`, `default_locale="en_US"`, `defaultapp="files"` to settings.
+- Commit: `64b327e`
+
+### Office backend — decision
+- Human clarified they meant **Nextcloud Office powered by Euro-Office** (not Collabora).
+  Euro-Office (June 2026, ONLYOFFICE-based) is NOT in nixpkgs; its parent
+  `onlyoffice-documentserver` 9.3.1 + `services.onlyoffice` DO exist.
+- Decision: **keep Collabora** (works, native, verified). Euro-Office → TODO/15 watch.
+
+### Installer project (human idea)
+- Documented in TODO/15: `install.sh` on live ISO → fork repo → create GitHub repo on
+  user's account → interactive Q&A (users/accounts/emails/aliases/apps/disks/API tokens)
+  → generate config + sops → print manual steps. Assumes same stack (Resend/CF/INWX/WG/SNM).
+
+### Account persistence — confirmed
+- Nextcloud accounts live in postgres `oc_users` (root + dnanu present); Vaultwarden in
+  `/var/lib/vaultwarden/db.sqlite3`. Both persist across reboot AND rebuild. Declarative
+  account creation only needed for first-install provisioning, never for persistence.
+
+---
+(previous session history preserved below)
+
 ## 2026-08-08 — Declarative cloud fixes: Nextcloud Office, Vaultwarden Argon2, watchdog bug
 
 ### Mail watchdog false alarm fixed
