@@ -65,7 +65,7 @@ in
       RemainAfterExit = true;
     };
     script = ''
-      OCC=nextcloud-occ
+      OCC=${config.services.nextcloud.occ}/bin/nextcloud-occ
       CURRENT=$($OCC config:app:get richdocuments wopi_url 2>/dev/null || true)
       if [ "$CURRENT" != "https://office.${settings.domains.internal}" ]; then
         $OCC config:app:set richdocuments wopi_url --value "https://office.${settings.domains.internal}"
