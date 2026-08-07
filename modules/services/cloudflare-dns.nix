@@ -231,12 +231,25 @@ in
     path = with pkgs; [ curl jq inetutils ];
     script = ''
       set -euo pipefail
+      # Rate-limit: at most one alert per 6h (same pattern as mail-queue-watch).
+      # A crash-looping sync must not page every few minutes.
+      STATE=/var/lib/tlsa-alert/last-sent
+      NOW=$(date +%s)
+      if [ -f "$STATE" ]; then
+        LAST=$(cat "$STATE")
+        if [ $(( NOW - LAST )) -lt 21600 ]; then
+          echo "alert rate-limited (last sent $(( NOW - LAST ))s ago)"
+          exit 0
+        fi
+      fi
       body="cloudflare-tlsa-sync FAILED on $(hostname) — check journal for details."
       curl -sS --fail -X POST "https://api.resend.com/emails" \
         -H "Authorization: Bearer $(cat "$CREDENTIALS_DIRECTORY/resend_api_key")" \
         -H "Content-Type: application/json" \
         -d "$(jq -nc --arg b "$body" '{from:"alert@dnanu.de",to:["hey@dnanu.de"],subject:"[homelab] TLSA sync failure",text:$b}')" \
         > /dev/null
+      mkdir -p /var/lib/tlsa-alert
+      echo "$NOW" > "$STATE"
       echo "TLSA-failure alert sent"
     '';
   };
