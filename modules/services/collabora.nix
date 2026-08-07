@@ -13,6 +13,8 @@ in
     settings = {
       storage.wopi."@allow" = true;
       storage.wopi.host = [ "cloud\\.${settings.domains.internal}" ];
+      ssl.enable = false;
+      ssl.termination = true;
     };
 
     aliasGroups = [{
