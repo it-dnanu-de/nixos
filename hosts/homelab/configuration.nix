@@ -12,6 +12,7 @@
     ./disko.nix
     ./hardware-configuration.nix
     ../../modules/system/zfs.nix
+    ../../modules/system/storage-layout.nix
     ../../modules/system/sops.nix
     ../../modules/networking/base.nix
     ../../modules/networking/adguard.nix

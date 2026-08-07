@@ -26,6 +26,9 @@ in
     settings = {
       maintenance_window_start = 2;
       default_phone_region = "DE";
+      default_language = "en";
+      default_locale = "en_US";
+      defaultapp = "files";
       serverId = "homelab-dell";
       log_type = "file";
     };
@@ -53,6 +56,9 @@ in
     useACMEHost = settings.domains.internal;
     extraConfig = helpers.userAllowlist;
   };
+
+  # media group (§5): nextcloud php reads/writes /fast/user/hey
+  systemd.services.phpfpm-nextcloud.serviceConfig.SupplementaryGroups = [ "media" ];
 
   # Declarative WOPI config: point richdocuments at the local Collabora server.
   # Idempotent oneshot — no-op when wopi_url already set.

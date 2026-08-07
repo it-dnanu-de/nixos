@@ -9,10 +9,13 @@ in
   services.immich = {
     enable = true;
     mediaLocation = "/fast/immich";
-    machine-learning.enable = false;
+    machine-learning.enable = false; # Dell CPU too weak
     host = "127.0.0.1";
     port = 2283;
   };
+
+  # media group (§5): immich reads/writes /fast/user/hey + /slow/shared-media
+  systemd.services.immich-server.serviceConfig.SupplementaryGroups = [ "media" ];
 
   services.nginx.virtualHosts."photos.${settings.domains.internal}" = lib.recursiveUpdate
     (helpers.mkUserVhost "photos.${settings.domains.internal}" "http://127.0.0.1:2283")
