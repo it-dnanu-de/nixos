@@ -19,13 +19,14 @@
 - [ ] `zpool status` + ARC within cap
 - [ ] cellular + tunnel: `dig cloud.nanulab.de` + `curl -I https://cloud.nanulab.de`
 - [ ] `curl -k https://profile.nanulab.de` → 404 (dead name)
-- [ ] `swaks` inbound SMTP from outside
+- [ ] inbound SMTP from outside — covered by mail-tester 2026-08-07 ✅ (see 04-Mail); re-run `swaks` after IPv6 pass-through
 - [ ] send via iOS → Resend dashboard
 - [ ] guest lease ∈ .100-.200
 - [ ] torrent IP-leak test (qBittorrent)
 - [ ] `restic check`
 - [ ] lid-close test
 - [ ] `systemctl --failed` empty
+- [ ] internet.nl IPv6 subtest (blocked on Speedport v6 pass-through — 03-Networking)
 - [ ] full suite after each milestone deploy
 
 ## Gate

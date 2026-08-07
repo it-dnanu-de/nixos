@@ -29,5 +29,6 @@
 - [ ] Jellyfin/Navidrome/ABS/Booklore admin + libraries
 - [ ] Prowlarr indexers; connect *arrs to downloaders
 - [ ] Seerr ↔ Jellyfin; Vaultwarden admin; HA onboarding; Beszel agent key
-- [ ] mail-tester.com + internet.nl; flip DMARC reject after 30 days
-- [ ] Publish DS records at DENIC (both zones) — activates DANE
+- [x] mail-tester.com + internet.nl — **run 2026-08-07** (mail-tester 0.1 SPF/DKIM/DMARC pass; MECSA 100s; internet.nl dnanu 90%, mail 61% — only IPv6 fail). Flip DMARC reject after 30 clean days.
+- [ ] Speedport v6 pass-through (fixes internet.nl IPv6 subtest) — see 03-Networking
+- [ ] Publish DS records at DENIC (both zones) — activates DANE (TLSA already published + matching)

@@ -55,4 +55,5 @@
 ## IPv6
 - [x] GUA via SLAAC, ULA fd10::/64, no v6 forwarding
 - [x] Inbound :25 v6 allowed (inet family)
-- [ ] Speedport v6 pass-through (1% manual)
+- [x] AAAA published for mail.dnanu.de (`2003:c8:...`, via ddclient) — resolves publicly (`tests/ip6.nl/`)
+- [~] **Speedport v6 pass-through (1% manual, §3.5)** — GUA published but **v6 connections time out** (internet.nl IPv6 web reachability fails; dane.sys4.de shows v6 timeout). AAAA records OK; inbound/outbound v6 traffic through the Speedport needs the manual router step.

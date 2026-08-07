@@ -39,8 +39,15 @@
 - [x] 6h cooldown, independent of local postfix
 - [x] TLSA-sync failure alert (OnFailure → Resend)
 
-## Verification
-- [ ] `swaks --to hey@dnanu.de --server <home-ip>` from outside
-- [ ] iOS send via Resend dashboard
-- [ ] mail-tester.com + internet.nl after final deploy
-- [ ] `dig mail.dnanu.de @1.1.1.1` → home IP
+## Verification (results captured 2026-08-07 in `tests/`)
+- [x] `swaks --to hey@dnanu.de --server <home-ip>` — delivered (mail-tester 2026-08-07)
+- [x] mail-tester.com: **SPF pass, DKIM valid, DMARC pass (p=quarantine), SpamAssassin 0.1** — `tests/mail-tester/mail-tester.txt`
+- [x] MECSA: TLS 100 / X509 100 / DKIM 100 / DMARC 100 / DANE 100 / DNSSEC 100 / MTA-STS 100 (SPF 50 = expected, dnanu.de sends nothing; Resend uses send.dnanu.de) — `tests/mecsa/`
+- [x] haveDANE: all 3 delivery tests pass (outbound DANE support) — `tests/haveDANE/`
+- [x] dane.sys4.de: TLSA `3 1 1` published + matching on **both** zones — `tests/dane/`
+- [x] zonemaster: only same-AS(Cloudflare 13335) warnings, no errors — `tests/zonemaster/`
+- [x] dnsviz: DNSSEC chain **Secure**, VALID on both zones — `tests/dnsviz/`
+- [x] internet.nl @dnanu.de: **90%** (only IPv6 fail); mail.dnanu.de: **61%** — TLS 1.3 good, **IPv6 web reachability fails** (v6 conns time out) — `tests/internet.nl/`
+- [ ] iOS send via Resend dashboard (manual on device)
+- [ ] internet.nl IPv6 fail → Speedport v6 pass-through (1% manual, §3.5 / 03-Networking)
+- [x] `dig mail.dnanu.de @1.1.1.1` → home IP (91.50.54.159)
