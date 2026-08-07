@@ -6,6 +6,7 @@
 
     secrets = {
       cloudflare_api_token = {};
+      cloudflare_account_token = {};
 
       cloudflared_tunnel_cred = {};
 

@@ -63,7 +63,7 @@
   # Note: SSH password authentication remains enabled — intentional by human ruling.
 
   cloudflare = {
-    tunnelId = "62ab1635-c6ea-44bc-a702-1bff07f392f7"; # real tunnel (created 2026-08-06 via dashboard token)
+    tunnelId = "734c3fa5-7b72-4cfb-8003-f1cab01743ee"; # local-config tunnel (recreated 2026-08-07 via API, config_src=local)
   };
 
   timeZone = "Europe/Berlin";
