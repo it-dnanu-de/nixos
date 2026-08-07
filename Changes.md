@@ -1,5 +1,41 @@
 # Changes.md — temporary session log (wiped into OpenCode.md at end of session)
 
+## 2026-08-08 — Declarative cloud fixes: Nextcloud Office, Vaultwarden Argon2, watchdog bug
+
+### Mail watchdog false alarm fixed
+- `mail.nix` watchdog checked unit `dovecot2` but SNM 26.05 unit is `dovecot.service` → fired
+  false "dovecot2-down" every 15 min. Fixed to `dovecot`. Deployed gen 80, verified clean.
+  Commit: `46a8ffe`
+
+### Nextcloud — declarative warning fixes + Nextcloud Office
+- Added `richdocuments` 10.3.0 app (Nextcloud Office) via extraApps; WOPI URL pointed at
+  `office.nanulab.de` via idempotent `nextcloud-richdocuments-wopi` oneshot (occ
+  config:app:set; uses `config.services.nextcloud.occ` path — nextcloud-occ not on service PATH).
+  `richdocuments:activate-config` confirms clean. Commit: `ebafea7`, `5f9815e`.
+- Declarative setup-warning fixes: `maintenance_window_start=2`, `default_phone_region=DE`,
+  `serverId=homelab-dell`, `log_type=file` (Logreader), `opcache.interned_strings_buffer=32`.
+- 2FA skipped by human ruling (VPN-only access). AppAPI daemon + integrity checker = nix-native
+  non-issues (documented).
+- Commit: `ebafea7`
+
+### Vaultwarden — Argon2 admin token + declared settings
+- `vaultwarden_admin_token` in sops is now an **Argon2id PHC string** (generated via
+  `vaultwarden hash`, m=64MiB t=3 p=4), fixing the "plain text ADMIN_TOKEN insecure" warning.
+- Declared admin-page settings as env config: SMTP → local postfix :25 loopback relay
+  (mynetworks includes loopback; 587 needs SASL), `ENABLE_PUSH_NOTIFICATION=false`, `DOMAIN`.
+- Commit: `ebafea7`
+
+### Mail secrets
+- Reset `mail_admin` password to human-requested value (yescrypt, verified via dovecot).
+  Commit: `f49a9a2`
+
+### Still open (human input)
+- Declarative file structure (§5 tree) — printed to user, awaiting approval
+- Declarative Nextcloud account creation — solution requested, pending design
+
+---
+(previous session history preserved below)
+
 ## 2026-08-07 — Cloud Services milestone (build step 5): Nextcloud + Collabora + Immich + Vaultwarden
 
 ### nginx-helpers refactor

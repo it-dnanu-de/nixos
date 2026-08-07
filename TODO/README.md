@@ -18,7 +18,7 @@
 | 03 | [Networking](03-Networking/todo.md) | ✅ done | IP, firewall, DNS, WG, tunnel |
 | 04 | [Mail](04-Mail/todo.md) | ✅ done + verified | SNM + Resend + hardening; mail-tester/MECSA/DANE green 2026-08-07 |
 | 05 | [Identity & Access](05-Identity-Access/todo.md) | ✅ done | Authelia, WG peers, profiles |
-| 06 | [Cloud Services](06-Cloud-Services/todo.md) | ⬜ not started | Nextcloud, Collabora, Immich, Vaultwarden |
+| 06 | [Cloud Services](06-Cloud-Services/todo.md) | ✅ done | Nextcloud(+Office), Collabora, Immich, Vaultwarden (gen 81) |
 | 07 | [Downloads & VPN](07-Downloads/todo.md) | ⬜ not started | qBit, SAB, slskd, confinement |
 | 08 | [Arr Stack](08-Arr-Stack/todo.md) | ⬜ not started | Sonarr/Radarr/…, Seerr, soularr, beets |
 | 09 | [Media Players](09-Media-Players/todo.md) | ⬜ not started | Jellyfin, Navidrome, ABS, Booklore |
@@ -36,6 +36,9 @@
 ## Cross-cutting open items (blockers / manual)
 - [ ] **IPv6 inbound/outbound through Speedport** — AAAA records published and resolving, but v6 connections time out (internet.nl mail 61% / dnanu 90% fail only on IPv6; dane.sys4 v6 timeout). 1% manual router pass-through (OpenCode.md §3.5, 03-Networking)
 - [ ] iza / kerem / hannah MACs still `TODO` in `users.nix` (blocks Kea reservations)
+- [ ] **Declarative Nextcloud account creation** — human requested; solution design pending (06-Cloud-Services)
+- [ ] **Declarative file structure §5** — tree printed 2026-08-08, awaiting human approval
+- [ ] Nextcloud 1% manual: link Mail app to IMAP, Office check, admin accounts (06-Cloud-Services)
 - [ ] Switch dumitru iPhone off manual `10.0.0.3` → DHCP (Kea hands out `10.0.0.10`)
 - [ ] Re-scan ALL WireGuard QRs post-v4 deploy (deployed gen is v2 `10.0.1.x`)
 - [ ] Distribute Authelia passwords (10 users)
