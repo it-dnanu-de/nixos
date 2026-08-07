@@ -26,6 +26,7 @@
     ../../modules/services/ios-profile.nix
     ../../modules/services/authelia.nix
     ../../modules/services/nextcloud.nix
+    ../../modules/services/vaultwarden.nix
     ../../modules/system/users.nix
   ];
 
