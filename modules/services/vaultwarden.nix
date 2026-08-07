@@ -17,6 +17,13 @@ in
       SIGNUPS_ALLOWED = false;
       ENABLE_WEBSOCKET = true;
       DOMAIN = "https://vault.${settings.domains.internal}";
+      # Declared admin-page settings (no web-UI poking):
+      ENABLE_PUSH_NOTIFICATION = false;      # no mobile push relay — VPN-only access
+      SMTP_HOST = "127.0.0.1";               # local postfix (mynetworks includes loopback → relays to Resend)
+      SMTP_PORT = 25;                        # loopback relay, no auth needed
+      SMTP_SECURITY = "none";
+      SMTP_FROM = "vaultwarden@${settings.domains.public}";
+      SMTP_FROM_NAME = "Vaultwarden";
     };
 
     environmentFile = [ config.sops.templates."vaultwarden-env".path ];

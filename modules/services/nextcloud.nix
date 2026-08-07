@@ -17,8 +17,25 @@ in
     config.adminpassFile = config.sops.secrets.nextcloud_admin_pass.path;
     configureRedis = true;
 
+    # Fixes reported setup warnings (declarative, no web-UI poking):
+    # - maintenance window: run background jobs at 02:30
+    # - default phone region: DE
+    # - server ID: single PHP server identifier
+    # - integrity checker stays disabled (nix store path changes each rebuild — standard on NixOS)
+    # - log_type=file so the Logreader app works (module default is systemd → Logreader error)
+    settings = {
+      maintenance_window_start = 2;
+      default_phone_region = "DE";
+      serverId = "homelab-dell";
+      log_type = "file";
+    };
+
+    # opcache.interned_strings_buffer default is 8 → warning "nearly full".
+    # Bump to 32 (recommended >8). Additive; other phpOptions untouched.
+    phpOptions."opcache.interned_strings_buffer" = "32";
+
     extraApps = with pkgs.nextcloud33Packages.apps; {
-      inherit mail calendar contacts;
+      inherit mail calendar contacts richdocuments; # richdocuments = Nextcloud Office → coolwsd (office.nanulab.de)
     };
 
     poolSettings = {
@@ -35,5 +52,24 @@ in
     forceSSL = true;
     useACMEHost = settings.domains.internal;
     extraConfig = helpers.userAllowlist;
+  };
+
+  # Declarative WOPI config: point richdocuments at the local Collabora server.
+  # Idempotent oneshot — no-op when wopi_url already set.
+  systemd.services.nextcloud-richdocuments-wopi = {
+    description = "Point Nextcloud richdocuments at local Collabora server";
+    after = [ "nextcloud-setup.service" ];
+    requires = [ "nextcloud-setup.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      OCC=nextcloud-occ
+      CURRENT=$($OCC config:app:get richdocuments wopi_url 2>/dev/null || true)
+      if [ "$CURRENT" != "https://office.${settings.domains.internal}" ]; then
+        $OCC config:app:set richdocuments wopi_url --value "https://office.${settings.domains.internal}"
+      fi
+    '';
   };
 }
